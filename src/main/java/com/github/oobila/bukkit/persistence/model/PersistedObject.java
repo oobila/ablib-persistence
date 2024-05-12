@@ -5,16 +5,16 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.time.ZonedDateTime;
 
+@Getter
 public abstract class PersistedObject implements ConfigurationSerializable {
 
-    @Getter
     private final ZonedDateTime createdDate;
 
-    public PersistedObject() {
+    protected PersistedObject() {
         this(ZonedDateTime.now());
     }
 
-    public PersistedObject(ZonedDateTime createdDate) {
+    protected PersistedObject(ZonedDateTime createdDate) {
         this.createdDate = createdDate;
     }
 }

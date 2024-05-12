@@ -58,7 +58,7 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
             ResultSet resultSet = statement.executeQuery(query);
             if(resultSet.next()) {
                 String data = resultSet.getString("data");
-                return SqlAdapterUtils.deserializeData(data, dataCache.getType());
+                return SqlAdapterUtils.deserializeData(this, data, dataCache.getType());
             } else {
                 return null;
             }

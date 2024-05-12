@@ -6,13 +6,20 @@ import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.apache.commons.io.FilenameUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
+
+import static com.github.oobila.bukkit.common.ABCommon.log;
 
 public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheAdapter<K, V> {
 
@@ -98,8 +105,8 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
 
     protected Map<K, V> onLoad(File saveFile, Class<K> keyType) {
         Map<K, V> map = new HashMap<>();
-        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(saveFile);
-        fileConfiguration.getValues(false).entrySet().forEach(entry ->{
+        YamlConfiguration yamlConfiguration = FileAdapterUtils.loadYaml(this, saveFile);
+        yamlConfiguration.getValues(false).entrySet().forEach(entry ->{
             K key = Serialization.deserialize(keyType, entry.getKey());
             V value = (V) entry.getValue();
             map.put(key, value);
@@ -108,20 +115,20 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     }
 
     protected void onSave(File saveFile, Set<Map.Entry<K, V>> entries) {
-        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(saveFile);
+        YamlConfiguration yamlConfiguration = FileAdapterUtils.loadYaml(this, saveFile);
         entries.forEach(entry -> {
             String key = Serialization.serialize(entry.getKey());
-            fileConfiguration.set(key, entry.getValue());
+            yamlConfiguration.set(key, entry.getValue());
         });
         try {
-            fileConfiguration.save(saveFile);
+            yamlConfiguration.save(saveFile);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log(Level.SEVERE, "Failed to save: {0}", saveFile.getName());
         }
     }
 
     protected V onLoadCluster(File saveFile) {
-        return FileAdapterUtils.loadConfiguration(saveFile);
+        return FileAdapterUtils.loadConfiguration(this, saveFile);
     }
 
     protected void onSaveCluster(File saveFile, V value) {

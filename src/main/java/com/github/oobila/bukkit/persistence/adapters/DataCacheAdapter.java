@@ -5,7 +5,7 @@ import com.github.oobila.bukkit.persistence.model.PersistedObject;
 
 import java.time.ZonedDateTime;
 
-public interface DataCacheAdapter<K, V extends PersistedObject> {
+public interface DataCacheAdapter<K, V extends PersistedObject> extends CacheReader {
     
     void open(BaseCache<K, V> dataCache);
 

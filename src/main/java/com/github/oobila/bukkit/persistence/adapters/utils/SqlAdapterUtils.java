@@ -1,12 +1,13 @@
 package com.github.oobila.bukkit.persistence.adapters.utils;
 
+import com.github.oobila.bukkit.persistence.adapters.CacheReader;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -17,6 +18,9 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+
+import static com.github.oobila.bukkit.common.ABCommon.log;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SqlAdapterUtils {
@@ -68,20 +72,32 @@ public class SqlAdapterUtils {
         return StringUtils.replace(yaml, "'", "''");
     }
 
-    public static <V> V deserializeData(String dataString, Class<V> type) {
+    public static <V> V deserializeData(CacheReader cacheReader, String dataString, Class<V> type) {
         try {
-            YamlConfiguration yamlConfiguration = new YamlConfiguration();
-            yamlConfiguration.loadFromString(dataString);
+            YamlConfiguration yamlConfiguration = loadYaml(cacheReader, dataString, type.getName());
             Map<String, Object> map = yamlConfiguration.getValues(false);
             return (V) type.getDeclaredMethod("deserialize",  Map.class).invoke(null, map);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidConfigurationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static YamlConfiguration loadYaml(CacheReader cacheReader, String string, String name) {
+        try {
+            YamlConfiguration yamlConfiguration = new YamlConfiguration();
+            for (Map.Entry<String, String> rule : cacheReader.getDeserializeReplacementRules().entrySet()) {
+                string = string.replace(rule.getKey(), rule.getValue());
+            }
+            yamlConfiguration.loadFromString(string);
+            return yamlConfiguration;
+        } catch (InvalidConfigurationException e) {
+            log(Level.SEVERE, "Could not load YAML from SQL - {0}", name);
+            Bukkit.shutdown();
+            return null;
         }
     }
 

@@ -4,7 +4,7 @@ import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import org.bukkit.OfflinePlayer;
 
-public interface PlayerCacheAdapter<K, V extends PersistedObject> {
+public interface PlayerCacheAdapter<K, V extends PersistedObject> extends CacheReader {
 
     void open(BaseCache<K, V> playerCache);
 

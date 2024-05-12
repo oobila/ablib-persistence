@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-public class ConfigCache<K, V> extends BaseCache<K, V>{
+public class ConfigCache<K, V> extends BaseCache<K, V> {
 
     private static long scheduledTaskId = 0;
     private static int reloadIterator;

@@ -71,7 +71,7 @@ public class PlayerSqlAdapter<K, V extends PersistedObject> implements PlayerCac
             ResultSet resultSet = statement.executeQuery(query);
             if(resultSet.next()) {
                 String data = resultSet.getString("data");
-                return SqlAdapterUtils.deserializeData(data, playerCache.getType());
+                return SqlAdapterUtils.deserializeData(this, data, playerCache.getType());
             } else {
                 return null;
             }

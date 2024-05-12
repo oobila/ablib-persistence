@@ -1,12 +1,13 @@
 package com.github.oobila.bukkit.persistence.caches;
 
+import com.github.oobila.bukkit.persistence.adapters.CacheReader;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.Plugin;
 
 @Getter
-public abstract class BaseCache<K, V> {
+public abstract class BaseCache<K, V> implements CacheReader {
 
     @Getter
     @Setter
