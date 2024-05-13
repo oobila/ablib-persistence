@@ -5,7 +5,7 @@ import com.github.oobila.bukkit.persistence.caches.ConfigCache;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface ConfigCacheAdapter<K,V>  {
+public interface ConfigCacheAdapter<K,V> extends CacheReader {
 
     void open(ConfigCache<K, V> configCache);
 
