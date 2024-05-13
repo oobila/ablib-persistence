@@ -88,9 +88,8 @@ public class FileAdapterUtils {
         try {
             return loadYaml(cacheReader, new FileReader(file), file.getName());
         } catch (FileNotFoundException e) {
-            log(Level.SEVERE, "Could not find file - {0}", file.getName());
-            Bukkit.shutdown();
-            return null;
+            log(Level.WARNING, "Could not find file - {0}", file.getName());
+            return new YamlConfiguration();
         }
     }
 
