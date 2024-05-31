@@ -8,7 +8,7 @@ import java.util.List;
 
 public class SerializedKeyCache<K> extends SerializedKeyObserver<K> implements Collection<String> {
 
-    @Delegate(excludes = SerializedKeyObserver.class)
+    @Delegate(excludes = KeyObserver.class)
     private final List<String> cache = new ArrayList<>();
 
     @Override
