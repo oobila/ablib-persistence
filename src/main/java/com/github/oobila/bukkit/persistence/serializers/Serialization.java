@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.serializers;
 
+import com.github.alastairbooth.abid.ABID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bukkit.Location;
@@ -15,6 +16,7 @@ public class Serialization {
     private static final Map<Class<?>, KeySerializer<?>> keySerializers = new HashMap<>();
     static {
         register(String.class, new StringSerializer());
+        register(ABID.class, new ABIDSerializer());
         register(UUID.class, new UUIDSerializer());
         register(OfflinePlayer.class, new OfflinePlayerSerializer());
         register(Location.class, new LocationSerializer());
