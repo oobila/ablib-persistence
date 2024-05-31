@@ -11,6 +11,9 @@ import java.sql.Statement;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAdapter<K, V> {
@@ -56,7 +59,7 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
         );
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 String data = resultSet.getString("data");
                 return SqlAdapterUtils.deserializeData(this, data, dataCache.getType());
             } else {
@@ -84,17 +87,33 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
     }
 
     @Override
-    public int removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache) {
-        String query = String.format(
+    public Collection<V> removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache) {
+        String query1 = String.format(
+                "SELECT data FROM %s WHERE created<'%s'",
+                SqlAdapterUtils.getTableName(dataCache),
+                zonedDateTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime().format(FORMATTER)
+        );
+        List<V> valuesRemoved = new ArrayList<>();
+        try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
+            ResultSet resultSet = statement.executeQuery(query1);
+            while (resultSet.next()) {
+                String data = resultSet.getString("data");
+                valuesRemoved.add(SqlAdapterUtils.deserializeData(this, data, dataCache.getType()));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("query: " + query1, e);
+        }
+        String query2 = String.format(
                 "DELETE FROM %s WHERE created<'%s'",
                 SqlAdapterUtils.getTableName(dataCache),
                 zonedDateTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime().format(FORMATTER)
         );
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
-            return statement.executeUpdate(query);
+            statement.executeUpdate(query2);
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query, e);
+            throw new RuntimeException("query: " + query2, e);
         }
+        return valuesRemoved;
     }
 
     private void createTableIfNotExists(BaseCache<K,V> dataCache) {

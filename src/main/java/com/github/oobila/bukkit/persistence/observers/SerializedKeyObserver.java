@@ -4,7 +4,7 @@ import com.github.oobila.bukkit.persistence.serializers.Serialization;
 
 import java.util.List;
 
-public abstract class SerializedKeyObserver<K> extends KeyObserver<K> {
+public abstract class SerializedKeyObserver<K> implements DataCacheKeyObserver<K> {
 
     @Override
     public void onPut(K key) {

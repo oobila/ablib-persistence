@@ -10,9 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 import java.util.logging.Level;
 
 public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
@@ -67,20 +67,20 @@ public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V
         });
     }
 
-    public void remove(K key, Runnable runnable) {
+    public void remove(K key, Consumer<V> consumer) {
         Bukkit.getScheduler().runTaskAsynchronously(getPlugin(), () -> {
-            adapter.remove(key, this);
-            if (runnable != null) {
-                runnable.run();
+            V v = adapter.remove(key, this);
+            if (consumer != null) {
+                consumer.accept(v);
             }
         });
     }
 
-    public void removeBefore(ZonedDateTime zonedDateTime, IntConsumer consumer) {
+    public void removeBefore(ZonedDateTime zonedDateTime, Consumer<Collection<V>> consumer) {
         Bukkit.getScheduler().runTaskAsynchronously(getPlugin(), () -> {
-            int i = adapter.removeBefore(zonedDateTime, this);
+            Collection<V> results = adapter.removeBefore(zonedDateTime, this);
             if (consumer != null) {
-                consumer.accept(i);
+                consumer.accept(results);
             }
         });
     }

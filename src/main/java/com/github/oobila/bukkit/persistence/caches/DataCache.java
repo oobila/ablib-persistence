@@ -3,6 +3,7 @@ package com.github.oobila.bukkit.persistence.caches;
 import com.github.oobila.bukkit.persistence.adapters.DataCacheAdapter;
 import com.github.oobila.bukkit.persistence.adapters.DataFileAdapter;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
+import com.github.oobila.bukkit.persistence.observers.DataCacheKeyObserver;
 import com.github.oobila.bukkit.persistence.observers.DataCacheObserver;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -10,6 +11,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
@@ -21,6 +23,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
     @Setter
     private DataCacheAdapter<K,V> adapter;
     private final List<DataCacheObserver<K, V>> observers = new ArrayList<>();
+    private final List<DataCacheKeyObserver<K>> keyObservers = new ArrayList<>();
 
     private final String subFolderName;
 
@@ -46,6 +49,9 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
         this.plugin = plugin;
         adapter.open(this);
         observers.forEach(observer -> observer.onOpen(this));
+        List<K> keyList = new ArrayList<>();
+        forEach((k, v) -> keyList.add(k));
+        keyObservers.forEach(observer -> observer.onOpen(keyList));
     }
 
     public void close(){
@@ -56,6 +62,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
     public void put(K key, V value) {
         adapter.put(key, value, this);
         observers.forEach(observer -> observer.onPut(key, value, this));
+        keyObservers.forEach(observer -> observer.onPut(key));
     }
 
     public V get(K key) {
@@ -65,11 +72,13 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
     public V remove(K key) {
         V value = adapter.remove(key, this);
         observers.forEach(observer -> observer.onRemove(key, value, this));
+        keyObservers.forEach(observer -> observer.onRemove(key));
         return value;
     }
 
     public int removeBefore(ZonedDateTime zonedDateTime) {
-        return adapter.removeBefore(zonedDateTime, this);
+        Collection<V> removedValues = adapter.removeBefore(zonedDateTime, this);
+        return removedValues.size();
     }
 
     public void forEach(BiConsumer<K, V> action) {
@@ -99,6 +108,10 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
 
     public void addObserver(DataCacheObserver<K, V> observer) {
         observers.add(observer);
+    }
+
+    public void addObserver(DataCacheKeyObserver<K> observer) {
+        keyObservers.add(observer);
     }
 
 }

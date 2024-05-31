@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 
 public interface DataCacheAdapter<K, V extends PersistedObject> extends CacheReader {
     
@@ -17,7 +18,7 @@ public interface DataCacheAdapter<K, V extends PersistedObject> extends CacheRea
 
     V remove(K key, BaseCache<K, V> dataCache);
 
-    int removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache);
+    Collection<V> removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache);
 
     int size(BaseCache<K, V> dataCache);
 }

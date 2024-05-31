@@ -11,9 +11,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -84,15 +87,16 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     }
 
     @Override
-    public int removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache) {
+    public Collection<V> removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache) {
         Set<K> keysToRemove = new HashSet<>();
+        List<V> valuesRemoved = new ArrayList<>();
         localCache.forEach((k, v) -> {
             if (v.getCreatedDate().isBefore(zonedDateTime)) {
                 keysToRemove.add(k);
             }
         });
-        keysToRemove.forEach(k -> this.remove(k, dataCache));
-        return 0;
+        keysToRemove.forEach(k -> valuesRemoved.add(this.remove(k, dataCache)));
+        return valuesRemoved;
     }
 
     public void forEach(BiConsumer<K,V> action) {
