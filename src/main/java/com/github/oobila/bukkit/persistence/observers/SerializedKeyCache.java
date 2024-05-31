@@ -1,11 +1,13 @@
 package com.github.oobila.bukkit.persistence.observers;
 
+import lombok.Getter;
 import lombok.experimental.Delegate;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 public class SerializedKeyCache<K> extends SerializedKeyObserver<K> implements Collection<String> {
 
     @Delegate(excludes = DataCacheKeyObserver.class)
