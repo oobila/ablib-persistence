@@ -79,8 +79,8 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     }
 
     @Override
-    public void remove(K key, BaseCache<K, V> dataCache) {
-        localCache.remove(key);
+    public V remove(K key, BaseCache<K, V> dataCache) {
+        return localCache.remove(key);
     }
 
     @Override

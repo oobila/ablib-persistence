@@ -3,11 +3,14 @@ package com.github.oobila.bukkit.persistence.caches;
 import com.github.oobila.bukkit.persistence.adapters.DataCacheAdapter;
 import com.github.oobila.bukkit.persistence.adapters.DataFileAdapter;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
+import com.github.oobila.bukkit.persistence.observers.DataCacheObserver;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
@@ -17,8 +20,9 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
 
     @Setter
     private DataCacheAdapter<K,V> adapter;
+    private final List<DataCacheObserver<K, V>> observers = new ArrayList<>();
 
-    private String subFolderName;
+    private final String subFolderName;
 
     public DataCache(String name, Class<K> keyType, Class<V> type) {
         this(name, keyType, type, new DataFileAdapter<>());
@@ -41,22 +45,27 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
     public void open(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
+        observers.forEach(observer -> observer.onOpen(this));
     }
 
     public void close(){
+        observers.forEach(observer -> observer.onClose(this));
         adapter.close(this);
     }
 
     public void put(K key, V value) {
         adapter.put(key, value, this);
+        observers.forEach(observer -> observer.onPut(key, value, this));
     }
 
     public V get(K key) {
         return adapter.get(key, this);
     }
 
-    public void remove(K key) {
-        adapter.remove(key, this);
+    public V remove(K key) {
+        V value = adapter.remove(key, this);
+        observers.forEach(observer -> observer.onRemove(key, value, this));
+        return value;
     }
 
     public int removeBefore(ZonedDateTime zonedDateTime) {
@@ -86,6 +95,10 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
 
     public int size(){
         return adapter.size(this);
+    }
+
+    public void addObserver(DataCacheObserver<K, V> observer) {
+        observers.add(observer);
     }
 
 }

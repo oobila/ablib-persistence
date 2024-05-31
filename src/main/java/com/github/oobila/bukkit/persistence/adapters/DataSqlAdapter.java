@@ -68,7 +68,8 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
     }
 
     @Override
-    public void remove(K key, BaseCache<K, V> dataCache) {
+    public V remove(K key, BaseCache<K, V> dataCache) {
+        V value = get(key, dataCache);
         String query = String.format(
                 "DELETE FROM %s WHERE id='%s'",
                 SqlAdapterUtils.getTableName(dataCache),
@@ -76,6 +77,7 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
         );
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
             statement.executeUpdate(query);
+            return value;
         } catch (SQLException e) {
             throw new RuntimeException("query: " + query, e);
         }
