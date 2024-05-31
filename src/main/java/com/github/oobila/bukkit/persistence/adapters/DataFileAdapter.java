@@ -134,4 +134,9 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     protected void onSaveCluster(File saveFile, V value) {
         FileAdapterUtils.saveConfiguration(saveFile, value);
     }
+
+    @Override
+    public int size(BaseCache<K, V> dataCache) {
+        return localCache.size();
+    }
 }

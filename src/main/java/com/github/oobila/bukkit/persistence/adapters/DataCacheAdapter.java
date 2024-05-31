@@ -18,4 +18,6 @@ public interface DataCacheAdapter<K, V extends PersistedObject> extends CacheRea
     void remove(K key, BaseCache<K, V> dataCache);
 
     int removeBefore(ZonedDateTime zonedDateTime, BaseCache<K, V> dataCache);
+
+    int size(BaseCache<K, V> dataCache);
 }

@@ -84,4 +84,8 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
         return subFolderName == null ? SUB_FOLDER_NAME : subFolderName;
     }
 
+    public int size(){
+        return adapter.size(this);
+    }
+
 }

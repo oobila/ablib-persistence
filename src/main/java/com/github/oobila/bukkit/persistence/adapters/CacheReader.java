@@ -2,7 +2,6 @@ package com.github.oobila.bukkit.persistence.adapters;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -107,4 +107,21 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
         }
     }
 
+    @Override
+    public int size(BaseCache<K, V> dataCache) {
+        String query = String.format(
+                "SELECT count(*) FROM %s",
+                SqlAdapterUtils.getTableName(dataCache)
+        );
+        try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
+            ResultSet resultSet = statement.executeQuery(query);
+            if(resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("query: " + query, e);
+        }
+    }
 }
