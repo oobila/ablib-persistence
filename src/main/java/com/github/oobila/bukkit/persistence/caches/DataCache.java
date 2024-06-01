@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
-public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
+public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
 
     private static final String SUB_FOLDER_NAME = "data";
 

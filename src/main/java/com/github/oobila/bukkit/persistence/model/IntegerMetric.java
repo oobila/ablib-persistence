@@ -5,9 +5,9 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class IntegerMetric extends PersistedObject {
 
-    @Getter
     private int value;
 
     public IntegerMetric() {
