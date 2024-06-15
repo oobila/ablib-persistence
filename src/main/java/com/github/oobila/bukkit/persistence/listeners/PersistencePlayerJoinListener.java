@@ -1,6 +1,6 @@
 package com.github.oobila.bukkit.persistence.listeners;
 
-import com.github.oobila.bukkit.persistence.caches.MessageCache;
+import com.github.oobila.bukkit.persistence.caches.exemplar.MessageCache;
 import com.github.oobila.bukkit.persistence.model.MessageQueue;
 import lombok.AllArgsConstructor;
 import org.bukkit.event.EventHandler;

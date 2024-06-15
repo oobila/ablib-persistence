@@ -7,7 +7,7 @@ import lombok.Setter;
 import org.bukkit.plugin.Plugin;
 
 @Getter
-public abstract class BaseCache<K, V> implements CacheReader {
+public abstract class BaseCache<K, V> implements CacheReader, ICache {
 
     @Getter
     @Setter
@@ -18,7 +18,7 @@ public abstract class BaseCache<K, V> implements CacheReader {
     private final Class<V> type;
     protected Plugin plugin;
 
-    public BaseCache(String name, Class<K> keyType, Class<V> type) {
+    protected BaseCache(String name, Class<K> keyType, Class<V> type) {
         this.name = name;
         this.keyType = keyType;
         this.type = type;

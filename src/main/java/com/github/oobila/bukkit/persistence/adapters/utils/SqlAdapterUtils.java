@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.adapters.utils;
 
+import com.github.oobila.bukkit.persistence.SqlRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.CacheReader;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
@@ -29,6 +30,7 @@ public class SqlAdapterUtils {
     @Getter
     private static Connection connection;
 
+    @SuppressWarnings("java:S4925") //this is required to load the correct SQL driver
     public static Connection createConnection(BaseCache<?,?> cache) {
         if(connectionHolders.isEmpty()) {
             try {
@@ -41,7 +43,7 @@ public class SqlAdapterUtils {
                         cache.getSqlConnectionProperties().getPassword()
                 );
             } catch (SQLException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new SqlRuntimeException(e);
             }
         }
         connectionHolders.add(cache);
@@ -55,7 +57,7 @@ public class SqlAdapterUtils {
                 connection.close();
                 connection = null;
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new SqlRuntimeException(e);
             }
         }
     }
@@ -64,25 +66,21 @@ public class SqlAdapterUtils {
         return StringUtils.replace(cache.getPlugin().getName() + "_" + cache.getName(), "-", "_");
     }
 
-    public static <V> String serializeData(V data) {
-        Map<String,Object> map = ((PersistedObject) data).serialize();
+    public static <V extends PersistedObject> String serializeData(V data) {
+        Map<String,Object> map = data.serialize();
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         map.forEach(yamlConfiguration::set);
         String yaml = yamlConfiguration.saveToString();
         return StringUtils.replace(yaml, "'", "''");
     }
 
-    public static <V> V deserializeData(CacheReader cacheReader, String dataString, Class<V> type) {
+    public static <V extends PersistedObject> V deserializeData(CacheReader cacheReader, String dataString, Class<V> type) {
         try {
             YamlConfiguration yamlConfiguration = loadYaml(cacheReader, dataString, type.getName());
             Map<String, Object> map = yamlConfiguration.getValues(false);
             return (V) type.getDeclaredMethod("deserialize",  Map.class).invoke(null, map);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+            throw new SqlRuntimeException(e);
         }
     }
 

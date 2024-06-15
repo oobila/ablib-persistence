@@ -1,10 +1,14 @@
 package com.github.oobila.bukkit.persistence.adapters;
 
+import com.github.oobila.bukkit.persistence.SqlRuntimeException;
+import com.github.oobila.bukkit.persistence.adapters.sql.SqlValueAdapter;
 import com.github.oobila.bukkit.persistence.adapters.utils.SqlAdapterUtils;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
+import lombok.RequiredArgsConstructor;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,9 +19,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
+
+@RequiredArgsConstructor
 public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAdapter<K, V> {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private final SqlValueAdapter<V> adapter;
 
     @Override
     public void open(BaseCache<K, V> dataCache) {
@@ -33,20 +42,19 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
     @Override
     public void put(K key, V value, BaseCache<K, V> dataCache) {
         String dateTime = value.getCreatedDate().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime().format(FORMATTER);
-        String yaml = SqlAdapterUtils.serializeData(value);
         String query = String.format(
-                "INSERT INTO %s (id, created, data) VALUES('%s','%s','%s') ON DUPLICATE KEY UPDATE created = '%s', data = '%s'",
+                "INSERT INTO %s (id, created, data) VALUES('%s','%s',?) ON DUPLICATE KEY UPDATE created = '%s', data = ?",
                 SqlAdapterUtils.getTableName(dataCache),
                 Serialization.serialize(key),
                 dateTime,
-                yaml,
-                dateTime,
-                yaml
+                dateTime
         );
-        try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
-            statement.executeUpdate(query);
+        try (PreparedStatement statement = SqlAdapterUtils.getConnection().prepareStatement(query)) {
+            adapter.addValue(1, value, statement);
+            adapter.addValue(2, value, statement);
+            statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query, e);
+            throw new SqlRuntimeException(query, e);
         }
     }
 
@@ -60,13 +68,12 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-                String data = resultSet.getString("data");
-                return SqlAdapterUtils.deserializeData(this, data, dataCache.getType());
+                return adapter.getValue(resultSet);
             } else {
                 return null;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query, e);
+            throw new SqlRuntimeException(query, e);
         }
     }
 
@@ -82,7 +89,7 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
             statement.executeUpdate(query);
             return value;
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query, e);
+            throw new SqlRuntimeException(query, e);
         }
     }
 
@@ -97,11 +104,10 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
             ResultSet resultSet = statement.executeQuery(query1);
             while (resultSet.next()) {
-                String data = resultSet.getString("data");
-                valuesRemoved.add(SqlAdapterUtils.deserializeData(this, data, dataCache.getType()));
+                valuesRemoved.add(adapter.getValue(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query1, e);
+            throw new SqlRuntimeException(query1, e);
         }
         String query2 = String.format(
                 "DELETE FROM %s WHERE created<'%s'",
@@ -111,20 +117,21 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
             statement.executeUpdate(query2);
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query2, e);
+            throw new SqlRuntimeException(query2, e);
         }
         return valuesRemoved;
     }
 
     private void createTableIfNotExists(BaseCache<K,V> dataCache) {
         String query = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (id VARCHAR(40) PRIMARY KEY, created DATETIME NOT NULL, data TEXT NOT NULL)",
-                SqlAdapterUtils.getTableName(dataCache)
+                "CREATE TABLE IF NOT EXISTS %s (id VARCHAR(40) PRIMARY KEY, created DATETIME NOT NULL, data %s NOT NULL)",
+                SqlAdapterUtils.getTableName(dataCache),
+                adapter.type()
         );
         try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
             statement.executeUpdate(query);
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query, e);
+            throw new SqlRuntimeException(query, e);
         }
     }
 
@@ -142,7 +149,7 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
                 return 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("query: " + query, e);
+            throw new SqlRuntimeException(query, e);
         }
     }
 }

@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
-public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
+import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
-    private static final String SUB_FOLDER_NAME = "data";
+public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> implements IDataCache<K, V> {
 
     @Setter
     private DataCacheAdapter<K,V> adapter;
@@ -36,7 +36,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
     }
 
     public DataCache(String name, Class<K> keyType, Class<V> type, DataCacheAdapter<K,V> adapter) {
-        this(name, keyType, type, adapter, SUB_FOLDER_NAME);
+        this(name, keyType, type, adapter, DATA);
     }
 
     public DataCache(String name, Class<K> keyType, Class<V> type, DataCacheAdapter<K,V> adapter, String subFolderName) {
@@ -45,6 +45,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
         this.subFolderName = subFolderName;
     }
 
+    @Override
     public void open(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
@@ -54,21 +55,25 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
         keyObservers.forEach(observer -> observer.onOpen(keyList));
     }
 
-    public void close(){
+    @Override
+    public void close() {
         observers.forEach(observer -> observer.onClose(this));
         adapter.close(this);
     }
 
+    @Override
     public void put(K key, V value) {
         adapter.put(key, value, this);
         observers.forEach(observer -> observer.onPut(key, value, this));
         keyObservers.forEach(observer -> observer.onPut(key));
     }
 
+    @Override
     public V get(K key) {
         return adapter.get(key, this);
     }
 
+    @Override
     public V remove(K key) {
         V value = adapter.remove(key, this);
         observers.forEach(observer -> observer.onRemove(key, value, this));
@@ -76,6 +81,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
         return value;
     }
 
+    @Override
     public int removeBefore(ZonedDateTime zonedDateTime) {
         Collection<V> removedValues = adapter.removeBefore(zonedDateTime, this);
         return removedValues.size();
@@ -99,7 +105,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
 
     @Override
     public String getSubFolderName() {
-        return subFolderName == null ? SUB_FOLDER_NAME : subFolderName;
+        return subFolderName == null ? DATA : subFolderName;
     }
 
     public int size(){

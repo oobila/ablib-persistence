@@ -15,9 +15,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
+import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
-    private static final String SUB_FOLDER_NAME = "data";
+public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
 
     @Getter
     @Setter
@@ -37,7 +37,7 @@ public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V
 
     @Override
     public String getSubFolderName() {
-        return SUB_FOLDER_NAME;
+        return DATA;
     }
 
     public void open(Plugin plugin) {

@@ -3,15 +3,22 @@ package com.github.oobila.bukkit.persistence.adapters;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.caches.DataCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
+import lombok.NoArgsConstructor;
 import org.bukkit.OfflinePlayer;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@NoArgsConstructor
 public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
 
     private final Map<UUID, DataCache<K, V>> localCache = new HashMap<>();
+    private DataFileAdapter<K, V> fileAdapter = new DataFileAdapter<>();
+
+    public PlayerFileAdapter(DataFileAdapter<K, V> fileAdapter) {
+        this.fileAdapter = fileAdapter;
+    }
 
     @Override
     public void open(BaseCache<K, V> cache) {
@@ -25,7 +32,7 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
                         cache.getName(),
                         cache.getKeyType(),
                         cache.getType(),
-                        new DataFileAdapter<>()
+                        fileAdapter
                 )
         );
         dataCache.open(cache.getPlugin());

@@ -1,13 +1,14 @@
-package com.github.oobila.bukkit.persistence.caches;
+package com.github.oobila.bukkit.persistence.caches.exemplar;
 
 import com.github.oobila.bukkit.chat.Message;
+import com.github.oobila.bukkit.persistence.caches.DataCache;
 import com.github.oobila.bukkit.persistence.model.MessageQueue;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-public class MessageCache extends DataCache<OfflinePlayer, MessageQueue> {
+import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
-    private static final String SUB_FOLDER_NAME = "data";
+public class MessageCache extends DataCache<OfflinePlayer, MessageQueue> {
 
     public MessageCache() {
         super("message-cache", OfflinePlayer.class, MessageQueue.class);
@@ -26,6 +27,6 @@ public class MessageCache extends DataCache<OfflinePlayer, MessageQueue> {
 
     @Override
     public String getSubFolderName() {
-        return SUB_FOLDER_NAME;
+        return DATA;
     }
 }
