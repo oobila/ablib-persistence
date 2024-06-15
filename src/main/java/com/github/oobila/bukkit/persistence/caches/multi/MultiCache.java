@@ -5,6 +5,8 @@ import com.github.oobila.bukkit.persistence.caches.IDataCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
@@ -39,6 +41,18 @@ public class MultiCache<K, V extends PersistedObject> extends MultiCacheBase<K, 
             }
         }
         return v;
+    }
+
+    @Override
+    public List<V> get() {
+        List<V> list = new ArrayList<>();
+        if (canReadFromWriter) {
+            list.addAll(cacheWriteInstance.get());
+        }
+        for (IDataCache<K, V> cacheReader : cacheReadInstances) {
+            list.addAll(cacheReader.get());
+        }
+        return list;
     }
 
     @Override

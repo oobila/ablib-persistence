@@ -15,8 +15,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-
-import static com.github.oobila.bukkit.persistence.Constants.DATA;
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class PlayerSqlAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
@@ -85,6 +85,25 @@ public class PlayerSqlAdapter<K, V extends PersistedObject> implements PlayerCac
         } catch (SQLException e) {
             throw new SqlRuntimeException(query, e);
         }
+    }
+
+    @Override
+    public List<V> get(OfflinePlayer player, BaseCache<K, V> playerCache) {
+        String query = String.format(
+                "SELECT data FROM %s WHERE player='%s'",
+                SqlAdapterUtils.getTableName(playerCache),
+                Serialization.serialize(player)
+        );
+        List<V> list = new ArrayList<>();
+        try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
+            ResultSet resultSet = statement.executeQuery(query);
+            if(resultSet.next()) {
+                list.add(adapter.getValue(resultSet));
+            }
+        } catch (SQLException e) {
+            throw new SqlRuntimeException(query, e);
+        }
+        return list;
     }
 
     @Override

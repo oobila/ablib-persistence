@@ -82,6 +82,11 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     }
 
     @Override
+    public List<V> get(BaseCache<K, V> dataCache) {
+        return new ArrayList<>(localCache.values());
+    }
+
+    @Override
     public V remove(K key, BaseCache<K, V> dataCache) {
         return localCache.remove(key);
     }

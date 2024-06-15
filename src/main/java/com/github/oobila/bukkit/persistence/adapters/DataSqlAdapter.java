@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.github.oobila.bukkit.persistence.Constants.DATA;
-
 
 @RequiredArgsConstructor
 public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAdapter<K, V> {
@@ -72,6 +70,24 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
             } else {
                 return null;
             }
+        } catch (SQLException e) {
+            throw new SqlRuntimeException(query, e);
+        }
+    }
+
+    @Override
+    public List<V> get(BaseCache<K, V> dataCache) {
+        String query = String.format(
+                "SELECT data FROM %s",
+                SqlAdapterUtils.getTableName(dataCache)
+        );
+        try (Statement statement = SqlAdapterUtils.getConnection().createStatement()) {
+            ResultSet resultSet = statement.executeQuery(query);
+            List<V> list = new ArrayList<>();
+            while (resultSet.next()) {
+                list.add(adapter.getValue(resultSet));
+            }
+            return list;
         } catch (SQLException e) {
             throw new SqlRuntimeException(query, e);
         }

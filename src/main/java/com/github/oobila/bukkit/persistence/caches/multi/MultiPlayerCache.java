@@ -5,6 +5,9 @@ import com.github.oobila.bukkit.persistence.caches.PlayerCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import org.bukkit.OfflinePlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MultiPlayerCache<K, V extends PersistedObject> extends MultiCacheBase<K, V, PlayerCache<K, V>> implements IPlayerCache<K, V> {
 
 
@@ -43,6 +46,18 @@ public class MultiPlayerCache<K, V extends PersistedObject> extends MultiCacheBa
             }
         }
         return v;
+    }
+
+    @Override
+    public List<V> get(OfflinePlayer player) {
+        List<V> list = new ArrayList<>();
+        if (canReadFromWriter) {
+            list.addAll(cacheWriteInstance.get(player));
+        }
+        for (IPlayerCache<K, V> cacheReader : cacheReadInstances) {
+            list.addAll(cacheReader.get(player));
+        }
+        return list;
     }
 
     @Override

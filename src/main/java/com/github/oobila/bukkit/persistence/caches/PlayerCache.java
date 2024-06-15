@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
+
 public class PlayerCache<K, V extends PersistedObject> extends BaseCache<K,V> implements IPlayerCache<K, V> {
 
     private static final String SUB_FOLDER_NAME = "playerData";
@@ -52,6 +54,11 @@ public class PlayerCache<K, V extends PersistedObject> extends BaseCache<K,V> im
     @Override
     public V get(OfflinePlayer player, K key) {
         return adapter.get(player, key, this);
+    }
+
+    @Override
+    public List<V> get(OfflinePlayer player) {
+        return adapter.get(player, this);
     }
 
     @Override

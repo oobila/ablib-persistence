@@ -74,6 +74,11 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> imp
     }
 
     @Override
+    public List<V> get() {
+        return adapter.get(this);
+    }
+
+    @Override
     public V remove(K key) {
         V value = adapter.remove(key, this);
         observers.forEach(observer -> observer.onRemove(key, value, this));

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.bukkit.OfflinePlayer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -56,6 +57,11 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
     @Override
     public V get(OfflinePlayer player, K key, BaseCache<K,V> playerCache) {
         return localCache.get(player.getUniqueId()).get(key);
+    }
+
+    @Override
+    public List<V> get(OfflinePlayer player, BaseCache<K, V> playerCache) {
+        return localCache.get(player.getUniqueId()).get();
     }
 
     @Override
