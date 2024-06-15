@@ -11,12 +11,12 @@ import java.util.UUID;
 
 public class PlayerSchematicCache extends PlayerCache<UUID, SchematicObject> {
 
-    public PlayerSchematicCache(String name, Class<UUID> keyType, Class<SchematicObject> type, SqlConnectionProperties connectionProperties) {
-        super(name, keyType, type, new PlayerSqlAdapter<>(new SchematicSqlAdapter()));
+    public PlayerSchematicCache(String name, SqlConnectionProperties connectionProperties) {
+        super(name, UUID.class, SchematicObject.class, new PlayerSqlAdapter<>(new SchematicSqlAdapter()));
         setSqlConnectionProperties(connectionProperties);
     }
 
-    public PlayerSchematicCache(String name, Class<UUID> keyType, Class<SchematicObject> type) {
-        super(name, keyType, type, new PlayerFileAdapter<>());
+    public PlayerSchematicCache(String name) {
+        super(name, UUID.class, SchematicObject.class, new PlayerFileAdapter<>());
     }
 }
