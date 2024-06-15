@@ -6,21 +6,23 @@ import com.github.oobila.bukkit.persistence.adapters.DataSqlAdapter;
 import com.github.oobila.bukkit.persistence.adapters.PlayerCacheAdapter;
 import com.github.oobila.bukkit.persistence.adapters.PlayerFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.PlayerSqlAdapter;
+import com.github.oobila.bukkit.persistence.adapters.sql.YamlSqlAdapter;
+import com.github.oobila.bukkit.persistence.caches.DataCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 
 public class AdapterUtils {
 
-    public static <K, V extends PersistedObject> DataCacheAdapter<K, V> adapter(StorageType storageType) {
+    public static <K, V extends PersistedObject> DataCacheAdapter<K, V> adapter(StorageType storageType, DataCache<K, V> cache) {
         return switch (storageType) {
             case FILE -> new DataFileAdapter<>();
-            case SQL -> new DataSqlAdapter<>();
+            case SQL -> new DataSqlAdapter<>(new YamlSqlAdapter<>(cache, cache.getType()));
         };
     }
 
-    public static <K, V extends PersistedObject> PlayerCacheAdapter<K, V> playerAdapter(StorageType storageType) {
+    public static <K, V extends PersistedObject> PlayerCacheAdapter<K, V> playerAdapter(StorageType storageType, DataCache<K, V> cache) {
         return switch (storageType) {
             case FILE -> new PlayerFileAdapter<>();
-            case SQL -> new PlayerSqlAdapter<>();
+            case SQL -> new PlayerSqlAdapter<>(new YamlSqlAdapter<>(cache, cache.getType()));
         };
     }
 

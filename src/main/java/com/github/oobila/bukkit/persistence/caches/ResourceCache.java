@@ -6,7 +6,7 @@ import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.model.ResourceType;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.apache.commons.io.FilenameUtils;
-import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,17 +54,17 @@ public class ResourceCache<K, V extends PersistedObject> extends BaseCache<K, V>
                                             )
                                     );
                             default ->
-                                Bukkit.getLogger().log(Level.SEVERE, "Failed to load resource: " + entry.getName());
+                                log(Level.SEVERE, "Failed to load resource: {0}", entry.getName());
                         }
                     }
                 } catch (Exception e) {
-                    Bukkit.getLogger().log(Level.SEVERE, "Failed to load resource: " + entry.getName());
-                    e.printStackTrace();
+                    log(Level.SEVERE, "Failed to load resource: {0}", entry.getName());
+                    log(Level.SEVERE, e);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            Bukkit.getLogger().log(Level.SEVERE, "Failed loading resource pack: " + resourcePackName);
+            log(Level.SEVERE, "Failed loading resource pack: {0}", resourcePackName);
+            log(Level.SEVERE, e);
         }
         return null;
     }
@@ -72,5 +72,15 @@ public class ResourceCache<K, V extends PersistedObject> extends BaseCache<K, V>
     @Override
     public String getSubFolderName() {
         return SUB_FOLDER_NAME;
+    }
+
+    @Override
+    public void open(Plugin plugin) {
+        //TODO
+    }
+
+    @Override
+    public void close() {
+        //not required
     }
 }

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import static com.github.oobila.bukkit.common.ABCommon.log;
+
 public class ConfigCache<K, V> extends BaseCache<K, V> {
 
     private static long scheduledTaskId = 0;
@@ -43,6 +45,11 @@ public class ConfigCache<K, V> extends BaseCache<K, V> {
                 startFileListener(plugin);
             }
         }
+    }
+
+    @Override
+    public void close() {
+        //do nothing
     }
 
     public void addObserver(Runnable r) {
@@ -86,7 +93,7 @@ public class ConfigCache<K, V> extends BaseCache<K, V> {
                                 .arg(cache.getPlugin().getName())
                                 .send(op)
                 );
-                Bukkit.getLogger().log(Level.INFO, "Config " + cache.getName() + " was reloaded for plugin: " + cache.getPlugin().getName());
+                log(Level.INFO, "Config {0} was reloaded for plugin: {1}" , cache.getName(), cache.getPlugin().getName());
             }
         },1000,100);
     }
