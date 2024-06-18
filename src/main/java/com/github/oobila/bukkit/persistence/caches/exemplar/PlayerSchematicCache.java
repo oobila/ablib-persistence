@@ -1,7 +1,7 @@
 package com.github.oobila.bukkit.persistence.caches.exemplar;
 
-import com.github.oobila.bukkit.persistence.adapters.PlayerFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.PlayerSqlAdapter;
+import com.github.oobila.bukkit.persistence.adapters.file.SchematicPlayerFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.sql.SchematicSqlAdapter;
 import com.github.oobila.bukkit.persistence.caches.PlayerCache;
 import com.github.oobila.bukkit.persistence.model.SchematicObject;
@@ -17,6 +17,6 @@ public class PlayerSchematicCache extends PlayerCache<UUID, SchematicObject> {
     }
 
     public PlayerSchematicCache(String name) {
-        super(name, UUID.class, SchematicObject.class, new PlayerFileAdapter<>());
+        super(name, UUID.class, SchematicObject.class, new SchematicPlayerFileAdapter<>());
     }
 }

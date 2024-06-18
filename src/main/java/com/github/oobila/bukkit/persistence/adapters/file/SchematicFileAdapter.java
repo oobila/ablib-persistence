@@ -1,4 +1,4 @@
-package com.github.oobila.bukkit.persistence.adapters.schematic;
+package com.github.oobila.bukkit.persistence.adapters.file;
 
 import com.github.oobila.bukkit.persistence.adapters.DataFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
