@@ -20,7 +20,7 @@ public class SchematicObject extends PersistedObject implements Clipboard {
         this(clipboard, ZonedDateTime.now());
     }
 
-    public SchematicObject(Clipboard clipboard, ZonedDateTime createdDate) {
+    public SchematicObject (Clipboard clipboard, ZonedDateTime createdDate) {
         super(createdDate);
         this.clipboard = clipboard;
     }
