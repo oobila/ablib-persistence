@@ -31,9 +31,14 @@ public class PlayerCache<K, V extends PersistedObject> extends BaseCache<K,V> im
     }
 
     @Override
-    public void open(Plugin plugin) {
+    public void onOpen(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
+    }
+
+    @Override
+    public void onClose(){
+        adapter.close(this);
     }
 
     @Override
@@ -42,8 +47,8 @@ public class PlayerCache<K, V extends PersistedObject> extends BaseCache<K,V> im
     }
 
     @Override
-    public void close(){
-        adapter.close(this);
+    public void close(OfflinePlayer player) {
+        adapter.close(player, this);
     }
 
     @Override

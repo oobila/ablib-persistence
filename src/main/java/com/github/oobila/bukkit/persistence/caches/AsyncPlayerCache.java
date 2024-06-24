@@ -10,7 +10,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.function.Consumer;
 
-public class AsyncPlayerCache <K, V extends PersistedObject> extends BaseCache<K, V>{
+public class AsyncPlayerCache <K, V extends PersistedObject> extends BaseCache<K, V> {
 
     private static final String SUB_FOLDER_NAME = "playerData";
 
@@ -31,17 +31,23 @@ public class AsyncPlayerCache <K, V extends PersistedObject> extends BaseCache<K
         return SUB_FOLDER_NAME;
     }
 
-    public void open(Plugin plugin) {
+    @Override
+    public void onOpen(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
+    }
+
+    @Override
+    public void onClose(){
+        adapter.close(this);
     }
 
     public void open(OfflinePlayer player) {
         adapter.open(player, this);
     }
 
-    public void close(){
-        adapter.close(this);
+    public void close(OfflinePlayer player) {
+        adapter.close(player, this);
     }
 
     public void put(OfflinePlayer player, K key, V value, Runnable runnable) {

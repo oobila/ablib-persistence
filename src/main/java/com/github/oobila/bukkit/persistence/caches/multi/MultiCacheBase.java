@@ -48,13 +48,13 @@ public abstract class MultiCacheBase<K, V extends PersistedObject, C extends Bas
     }
 
     @Override
-    public void open(Plugin plugin) {
+    public void onOpen(Plugin plugin) {
         cacheWriteInstance.open(plugin);
         cacheReadInstances.forEach(cache -> cache.open(plugin));
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         cacheReadInstances.forEach(ICache::close);
         cacheWriteInstance.close();
     }

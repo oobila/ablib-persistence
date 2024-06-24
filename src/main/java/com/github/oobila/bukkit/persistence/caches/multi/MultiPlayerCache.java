@@ -26,6 +26,12 @@ public class MultiPlayerCache<K, V extends PersistedObject> extends MultiCacheBa
     }
 
     @Override
+    public void close(OfflinePlayer player) {
+        cacheWriteInstance.close(player);
+        cacheReadInstances.forEach(cache -> cache.close(player));
+    }
+
+    @Override
     public void put(OfflinePlayer player, K key, V value) {
         cacheWriteInstance.put(player, key, value);
     }

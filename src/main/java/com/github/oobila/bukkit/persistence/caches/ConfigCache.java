@@ -34,7 +34,8 @@ public class ConfigCache<K, V> extends BaseCache<K, V> {
         return null;
     }
 
-    public void open(Plugin plugin) {
+    @Override
+    public void onOpen(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
         observers.forEach(Runnable::run);
@@ -48,7 +49,7 @@ public class ConfigCache<K, V> extends BaseCache<K, V> {
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         //do nothing
     }
 

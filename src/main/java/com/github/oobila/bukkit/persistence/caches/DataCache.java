@@ -46,7 +46,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> imp
     }
 
     @Override
-    public void open(Plugin plugin) {
+    public void onOpen(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
         observers.forEach(observer -> observer.onOpen(this));
@@ -56,7 +56,7 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> imp
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         observers.forEach(observer -> observer.onClose(this));
         adapter.close(this);
     }

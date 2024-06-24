@@ -75,12 +75,12 @@ public class ResourceCache<K, V extends PersistedObject> extends BaseCache<K, V>
     }
 
     @Override
-    public void open(Plugin plugin) {
+    public void onOpen(Plugin plugin) {
         //TODO
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         //not required
     }
 }

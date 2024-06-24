@@ -17,7 +17,7 @@ import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
-public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V>{
+public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V> {
 
     @Getter
     @Setter
@@ -40,12 +40,14 @@ public class AsyncDataCache<K, V extends PersistedObject> extends BaseCache<K, V
         return DATA;
     }
 
-    public void open(Plugin plugin) {
+    @Override
+    public void onOpen(Plugin plugin) {
         this.plugin = plugin;
         adapter.open(this);
     }
 
-    public void close(){
+    @Override
+    public void onClose(){
         adapter.close(this);
     }
 
