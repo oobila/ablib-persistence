@@ -6,6 +6,7 @@ import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import lombok.NoArgsConstructor;
 import org.bukkit.OfflinePlayer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,17 +57,25 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
 
     @Override
     public V get(OfflinePlayer player, K key, BaseCache<K,V> playerCache) {
-        return localCache.get(player.getUniqueId()).get(key);
+        if (localCache.get(player.getUniqueId()) != null) {
+            return localCache.get(player.getUniqueId()).get(key);
+        }
+        return null;
     }
 
     @Override
     public List<V> get(OfflinePlayer player, BaseCache<K, V> playerCache) {
-        return localCache.get(player.getUniqueId()).get();
+        if (localCache.get(player.getUniqueId()) != null) {
+            return localCache.get(player.getUniqueId()).get();
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public void remove(OfflinePlayer player, K key, BaseCache<K,V> playerCache) {
-        localCache.get(player.getUniqueId()).remove(key);
+        if (localCache.get(player.getUniqueId()) != null) {
+            localCache.get(player.getUniqueId()).remove(key);
+        }
     }
 
     @Override
