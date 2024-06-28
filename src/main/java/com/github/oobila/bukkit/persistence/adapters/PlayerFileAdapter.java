@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.caches.DataCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import lombok.NoArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Collections;
@@ -43,7 +44,7 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
 
     @Override
     public void close(BaseCache<K, V> playerCache) {
-        //do nothing
+        Bukkit.getOnlinePlayers().forEach(player -> close(player, playerCache));
     }
 
     @Override
