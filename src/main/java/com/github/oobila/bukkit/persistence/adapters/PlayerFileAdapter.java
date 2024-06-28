@@ -12,15 +12,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @NoArgsConstructor
 public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
 
     private final Map<UUID, DataCache<K, V>> localCache = new HashMap<>();
-    private DataFileAdapter<K, V> fileAdapter = new DataFileAdapter<>();
+    private Supplier<DataFileAdapter<K, V>> adapterSupplier = DataFileAdapter::new;
 
-    public PlayerFileAdapter(DataFileAdapter<K, V> fileAdapter) {
-        this.fileAdapter = fileAdapter;
+    public PlayerFileAdapter(Supplier<DataFileAdapter<K, V>> adapterSupplier) {
+        this.adapterSupplier = adapterSupplier;
     }
 
     @Override
@@ -35,7 +36,7 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
                         cache.getName(),
                         cache.getKeyType(),
                         cache.getType(),
-                        fileAdapter,
+                        adapterSupplier.get(),
                         "playerdata/" + offlinePlayer.getUniqueId()
                 )
         );

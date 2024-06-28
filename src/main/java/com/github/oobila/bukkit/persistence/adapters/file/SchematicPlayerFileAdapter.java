@@ -18,7 +18,7 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 public class SchematicPlayerFileAdapter<K> extends PlayerFileAdapter<K, SchematicObject> {
 
     public SchematicPlayerFileAdapter() {
-        super(new SchematicFileAdapter<>());
+        super(SchematicFileAdapter::new);
     }
 
     @Override
