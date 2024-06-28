@@ -12,6 +12,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
@@ -71,6 +72,14 @@ public class ConfigCache<K, V> extends BaseCache<K, V> {
 
     public LocalDateTime lastUpdated() {
         return adapter.getLastUpdated();
+    }
+
+    public void forEach(BiConsumer<K, V> action) {
+        if (adapter instanceof ConfigFileAdapter<K,V> configFileAdapter) {
+            configFileAdapter.forEach(action);
+        } else {
+            Bukkit.getLogger().log(Level.WARNING, "Method only allowed when reading from file");
+        }
     }
 
     private static void startFileListener(Plugin plugin) {

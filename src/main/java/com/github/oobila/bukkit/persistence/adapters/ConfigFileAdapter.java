@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class ConfigFileAdapter<K, V> implements ConfigCacheAdapter<K, V> {
 
@@ -60,6 +61,10 @@ public class ConfigFileAdapter<K, V> implements ConfigCacheAdapter<K, V> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void forEach(BiConsumer<K,V> action) {
+        localCache.forEach(action);
     }
 
     @Override
