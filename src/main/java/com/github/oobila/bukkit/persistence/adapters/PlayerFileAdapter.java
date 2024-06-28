@@ -34,7 +34,8 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
                         cache.getName(),
                         cache.getKeyType(),
                         cache.getType(),
-                        fileAdapter
+                        fileAdapter,
+                        "playerdata/" + offlinePlayer.getUniqueId()
                 )
         );
         dataCache.open(cache.getPlugin());
