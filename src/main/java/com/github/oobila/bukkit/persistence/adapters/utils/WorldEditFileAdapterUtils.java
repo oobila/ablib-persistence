@@ -22,15 +22,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
+
+import static java.time.ZoneOffset.UTC;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WorldEditFileAdapterUtils {
 
     public static SchematicObject loadSchematic(File saveFile) {
         try (FileInputStream fis = new FileInputStream(saveFile)) {
-            return loadSchematic(fis, ZonedDateTime.ofInstant(Instant.ofEpochSecond(saveFile.lastModified()), ZoneId.of("utc")));
+            return loadSchematic(fis, ZonedDateTime.ofInstant(Instant.ofEpochSecond(saveFile.lastModified()), UTC));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
