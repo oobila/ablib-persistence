@@ -113,17 +113,17 @@ public class FileAdapterUtils {
 
     public static <V extends PersistedObject> V loadConfiguration(DataCacheAdapter<?,?> adapter, File file) {
         YamlConfiguration yamlConfiguration = loadYaml(adapter, file);
-        return (V) yamlConfiguration.get("");
+        return (V) yamlConfiguration.get("data");
     }
 
     public static <V extends PersistedObject> V loadConfiguration(DataCacheAdapter<?,?> adapter, InputStream inputStream) {
         YamlConfiguration yamlConfiguration = loadYaml(adapter, new InputStreamReader(inputStream), "inputStream");
-        return (V) yamlConfiguration.get("");
+        return (V) yamlConfiguration.get("data");
     }
 
     public static <V extends PersistedObject> void saveConfiguration(File file, V object) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
-        yamlConfiguration.set("", object);
+        yamlConfiguration.set("data", object);
         try (Writer writer = new FileWriter(file)) {
             String string = yamlConfiguration.saveToString();
             writer.write(string);
