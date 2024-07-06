@@ -44,8 +44,9 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
             Bukkit.getLogger().warning("savefile does not exist");
             FileAdapterUtils.copyDefaults(cache, saveFile);
         }
-        if (isCluster) {
-            Arrays.stream(saveFile.listFiles()).forEach(file -> {
+        File[] files = saveFile.listFiles();
+        if (isCluster && files != null) {
+            Arrays.stream(files).forEach(file -> {
                 String fileName = FilenameUtils.removeExtension(file.getName());
                 K key = Serialization.deserialize(cache.getKeyType(), fileName);
                 localCache.put(key, onLoadCluster(file));
@@ -124,7 +125,7 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     }
 
     protected void onSave(File saveFile, Set<Map.Entry<K, V>> entries) {
-        YamlConfiguration yamlConfiguration = FileAdapterUtils.loadYaml(this, saveFile);
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
         entries.forEach(entry -> {
             String key = Serialization.serialize(entry.getKey());
             yamlConfiguration.set(key, entry.getValue());

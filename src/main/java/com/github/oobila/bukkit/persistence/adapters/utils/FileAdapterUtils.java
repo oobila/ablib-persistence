@@ -19,11 +19,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -120,6 +122,13 @@ public class FileAdapterUtils {
     }
 
     public static <V extends PersistedObject> void saveConfiguration(File file, V object) {
-
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+        yamlConfiguration.set("", object);
+        try (Writer writer = new FileWriter(file)) {
+            String string = yamlConfiguration.saveToString();
+            writer.write(string);
+        } catch (IOException e) {
+            log(Level.WARNING, "Could not save YAML for - {0}", file.getName());
+        }
     }
 }
