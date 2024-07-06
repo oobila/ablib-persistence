@@ -26,7 +26,8 @@ public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCa
 
     @Override
     public void open(BaseCache<K, V> cache) {
-        //do nothing
+        //if a reload has occurred there may be players already online
+        Bukkit.getOnlinePlayers().forEach(player -> open(player, cache));
     }
 
     @Override
