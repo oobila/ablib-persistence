@@ -27,15 +27,6 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheAdapter<K, V> {
 
     private final Map<K, V> localCache = new HashMap<>();
-    private final boolean isCluster;
-
-    public DataFileAdapter() {
-        this.isCluster = false;
-    }
-
-    public DataFileAdapter(boolean isCluster) {
-        this.isCluster = isCluster;
-    }
 
     @Override
     public void open(BaseCache<K, V> cache) {
@@ -44,16 +35,7 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
             Bukkit.getLogger().warning("savefile does not exist");
             FileAdapterUtils.copyDefaults(cache, saveFile);
         }
-        File[] files = saveFile.listFiles();
-        if (isCluster && files != null) {
-            Arrays.stream(files).forEach(file -> {
-                String fileName = FilenameUtils.removeExtension(file.getName());
-                K key = Serialization.deserialize(cache.getKeyType(), fileName);
-                localCache.put(key, onLoadCluster(file));
-            });
-        } else {
-            localCache.putAll(onLoad(saveFile, cache.getKeyType()));
-        }
+        localCache.putAll(onLoad(saveFile, cache.getKeyType()));
     }
 
     @Override
@@ -62,14 +44,12 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
         if (saveFile.exists()) {
             saveFile.delete();
         }
-        if (isCluster) {
-            localCache.forEach((k, v) -> {
-                File clusterFile = new File(saveFile, Serialization.serialize(k) + ".yml");
-                onSaveCluster(clusterFile, v);
-            });
-        } else {
-            onSave(saveFile, localCache.entrySet());
-        }
+        onSave(saveFile, localCache.entrySet());
+    }
+
+    @Override
+    public int size(BaseCache<K, V> dataCache) {
+        return localCache.size();
     }
 
     @Override
@@ -135,18 +115,5 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
         } catch (IOException e) {
             log(Level.SEVERE, "Failed to save: {0}", saveFile.getName());
         }
-    }
-
-    protected V onLoadCluster(File saveFile) {
-        return FileAdapterUtils.loadConfiguration(this, saveFile);
-    }
-
-    protected void onSaveCluster(File saveFile, V value) {
-        FileAdapterUtils.saveConfiguration(saveFile, value);
-    }
-
-    @Override
-    public int size(BaseCache<K, V> dataCache) {
-        return localCache.size();
     }
 }

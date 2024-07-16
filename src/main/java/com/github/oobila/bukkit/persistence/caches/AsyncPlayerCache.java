@@ -1,7 +1,7 @@
 package com.github.oobila.bukkit.persistence.caches;
 
 import com.github.oobila.bukkit.persistence.adapters.PlayerCacheAdapter;
-import com.github.oobila.bukkit.persistence.adapters.PlayerFileAdapter;
+import com.github.oobila.bukkit.persistence.adapters.DataPlayerFileAdapter;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -18,7 +18,7 @@ public class AsyncPlayerCache <K, V extends PersistedObject> extends BaseCache<K
     private PlayerCacheAdapter<K,V> adapter;
 
     public AsyncPlayerCache(String name, Class<K> keyType, Class<V> type) {
-        this(name, keyType, type, new PlayerFileAdapter<>());
+        this(name, keyType, type, new DataPlayerFileAdapter<>());
     }
 
     public AsyncPlayerCache(String name, Class<K> keyType, Class<V> type, PlayerCacheAdapter<K, V> adapter) {

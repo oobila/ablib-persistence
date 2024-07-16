@@ -53,6 +53,10 @@ public class FileAdapterUtils {
     }
 
     public static <V, K> File getSaveFile(BaseCache<K,V> cache, OfflinePlayer player) {
+        return new File(getClusterLocation(cache, player), getSimpleFileName(cache));
+    }
+
+    public static <V, K> File getClusterLocation(BaseCache<K,V> cache, OfflinePlayer player) {
         File fileLocation = cache.getPlugin().getDataFolder();
 
         //append data prefix
@@ -73,16 +77,19 @@ public class FileAdapterUtils {
                 }
             }
         }
-
-        return new File(fileLocation, getSimpleFileName(cache));
+        return fileLocation;
     }
 
     public static <V, K> String getSimpleFileName(BaseCache<K,V> cache) {
-        String extension = FilenameUtils.getExtension(cache.getName());
+        return getSimpleFileName(cache.getName());
+    }
+
+    public static String getSimpleFileName(String input) {
+        String extension = FilenameUtils.getExtension(input);
         if (extension == null || extension.isEmpty()) {
-            return cache.getName() + ".yml";
+            return input + ".yml";
         } else {
-            return cache.getName();
+            return input;
         }
     }
 

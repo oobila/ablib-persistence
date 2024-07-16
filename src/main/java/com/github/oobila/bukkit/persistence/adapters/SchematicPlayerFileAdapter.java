@@ -1,6 +1,7 @@
-package com.github.oobila.bukkit.persistence.adapters.file;
+package com.github.oobila.bukkit.persistence.adapters;
 
-import com.github.oobila.bukkit.persistence.adapters.PlayerFileAdapter;
+import com.github.oobila.bukkit.persistence.adapters.DataPlayerFileAdapter;
+import com.github.oobila.bukkit.persistence.adapters.SchematicFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
 import com.github.oobila.bukkit.persistence.adapters.utils.WorldEditFileAdapterUtils;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
@@ -15,7 +16,7 @@ import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
-public class SchematicPlayerFileAdapter<K> extends PlayerFileAdapter<K, SchematicObject> {
+public class SchematicPlayerFileAdapter<K> extends DataPlayerFileAdapter<K, SchematicObject> {
 
     public SchematicPlayerFileAdapter() {
         super(SchematicFileAdapter::new);

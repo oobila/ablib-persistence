@@ -15,12 +15,12 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @NoArgsConstructor
-public class PlayerFileAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
+public class DataPlayerFileAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
 
     private final Map<UUID, DataCache<K, V>> localCache = new HashMap<>();
     private Supplier<DataFileAdapter<K, V>> adapterSupplier = DataFileAdapter::new;
 
-    public PlayerFileAdapter(Supplier<DataFileAdapter<K, V>> adapterSupplier) {
+    public DataPlayerFileAdapter(Supplier<DataFileAdapter<K, V>> adapterSupplier) {
         this.adapterSupplier = adapterSupplier;
     }
 

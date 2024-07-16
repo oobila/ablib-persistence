@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class PlayerSqlAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
+public class DataPlayerSqlAdapter<K, V extends PersistedObject> implements PlayerCacheAdapter<K, V> {
 
     private static final ZoneId UTC = ZoneId.of("UTC");
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
