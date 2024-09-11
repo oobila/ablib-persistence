@@ -4,15 +4,14 @@ import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
-import org.apache.commons.io.FilenameUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,9 +41,18 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     public void close(BaseCache<K, V> cache) {
         File saveFile = FileAdapterUtils.getSaveFile(cache, null);
         if (saveFile.exists()) {
-            saveFile.delete();
+            try {
+                Files.delete(saveFile.toPath());
+            } catch (IOException e) {
+                log(Level.SEVERE, e);
+            }
         }
         onSave(saveFile, localCache.entrySet());
+    }
+
+    @Override
+    public boolean contains(K key, BaseCache<K, V> dataCache) {
+        return localCache.containsKey(key);
     }
 
     @Override
@@ -96,9 +104,9 @@ public class DataFileAdapter<K, V extends PersistedObject> implements DataCacheA
     protected Map<K, V> onLoad(File saveFile, Class<K> keyType) {
         Map<K, V> map = new HashMap<>();
         YamlConfiguration yamlConfiguration = FileAdapterUtils.loadYaml(this, saveFile);
-        yamlConfiguration.getValues(false).entrySet().forEach(entry ->{
-            K key = Serialization.deserialize(keyType, entry.getKey());
-            V value = (V) entry.getValue();
+        yamlConfiguration.getValues(false).forEach((key1, value1) -> {
+            K key = Serialization.deserialize(keyType, key1);
+            V value = (V) value1;
             map.put(key, value);
         });
         return map;

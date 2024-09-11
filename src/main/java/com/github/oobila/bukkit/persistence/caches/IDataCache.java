@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface IDataCache<K, V extends PersistedObject> extends ICache {
 
+    boolean contains(K key);
     void put(K key, V value);
     V get(K key);
     List<V> get();

@@ -21,6 +21,19 @@ public class MultiCache<K, V extends PersistedObject> extends MultiCacheBase<K, 
     }
 
     @Override
+    public boolean contains(K key) {
+        if (canReadFromWriter && cacheWriteInstance.contains(key)) {
+            return true;
+        }
+        for (IDataCache<K, V> cacheReader : cacheReadInstances) {
+            if (cacheReader.contains(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void put(K key, V value) {
         cacheWriteInstance.put(key, value);
     }

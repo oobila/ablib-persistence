@@ -38,6 +38,11 @@ public class DataSqlAdapter<K, V extends PersistedObject> implements DataCacheAd
     }
 
     @Override
+    public boolean contains(K key, BaseCache<K, V> dataCache) {
+        return get(key, dataCache) != null;
+    }
+
+    @Override
     public void put(K key, V value, BaseCache<K, V> dataCache) {
         String dateTime = value.getCreatedDate().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime().format(FORMATTER);
         String query = String.format(

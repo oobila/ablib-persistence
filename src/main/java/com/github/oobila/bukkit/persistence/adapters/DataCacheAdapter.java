@@ -8,10 +8,12 @@ import java.util.Collection;
 import java.util.List;
 
 public interface DataCacheAdapter<K, V extends PersistedObject> extends CacheReader {
-    
+
     void open(BaseCache<K, V> dataCache);
 
     void close(BaseCache<K, V> dataCache);
+
+    boolean contains(K key, BaseCache<K, V> dataCache);
 
     void put(K key, V value, BaseCache<K, V> dataCache);
 

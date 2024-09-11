@@ -62,6 +62,11 @@ public class DataCache<K, V extends PersistedObject> extends BaseCache<K, V> imp
     }
 
     @Override
+    public boolean contains(K key) {
+        return adapter.contains(key, this);
+    }
+
+    @Override
     public void put(K key, V value) {
         adapter.put(key, value, this);
         observers.forEach(observer -> observer.onPut(key, value, this));
