@@ -1,14 +1,15 @@
 package com.github.oobila.bukkit.persistence.adapters;
 
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
-import com.github.oobila.bukkit.persistence.model.PersistedObject;
+import com.github.oobila.bukkit.persistence.model.Resource;
+import com.github.oobila.bukkit.persistence.model.ResourcePack;
 
-public interface ResourceCacheAdapter<K, V extends PersistedObject> {
+import java.util.List;
 
-    void open(BaseCache<K, V> dataCache);
+public interface ResourceCacheAdapter<K, V extends ResourcePack> extends CacheReader {
 
-    void close(BaseCache<K, V> dataCache);
+    void open(BaseCache<K, V> cache);
 
-    //TODO
+    int size(BaseCache<K, V> cache);
 
 }

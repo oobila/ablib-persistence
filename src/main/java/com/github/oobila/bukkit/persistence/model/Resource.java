@@ -1,18 +1,17 @@
 package com.github.oobila.bukkit.persistence.model;
 
-import java.util.HashMap;
-import java.util.Map;
+public class Resource {
 
-public class Resource extends PersistedObject{
-    
-    private final Map<String, Map<?, ?>> children = new HashMap<>();
-    
-    @Override
-    public Map<String, Object> serialize() {
-        return null;
+    private final String name;
+    private final long size;
+    private Object data;
+
+    public Resource(String name, long size) {
+        this.name = name;
+        this.size = size;
     }
-    
-    public static Resource deserialize(Map<String, Object> args) {
-        return null;
+
+    public void clearData() {
+        data = null;
     }
 }
