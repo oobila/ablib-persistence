@@ -10,27 +10,27 @@ import org.bukkit.plugin.Plugin;
 import static com.github.oobila.bukkit.common.ABCommon.log;
 import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
-public class ResourceCache<K, V extends ResourcePack> extends BaseCache<K, V> {
+public class ResourceCache<K> extends BaseCache<K, ResourcePack> {
 
     @Setter
-    private ResourceCacheAdapter<K,V> adapter;
+    private ResourceCacheAdapter<K> adapter;
     @Getter
     private final String subFolderName;
 
-    public ResourceCache(String name, Class<K> keyType, Class<V> type) {
-        this(name, keyType, type, new ResourceFileAdapter<>());
+    public ResourceCache(String name, Class<K> keyType) {
+        this(name, keyType, new ResourceFileAdapter<>(keyType));
     }
 
-    public ResourceCache(String name, Class<K> keyType, Class<V> type, String subFolderName) {
-        this(name, keyType, type, new ResourceFileAdapter<>(), subFolderName);
+    public ResourceCache(String name, Class<K> keyType, String subFolderName) {
+        this(name, keyType, new ResourceFileAdapter<>(keyType), subFolderName);
     }
 
-    public ResourceCache(String name, Class<K> keyType, Class<V> type, ResourceCacheAdapter<K,V> adapter) {
-        this(name, keyType, type, adapter, DATA);
+    public ResourceCache(String name, Class<K> keyType, ResourceCacheAdapter<K> adapter) {
+        this(name, keyType, adapter, DATA);
     }
 
-    public ResourceCache(String name, Class<K> keyType, Class<V> type, ResourceCacheAdapter<K,V> adapter, String subFolderName) {
-        super(name, keyType, type);
+    public ResourceCache(String name, Class<K> keyType, ResourceCacheAdapter<K> adapter, String subFolderName) {
+        super(name, keyType, ResourcePack.class);
         this.adapter = adapter;
         this.subFolderName = subFolderName;
     }
@@ -43,6 +43,6 @@ public class ResourceCache<K, V extends ResourcePack> extends BaseCache<K, V> {
 
     @Override
     public void onClose() {
-        adapter.close(this);
+        //no close action necessary
     }
 }

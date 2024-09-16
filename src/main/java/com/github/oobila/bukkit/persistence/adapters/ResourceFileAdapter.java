@@ -19,7 +19,7 @@ import java.util.zip.ZipFile;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
-public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K, ResourcePack> {
+public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
 
     private final Map<K, ResourcePack> localCache = new HashMap<>();
     private Class<K> keyType;
@@ -32,6 +32,7 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K, ResourceP
     public void open(BaseCache<K, ResourcePack> cache) {
         File directory = FileAdapterUtils.getClusterLocation(cache, null);
         if (directory.exists()) {
+            localCache.clear();
             localCache.putAll(onLoad(directory, cache.getKeyType()));
         }
     }
