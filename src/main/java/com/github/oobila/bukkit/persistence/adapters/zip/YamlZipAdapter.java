@@ -15,11 +15,10 @@ import java.util.zip.ZipFile;
 @RequiredArgsConstructor
 public abstract class YamlZipAdapter<V extends PersistedObject> implements ZipEntryAdapter<V> {
 
-    private final CacheReader cacheReader;
     private final Class<V> type;
 
     @Override
-    public <K> V getValue(ZipEntry entry, ZipFile zip, ResourceFileAdapter<K> resourceFileAdapter) {
+    public <K> V getValue(CacheReader cacheReader, ZipEntry entry, ZipFile zip, ResourceFileAdapter<K> resourceFileAdapter) {
         try(
                 InputStream inputStream = zip.getInputStream(entry);
                 InputStreamReader reader = new InputStreamReader(inputStream)

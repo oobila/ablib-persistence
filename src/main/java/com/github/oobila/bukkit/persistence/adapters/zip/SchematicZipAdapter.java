@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.adapters.zip;
 
+import com.github.oobila.bukkit.persistence.adapters.CacheReader;
 import com.github.oobila.bukkit.persistence.adapters.ResourceFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.utils.WorldEditAdapterUtils;
 import com.github.oobila.bukkit.persistence.model.SchematicObject;
@@ -13,7 +14,7 @@ import java.util.zip.ZipFile;
 public class SchematicZipAdapter implements ZipEntryAdapter<SchematicObject> {
 
     @Override
-    public <K> SchematicObject getValue(ZipEntry entry, ZipFile zip, ResourceFileAdapter<K> resourceFileAdapter) {
+    public <K> SchematicObject getValue(CacheReader cacheReader, ZipEntry entry, ZipFile zip, ResourceFileAdapter<K> resourceFileAdapter) {
         try (InputStream inputStream = zip.getInputStream(entry)) {
             return WorldEditAdapterUtils.loadSchematic(inputStream, null);
         } catch (IOException e) {

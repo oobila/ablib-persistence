@@ -15,7 +15,7 @@ public interface ResourceCacheAdapter<K> extends CacheReader {
             Map<Class<? extends PersistedObject>, ZipEntryAdapter<? extends PersistedObject>> zipEntryAdapterMap
     );
 
-    void loadData(Resource resource);
+    void loadData(CacheReader cacheReader, Resource resource);
 
     int size(BaseCache<K, ResourcePack> cache);
 

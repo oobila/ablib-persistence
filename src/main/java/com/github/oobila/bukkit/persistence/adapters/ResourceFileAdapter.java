@@ -98,7 +98,7 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
     }
 
     @Override
-    public void loadData(Resource resource) {
+    public void loadData(CacheReader cacheReader, Resource resource) {
         ResourcePack resourcePack = resource.getResourcePack();
         File file = resourcePack.getFile();
         try (ZipFile zip = new ZipFile(file)) {
@@ -108,7 +108,7 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
                     if (!entry.isDirectory() && resource.getName().equalsIgnoreCase(entry.getName())) {
                         //found file inside zip
                         ZipEntryAdapter<?> zipEntryAdapter = getZipEntryAdapter(resource);
-                        resource.setData(zipEntryAdapter.getValue(entry, zip, this));
+                        resource.setData(zipEntryAdapter.getValue(cacheReader, entry, zip, this));
                     }
                 } catch (Exception e) {
                     log(Level.SEVERE, "Failed to load resource: {0}", entry.getName());
