@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class Serialization {
         register(UUID.class, new UUIDSerializer());
         register(OfflinePlayer.class, new OfflinePlayerSerializer());
         register(Location.class, new LocationSerializer());
+        register(ZonedDateTime.class, new ZonedDateTimeSerializer());
     }
 
     public static <T> void register(Class<T> type, KeySerializer<T> serializer) {

@@ -1,7 +1,6 @@
 package com.github.oobila.bukkit.persistence.caches;
 
 import com.github.oobila.bukkit.persistence.adapters.ResourceCacheAdapter;
-import com.github.oobila.bukkit.persistence.adapters.ResourceFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.zip.SchematicZipAdapter;
 import com.github.oobila.bukkit.persistence.adapters.zip.ZipEntryAdapter;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
@@ -20,7 +19,7 @@ public class ResourceCache<K> extends BaseCache<K, ResourcePack> {
 
     @Setter
     private ResourceCacheAdapter<K> adapter;
-    private Map<Class<? extends PersistedObject>, ZipEntryAdapter<? extends PersistedObject>> zipEntryAdapters = new HashMap<>();
+    private final Map<Class<? extends PersistedObject>, ZipEntryAdapter<? extends PersistedObject>> zipEntryAdapters = new HashMap<>();
     @Getter
     private final String subFolderName;
 
