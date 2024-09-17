@@ -1,7 +1,9 @@
 package com.github.oobila.bukkit.persistence.adapters;
 
 import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
+import com.github.oobila.bukkit.persistence.adapters.zip.ZipEntryAdapter;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
+import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.model.Resource;
 import com.github.oobila.bukkit.persistence.model.ResourcePack;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
@@ -22,14 +24,17 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
 
     private final Map<K, ResourcePack> localCache = new HashMap<>();
-    private Class<K> keyType;
+    private Map<Class<? extends PersistedObject>, ZipEntryAdapter<? extends PersistedObject>> zipEntryAdapters;
 
-    public ResourceFileAdapter(Class<K> keyType) {
-        this.keyType = keyType;
+    public ResourceFileAdapter(Map<Class<? extends PersistedObject>, ZipEntryAdapter<? extends PersistedObject>> zipEntryAdapters) {
+        this.zipEntryAdapters = zipEntryAdapters;
     }
 
     @Override
-    public void open(BaseCache<K, ResourcePack> cache) {
+    public void open(
+            BaseCache<K, ResourcePack> cache,
+            Map<Class<? extends PersistedObject>, ZipEntryAdapter<? extends PersistedObject>> zipEntryAdapters
+    ) {
         File directory = FileAdapterUtils.getClusterLocation(cache, null);
         if (directory.exists()) {
             localCache.clear();
@@ -51,7 +56,7 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
                     String fileName = FilenameUtils.getBaseName(file.getName());
                     try {
                         K key = Serialization.deserialize(keyType, fileName);
-                        ResourcePack resourcePack = new ResourcePack(file);
+                        ResourcePack resourcePack = new ResourcePack(file, this);
                         map.put(key, resourcePack);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -77,7 +82,7 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
                             //found file inside zip
                             String name = entry.getName();
                             long size = entry.getSize();
-                            Resource resource = new Resource(name, size);
+                            Resource resource = new Resource(resourcePack, name, size);
                             resources.put(name, resource);
                         }
                     } catch (Exception e) {
@@ -92,38 +97,18 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
         });
     }
 
-    private void loadResourceData(ResourcePack resourcePack) {
-        Map<String, Resource> resources = resourcePack.getResources();
+    @Override
+    public void loadData(Resource resource) {
+        ResourcePack resourcePack = resource.getResourcePack();
         File file = resourcePack.getFile();
         try (ZipFile zip = new ZipFile(file)) {
             for (Enumeration<? extends ZipEntry> zipEntries = zip.entries(); zipEntries.hasMoreElements(); ) {
                 ZipEntry entry = zipEntries.nextElement();
                 try {
-                    if (!entry.isDirectory()) {
+                    if (!entry.isDirectory() && resource.getName().equalsIgnoreCase(entry.getName())) {
                         //found file inside zip
-                        String name = entry.getName();
-                        Resource resource = resources.get(name);
-                        if (resource != null) {
-
-                        }
-//                        InputStream inputStream = zip.getInputStream(entry);
-//                        ResourceType resourceType = ResourceType.of(FilenameUtils.getExtension(entry.getName()));
-//                        Object o;
-//                        switch (resourceType) {
-//                            case YAML ->
-//                                    log(Level.INFO, "todo");
-////                                    o = FileAdapterUtils.loadConfiguration(inputStream); TODO
-//                            case SCHEMATIC ->
-//                                    o = WorldEditFileAdapterUtils.loadSchematic(
-//                                            inputStream,
-//                                            ZonedDateTime.ofInstant(
-//                                                    entry.getLastModifiedTime().toInstant(),
-//                                                    ZoneId.systemDefault()
-//                                            )
-//                                    );
-//                            default ->
-//                                    log(Level.SEVERE, "Failed to load resource: {0}", entry.getName());
-//                        }
+                        ZipEntryAdapter<?> zipEntryAdapter = getZipEntryAdapter(resource);
+                        resource.setData(zipEntryAdapter.getValue(entry, zip, this));
                     }
                 } catch (Exception e) {
                     log(Level.SEVERE, "Failed to load resource: {0}", entry.getName());
@@ -136,7 +121,12 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
         }
     }
 
-    private void unloadResourceData(ResourcePack resourcePack) {
-        resourcePack.getResources().values().forEach(resource -> resource.setData(null));
+    private ZipEntryAdapter<?> getZipEntryAdapter(Resource resource) {
+        for (ZipEntryAdapter<?> zipEntryAdapter : zipEntryAdapters.values()) {
+            if (zipEntryAdapter.qualifierMatches(resource.getLocation())) {
+                return zipEntryAdapter;
+            }
+        }
+        throw new RuntimeException("Could not find a zip entry adapter for: " + resource.getLocation());
     }
 }

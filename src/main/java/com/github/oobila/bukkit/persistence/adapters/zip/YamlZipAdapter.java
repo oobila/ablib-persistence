@@ -13,7 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 @RequiredArgsConstructor
-public class YamlZipAdapter<V extends PersistedObject> implements ZipEntryAdapter<V> {
+public abstract class YamlZipAdapter<V extends PersistedObject> implements ZipEntryAdapter<V> {
 
     private final CacheReader cacheReader;
     private final Class<V> type;
