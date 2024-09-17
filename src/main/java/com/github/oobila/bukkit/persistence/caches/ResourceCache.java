@@ -11,11 +11,12 @@ import lombok.Setter;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.oobila.bukkit.persistence.Constants.DATA;
 
-public class ResourceCache<K> extends BaseCache<K, ResourcePack> {
+public class ResourceCache<K> extends BaseCache<K, ResourcePack> implements IResourceCache<K> {
 
     @Setter
     private ResourceCacheAdapter<K> adapter;
@@ -47,5 +48,20 @@ public class ResourceCache<K> extends BaseCache<K, ResourcePack> {
     @Override
     public void onClose() {
         //no close action necessary
+    }
+
+    @Override
+    public void put(K key, ResourcePack resourcePack) {
+        adapter.put(key, resourcePack);
+    }
+
+    @Override
+    public ResourcePack get(K key) {
+        return adapter.get(key);
+    }
+
+    @Override
+    public List<ResourcePack> get() {
+        return adapter.get();
     }
 }

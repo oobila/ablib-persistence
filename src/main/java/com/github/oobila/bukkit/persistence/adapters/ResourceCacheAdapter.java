@@ -6,6 +6,7 @@ import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.model.Resource;
 import com.github.oobila.bukkit.persistence.model.ResourcePack;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ResourceCacheAdapter<K> extends CacheReader {
@@ -18,5 +19,11 @@ public interface ResourceCacheAdapter<K> extends CacheReader {
     void loadData(CacheReader cacheReader, Resource resource);
 
     int size(BaseCache<K, ResourcePack> cache);
+
+    void put(K key, ResourcePack value);
+
+    ResourcePack get(K key);
+
+    List<ResourcePack> get();
 
 }

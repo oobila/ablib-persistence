@@ -11,8 +11,10 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -45,6 +47,21 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
     @Override
     public int size(BaseCache<K, ResourcePack> cache) {
         return 0;
+    }
+
+    @Override
+    public void put(K key, ResourcePack resourcePack) {
+        localCache.put(key, resourcePack);
+    }
+
+    @Override
+    public ResourcePack get(K key) {
+        return localCache.get(key);
+    }
+
+    @Override
+    public List<ResourcePack> get() {
+        return new ArrayList<>(localCache.values());
     }
 
     protected Map<K, ResourcePack> onLoad(File directory, Class<K> keyType) {
