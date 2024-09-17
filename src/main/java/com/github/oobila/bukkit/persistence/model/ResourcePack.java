@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.model;
 
+import com.github.oobila.bukkit.persistence.adapters.CacheReader;
 import com.github.oobila.bukkit.persistence.adapters.ResourceCacheAdapter;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
@@ -32,8 +33,8 @@ public class ResourcePack {
         createdDate = attr.creationTime().toInstant().atZone(ZoneOffset.UTC);
     }
 
-    public void loadData() {
-        resources.values().forEach(resource -> resource.loadData(this));
+    public void loadData(CacheReader cacheReader) {
+        resources.values().forEach(resource -> resource.loadData(cacheReader, this));
     }
 
     public void unloadData() {

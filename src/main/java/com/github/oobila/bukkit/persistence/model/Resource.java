@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.model;
 
+import com.github.oobila.bukkit.persistence.adapters.CacheReader;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
@@ -28,8 +29,8 @@ public class Resource {
         return FilenameUtils.getExtension(location);
     }
 
-    public void loadData(ResourcePack resourcePack) {
-        resourcePack.getAdapter().loadData(this);
+    public void loadData(CacheReader cacheReader, ResourcePack resourcePack) {
+        resourcePack.getAdapter().loadData(cacheReader, this);
     }
 
     public void unloadData() {
