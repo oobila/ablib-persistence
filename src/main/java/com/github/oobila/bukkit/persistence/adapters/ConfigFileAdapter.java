@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.adapters;
 
+import com.github.oobila.bukkit.persistence.adapters.utils.AdapterUtils;
 import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
 import com.github.oobila.bukkit.persistence.caches.ConfigCache;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
@@ -43,17 +44,15 @@ public class ConfigFileAdapter<K, V> implements ConfigCacheAdapter<K, V> {
     }
 
     private void updateDefaults(ConfigCache<K, V> cache, File saveFile, YamlConfiguration yamlConfiguration) {
-        YamlConfiguration defaults = FileAdapterUtils.loadYaml(this,
-                new InputStreamReader(cache.getPlugin().getResource(FileAdapterUtils.getSimpleFileName(cache))),
-                cache.getName());
-        boolean addDefaults = false;
-        for (Map.Entry<String, Object> entry : defaults.getValues(false).entrySet()) {
-            if (!yamlConfiguration.contains(entry.getKey())) {
-                yamlConfiguration.set(entry.getKey(), entry.getValue());
-                addDefaults = true;
+        try (InputStreamReader reader = new InputStreamReader(cache.getPlugin().getResource(FileAdapterUtils.getSimpleFileName(cache)))) {
+            YamlConfiguration defaults = AdapterUtils.loadYaml(this, reader);
+            boolean addDefaults = false;
+            for (Map.Entry<String, Object> entry : defaults.getValues(false).entrySet()) {
+                if (!yamlConfiguration.contains(entry.getKey())) {
+                    yamlConfiguration.set(entry.getKey(), entry.getValue());
+                    addDefaults = true;
+                }
             }
-        }
-        try {
             if (addDefaults) {
                 Bukkit.getLogger().info("adding new configuration items for " + cache.getPlugin().getName() + ": " + cache.getName());
                 yamlConfiguration.save(saveFile);

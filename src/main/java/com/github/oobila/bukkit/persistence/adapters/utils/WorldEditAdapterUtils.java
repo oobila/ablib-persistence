@@ -27,7 +27,7 @@ import java.time.ZonedDateTime;
 import static java.time.ZoneOffset.UTC;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class WorldEditFileAdapterUtils {
+public class WorldEditAdapterUtils {
 
     public static SchematicObject loadSchematic(File saveFile) {
         try (FileInputStream fis = new FileInputStream(saveFile)) {

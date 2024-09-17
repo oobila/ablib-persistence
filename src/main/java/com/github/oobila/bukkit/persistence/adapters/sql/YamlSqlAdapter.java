@@ -1,6 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters.sql;
 
 import com.github.oobila.bukkit.persistence.adapters.CacheReader;
+import com.github.oobila.bukkit.persistence.adapters.utils.AdapterUtils;
 import com.github.oobila.bukkit.persistence.adapters.utils.SqlAdapterUtils;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class YamlSqlAdapter<V extends PersistedObject> implements SqlValueAdapte
     @Override
     public V getValue(ResultSet resultSet) throws SQLException {
         String data = resultSet.getString(DATA);
-        return SqlAdapterUtils.deserializeData(cacheReader, data, type);
+        return AdapterUtils.deserializeData(cacheReader, data, type);
     }
 
 }

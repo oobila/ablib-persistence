@@ -1,7 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters.utils;
 
 import com.github.oobila.bukkit.persistence.adapters.CacheReader;
-import com.github.oobila.bukkit.persistence.adapters.DataCacheAdapter;
+import com.github.oobila.bukkit.persistence.adapters.DataFileAdapter;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.PersistedObject;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -93,39 +94,13 @@ public class FileAdapterUtils {
         }
     }
 
-    public static YamlConfiguration loadYaml(CacheReader cacheReader, File file) {
-        try {
-            return loadYaml(cacheReader, new FileReader(file), file.getName());
-        } catch (FileNotFoundException e) {
-            log(Level.WARNING, "Could not find file - {0}", file.getName());
-            return new YamlConfiguration();
+    public static <V extends PersistedObject> V loadConfiguration(Class<V> type, CacheReader cacheReader, File file)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        try (FileReader reader = new FileReader(file)) {
+            return AdapterUtils.deserializeData(cacheReader, reader, type);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-    }
-
-    public static YamlConfiguration loadYaml(CacheReader cacheReader, Reader reader, String name) {
-        try {
-            YamlConfiguration yamlConfiguration = new YamlConfiguration();
-            String yamlString = CharStreams.toString(reader);
-            for (Map.Entry<String, String> rule : cacheReader.getDeserializeReplacementRules().entrySet()) {
-                yamlString = yamlString.replace(rule.getKey(), rule.getValue());
-            }
-            yamlConfiguration.loadFromString(yamlString);
-            return yamlConfiguration;
-        } catch (InvalidConfigurationException | IOException e) {
-            log(Level.SEVERE, "Could not load YAML from reader - {0}", name);
-            Bukkit.shutdown();
-            return null;
-        }
-    }
-
-    public static <V extends PersistedObject> V loadConfiguration(DataCacheAdapter<?,?> adapter, File file) {
-        YamlConfiguration yamlConfiguration = loadYaml(adapter, file);
-        return (V) yamlConfiguration.get("data");
-    }
-
-    public static <V extends PersistedObject> V loadConfiguration(DataCacheAdapter<?,?> adapter, InputStream inputStream) {
-        YamlConfiguration yamlConfiguration = loadYaml(adapter, new InputStreamReader(inputStream), "inputStream");
-        return (V) yamlConfiguration.get("data");
     }
 
     public static <V extends PersistedObject> void saveConfiguration(File file, V object) {
@@ -136,6 +111,14 @@ public class FileAdapterUtils {
             writer.write(string);
         } catch (IOException e) {
             log(Level.WARNING, "Could not save YAML for - {0}", file.getName());
+        }
+    }
+
+    public static YamlConfiguration loadYaml(CacheReader cacheReader, File saveFile) {
+        try (FileReader reader = new FileReader(saveFile)) {
+            return AdapterUtils.loadYaml(cacheReader, reader);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

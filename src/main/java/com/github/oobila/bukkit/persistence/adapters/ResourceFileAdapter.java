@@ -137,6 +137,6 @@ public class ResourceFileAdapter<K> implements ResourceCacheAdapter<K> {
     }
 
     private void unloadResourceData(ResourcePack resourcePack) {
-        resourcePack.getResources().values().forEach(Resource::clearData);
+        resourcePack.getResources().values().forEach(resource -> resource.setData(null));
     }
 }

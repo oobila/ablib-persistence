@@ -1,7 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters;
 
 import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
-import com.github.oobila.bukkit.persistence.adapters.utils.WorldEditFileAdapterUtils;
+import com.github.oobila.bukkit.persistence.adapters.utils.WorldEditAdapterUtils;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.SchematicObject;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
@@ -17,26 +17,30 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 
 public class SchematicFileAdapter<K> extends DataClusterFileAdapter<K, SchematicObject> {
 
+    public SchematicFileAdapter() {
+        super(SchematicObject.class);
+    }
+
     @Override
     protected SchematicObject onLoad(File saveFile) {
-        return WorldEditFileAdapterUtils.loadSchematic(saveFile);
+        return WorldEditAdapterUtils.loadSchematic(saveFile);
     }
 
     @Override
     protected void onSave(File saveFile, SchematicObject value) {
-        WorldEditFileAdapterUtils.saveSchematic(saveFile, value);
+        WorldEditAdapterUtils.saveSchematic(saveFile, value);
     }
 
     @Override
     public void put(K key, SchematicObject value, BaseCache<K, SchematicObject> cache) {
         File file = getSchematicFile(key, cache);
-        WorldEditFileAdapterUtils.saveSchematic(file, value);
+        WorldEditAdapterUtils.saveSchematic(file, value);
     }
 
     @Override
     public SchematicObject get(K key, BaseCache<K, SchematicObject> cache) {
         File file = getSchematicFile(key, cache);
-        return WorldEditFileAdapterUtils.loadSchematic(file);
+        return WorldEditAdapterUtils.loadSchematic(file);
     }
 
     @Override

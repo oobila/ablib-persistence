@@ -1,9 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters;
 
-import com.github.oobila.bukkit.persistence.adapters.DataPlayerFileAdapter;
-import com.github.oobila.bukkit.persistence.adapters.SchematicFileAdapter;
 import com.github.oobila.bukkit.persistence.adapters.utils.FileAdapterUtils;
-import com.github.oobila.bukkit.persistence.adapters.utils.WorldEditFileAdapterUtils;
+import com.github.oobila.bukkit.persistence.adapters.utils.WorldEditAdapterUtils;
 import com.github.oobila.bukkit.persistence.caches.BaseCache;
 import com.github.oobila.bukkit.persistence.model.SchematicObject;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
@@ -45,13 +43,13 @@ public class SchematicPlayerFileAdapter<K> extends DataPlayerFileAdapter<K, Sche
     @Override
     public void put(OfflinePlayer player, K key, SchematicObject value, BaseCache<K, SchematicObject> playerCache) {
         File file = getSchematicFile(player, key, playerCache);
-        WorldEditFileAdapterUtils.saveSchematic(file, value);
+        WorldEditAdapterUtils.saveSchematic(file, value);
     }
 
     @Override
     public SchematicObject get(OfflinePlayer player, K key, BaseCache<K, SchematicObject> playerCache) {
         File file = getSchematicFile(player, key, playerCache);
-        return WorldEditFileAdapterUtils.loadSchematic(file);
+        return WorldEditAdapterUtils.loadSchematic(file);
     }
 
     @Override

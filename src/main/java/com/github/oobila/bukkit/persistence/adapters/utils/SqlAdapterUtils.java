@@ -74,29 +74,4 @@ public class SqlAdapterUtils {
         return StringUtils.replace(yaml, "'", "''");
     }
 
-    public static <V extends PersistedObject> V deserializeData(CacheReader cacheReader, String dataString, Class<V> type) {
-        try {
-            YamlConfiguration yamlConfiguration = loadYaml(cacheReader, dataString, type.getName());
-            Map<String, Object> map = yamlConfiguration.getValues(false);
-            return (V) type.getDeclaredMethod("deserialize",  Map.class).invoke(null, map);
-        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-            throw new SqlRuntimeException(e);
-        }
-    }
-
-    public static YamlConfiguration loadYaml(CacheReader cacheReader, String string, String name) {
-        try {
-            YamlConfiguration yamlConfiguration = new YamlConfiguration();
-            for (Map.Entry<String, String> rule : cacheReader.getDeserializeReplacementRules().entrySet()) {
-                string = string.replace(rule.getKey(), rule.getValue());
-            }
-            yamlConfiguration.loadFromString(string);
-            return yamlConfiguration;
-        } catch (InvalidConfigurationException e) {
-            log(Level.SEVERE, "Could not load YAML from SQL - {0}", name);
-            Bukkit.shutdown();
-            return null;
-        }
-    }
-
 }

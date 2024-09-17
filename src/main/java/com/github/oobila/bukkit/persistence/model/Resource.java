@@ -1,17 +1,28 @@
 package com.github.oobila.bukkit.persistence.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
+
+@Getter
 public class Resource {
 
-    private final String name;
+    private final String location;
     private final long size;
+    @Setter
     private Object data;
 
-    public Resource(String name, long size) {
-        this.name = name;
+    public Resource(String location, long size) {
+        this.location = location;
         this.size = size;
     }
 
-    public void clearData() {
-        data = null;
+    public String getName() {
+        return FilenameUtils.getBaseName(location);
     }
+
+    public String getType() {
+        return FilenameUtils.getExtension(location);
+    }
+
 }
