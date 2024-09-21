@@ -3,7 +3,6 @@ package com.github.oobila.bukkit.persistence.caches.async;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.Getter;
-import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -17,13 +16,13 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> implements AsyncWriteCache<K, V> {
 
 
-    public AsyncReadAndWriteCache(Plugin plugin, String name, PersistenceVehicle<K, V> vehicle) {
-        super(plugin, name, vehicle, vehicle);
+    public AsyncReadAndWriteCache(String name, PersistenceVehicle<K, V> vehicle) {
+        super(name, vehicle, vehicle);
     }
 
-    public AsyncReadAndWriteCache(Plugin plugin, String name, List<PersistenceVehicle<K, V>> readVehicles,
+    public AsyncReadAndWriteCache(String name, List<PersistenceVehicle<K, V>> readVehicles,
                                   PersistenceVehicle<K, V> writeVehicle) {
-        super(plugin, name, writeVehicle, readVehicles);
+        super(name, writeVehicle, readVehicles);
     }
 
 

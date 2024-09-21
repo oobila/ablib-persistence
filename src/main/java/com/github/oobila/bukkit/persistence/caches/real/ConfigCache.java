@@ -10,7 +10,6 @@ import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.plugin.Plugin;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,9 +21,8 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public class ConfigCache extends ReadOnlyCache<String, String> {
 
-    public ConfigCache(Plugin plugin, String name) {
+    public ConfigCache(String name) {
         super(
-                plugin,
                 name,
                 new YamlMultiItemVehicle<>(
                         String.class,
@@ -34,13 +32,13 @@ public class ConfigCache extends ReadOnlyCache<String, String> {
         );
     }
 
-    public ConfigCache(Plugin plugin, String name, PersistenceVehicle<String, String> vehicle) {
-        super(plugin, name, vehicle);
+    public ConfigCache(String name, PersistenceVehicle<String, String> vehicle) {
+        super(name, vehicle);
     }
 
-    public ConfigCache(Plugin plugin, String name, PersistenceVehicle<String, String> writeVehicle,
+    public ConfigCache(String name, PersistenceVehicle<String, String> writeVehicle,
                        List<PersistenceVehicle<String, String>> readVehicles) {
-        super(plugin, name, writeVehicle, readVehicles);
+        super(name, writeVehicle, readVehicles);
     }
 
     public String getString(String key) {

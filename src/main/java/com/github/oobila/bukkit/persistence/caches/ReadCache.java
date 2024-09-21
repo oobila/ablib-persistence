@@ -1,6 +1,7 @@
 package com.github.oobila.bukkit.persistence.caches;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface ReadCache<K, V> extends Cache {
 
     List<PersistenceVehicle<K, V>> getReadVehicles();
 
-    void load();
+    void load(Plugin plugin);
 
     void unload();
 

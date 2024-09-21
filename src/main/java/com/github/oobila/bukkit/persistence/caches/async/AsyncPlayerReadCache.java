@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-@SuppressWarnings({"unused", "java:S1845"})
+@SuppressWarnings({"unused","java:S1845"})
 public interface AsyncPlayerReadCache<K, V> extends PlayerReadCache<K, V> {
 
     void get(UUID id, K key, Consumer<V> consumer);

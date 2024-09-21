@@ -7,14 +7,12 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerYamlMultiItem
 import com.github.oobila.bukkit.persistence.caches.async.AsyncPlayerReadAndWriteCache;
 import com.github.oobila.bukkit.persistence.observers.PlayerSaveObserver;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.plugin.Plugin;
 
 @SuppressWarnings("unused")
 public class SimpleAsyncPlayerFileCache<K, V extends ConfigurationSerializable> extends AsyncPlayerReadAndWriteCache<K, V> {
 
-    public SimpleAsyncPlayerFileCache(Plugin plugin, String name, Class<K> keyType, Class<V> valueType) {
+    public SimpleAsyncPlayerFileCache(String name, Class<K> keyType, Class<V> valueType) {
         this(
-                plugin,
                 name,
                 new PlayerYamlMultiItemVehicle<>(
                         keyType,
@@ -24,8 +22,8 @@ public class SimpleAsyncPlayerFileCache<K, V extends ConfigurationSerializable> 
         );
     }
 
-    public SimpleAsyncPlayerFileCache(Plugin plugin, String name, PlayerPersistenceVehicle<K, V> vehicle) {
-        super(plugin, name, vehicle);
+    public SimpleAsyncPlayerFileCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+        super(name, vehicle);
         addPlayerObserver((PlayerSaveObserver<K, V>) (playerId, savedData) -> unloadPlayer(playerId));
     }
 

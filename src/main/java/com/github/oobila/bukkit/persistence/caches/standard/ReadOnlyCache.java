@@ -12,31 +12,31 @@ import java.util.Map;
 @Getter
 public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
 
-    private final Plugin plugin;
+    private Plugin plugin;
     private final String name;
     private final PersistenceVehicle<K, V> writeVehicle;
     private final List<PersistenceVehicle<K, V>> readVehicles;
     protected final Map<K, CacheItem<K,V>> localCache = new HashMap<>();
 
-    public ReadOnlyCache(Plugin plugin, String name, PersistenceVehicle<K, V> vehicle) {
-        this(plugin, name, vehicle, vehicle);
+    public ReadOnlyCache(String name, PersistenceVehicle<K, V> vehicle) {
+        this( name, vehicle, vehicle);
     }
 
-    public ReadOnlyCache(Plugin plugin, String name, PersistenceVehicle<K, V> writeVehicle,
+    public ReadOnlyCache(String name, PersistenceVehicle<K, V> writeVehicle,
                          PersistenceVehicle<K, V> readVehicle) {
-        this(plugin, name, writeVehicle, List.of(readVehicle));
+        this(name, writeVehicle, List.of(readVehicle));
     }
 
-    public ReadOnlyCache(Plugin plugin, String name, PersistenceVehicle<K, V> writeVehicle,
+    public ReadOnlyCache(String name, PersistenceVehicle<K, V> writeVehicle,
                          List<PersistenceVehicle<K, V>> readVehicles) {
-        this.plugin = plugin;
         this.name = name;
         this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
     }
 
     @Override
-    public void load() {
+    public void load(Plugin plugin) {
+        this.plugin = plugin;
         unload();
         if (plugin.getResource(name) != null && !writeVehicle.getStorageAdapter().exists(plugin, name)) {
             writeVehicle.getStorageAdapter().copyDefaults(plugin, name);

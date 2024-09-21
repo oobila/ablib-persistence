@@ -3,7 +3,6 @@ package com.github.oobila.bukkit.persistence.caches.standard;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.Getter;
-import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -13,13 +12,13 @@ import java.util.List;
 @Getter
 public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V> {
 
-    public ReadAndWriteCache(Plugin plugin, String name, PersistenceVehicle<K, V> vehicle) {
-        super(plugin, name, vehicle, vehicle);
+    public ReadAndWriteCache(String name, PersistenceVehicle<K, V> vehicle) {
+        super(name, vehicle, vehicle);
     }
 
-    public ReadAndWriteCache(Plugin plugin, String name, PersistenceVehicle<K, V> writeVehicle,
+    public ReadAndWriteCache(String name, PersistenceVehicle<K, V> writeVehicle,
                              List<PersistenceVehicle<K, V>> readVehicles) {
-        super(plugin, name, writeVehicle, readVehicles);
+        super(name, writeVehicle, readVehicles);
     }
 
 

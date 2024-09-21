@@ -8,7 +8,6 @@ import com.github.oobila.bukkit.persistence.caches.standard.PlayerReadAndWriteCa
 import com.github.oobila.bukkit.persistence.observers.PlayerLoadObserver;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -19,9 +18,8 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public class MessageCache extends PlayerReadAndWriteCache<ZonedDateTime, String> {
 
-    public MessageCache(Plugin plugin, String name) {
+    public MessageCache(String name) {
         this(
-                plugin,
                 name,
                 new PlayerYamlMultiItemVehicle<>(
                         ZonedDateTime.class,
@@ -31,8 +29,8 @@ public class MessageCache extends PlayerReadAndWriteCache<ZonedDateTime, String>
         );
     }
 
-    public MessageCache(Plugin plugin, String name, PlayerPersistenceVehicle<ZonedDateTime, String> vehicle) {
-        super(plugin, name, vehicle);
+    public MessageCache(String name, PlayerPersistenceVehicle<ZonedDateTime, String> vehicle) {
+        super(name, vehicle);
         addPlayerObserver((PlayerLoadObserver<ZonedDateTime, String>) (playerId, loadedData) ->
                 loadedData.entrySet().stream()
                         .sorted(Map.Entry.comparingByKey())

@@ -4,7 +4,6 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerPersistenceVe
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.observers.PlayerSaveObserver;
 import lombok.Getter;
-import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -19,14 +18,14 @@ public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> imp
 
     private final PlayerPersistenceVehicle<K, V> writeVehicle;
 
-    public PlayerReadAndWriteCache(Plugin plugin, String name, PlayerPersistenceVehicle<K, V> vehicle) {
-        super(plugin, name, vehicle);
+    public PlayerReadAndWriteCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+        super(name, vehicle);
         this.writeVehicle = vehicle;
     }
 
-    public PlayerReadAndWriteCache(Plugin plugin, String name, List<PlayerPersistenceVehicle<K, V>> readVehicles,
+    public PlayerReadAndWriteCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles,
                                    PlayerPersistenceVehicle<K, V> writeVehicle) {
-        super(plugin, name, readVehicles);
+        super(name, readVehicles);
         this.writeVehicle = writeVehicle;
     }
 

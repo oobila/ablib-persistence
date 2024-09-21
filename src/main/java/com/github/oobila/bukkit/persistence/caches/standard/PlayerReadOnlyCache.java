@@ -18,21 +18,25 @@ import java.util.UUID;
 @Getter
 public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V> {
 
-    private final Plugin plugin;
+    private Plugin plugin;
     private final String name;
     private final List<PlayerPersistenceVehicle<K, V>> readVehicles;
     protected final List<PlayerObserver<K, V>> playerObservers = new ArrayList<>();
     protected final Map<UUID, Map<K, CacheItem<K,V>>> localCache = new HashMap<>();
 
-    public PlayerReadOnlyCache(Plugin plugin, String name, PlayerPersistenceVehicle<K, V> vehicle) {
-        this(plugin, name, List.of(vehicle));
+    public PlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+        this(name, List.of(vehicle));
     }
 
-    public PlayerReadOnlyCache(Plugin plugin, String name, List<PlayerPersistenceVehicle<K, V>> readVehicles) {
-        this.plugin = plugin;
+    public PlayerReadOnlyCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles) {
         this.name = name;
         this.readVehicles = readVehicles;
         CacheManager.register(this);
+    }
+
+    @Override
+    public void load(Plugin plugin) {
+        this.plugin = plugin;
     }
 
     @Override

@@ -22,21 +22,25 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 @Getter
 public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V> {
 
-    private final Plugin plugin;
+    private Plugin plugin;
     private final String name;
     private final List<PlayerPersistenceVehicle<K, V>> readVehicles;
     protected final List<PlayerObserver<K, V>> playerObservers = new ArrayList<>();
     protected final Map<UUID, Map<K, CacheItem<K,V>>> localCache = new HashMap<>();
 
-    public AsyncPlayerReadOnlyCache(Plugin plugin, String name, PlayerPersistenceVehicle<K, V> vehicle) {
-        this(plugin, name, List.of(vehicle));
+    public AsyncPlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+        this(name, List.of(vehicle));
     }
 
-    public AsyncPlayerReadOnlyCache(Plugin plugin, String name,List<PlayerPersistenceVehicle<K, V>> readVehicles) {
-        this.plugin = plugin;
+    public AsyncPlayerReadOnlyCache(String name,List<PlayerPersistenceVehicle<K, V>> readVehicles) {
         this.name = name;
         this.readVehicles = readVehicles;
         CacheManager.register(this);
+    }
+
+    @Override
+    public void load(Plugin plugin) {
+        this.plugin = plugin;
     }
 
     @Override
