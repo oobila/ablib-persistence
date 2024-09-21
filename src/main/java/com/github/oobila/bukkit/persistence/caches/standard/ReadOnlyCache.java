@@ -41,11 +41,18 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, Cach
     public void load(Plugin plugin) {
         this.plugin = plugin;
         unload();
-        if (plugin.getResource(name + writeVehicle.getStorageAdapter().getExtension()) != null &&
-                !writeVehicle.getStorageAdapter().exists(plugin, name)) {
+        if (resourceExists(plugin) && !writeVehicle.getStorageAdapter().exists(plugin, name)) {
             writeVehicle.getStorageAdapter().copyDefaults(plugin, name);
         }
         readVehicles.forEach(vehicle -> localCache.putAll(vehicle.load(plugin, name)));
+    }
+
+    private boolean resourceExists(Plugin plugin) {
+        return plugin.getResource(String.format(
+                "%s.%s",
+                name,
+                writeVehicle.getStorageAdapter().getExtension()
+        )) != null;
     }
 
     @Override
