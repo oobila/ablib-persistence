@@ -53,7 +53,7 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
             }
             readVehicles.forEach(vehicle -> localCache.get(id).putAll(vehicle.loadPlayer(plugin, name, id)));
             if (consumer != null) {
-                getWithMetaData(id, consumer);
+                get(id, consumer);
             }
             runTaskAsync(() ->
                     playerObservers.forEach(playerObserver -> {
@@ -85,7 +85,7 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
     }
 
     @Override
-    public void get(UUID id, K key, Consumer<V> consumer) {
+    public void getValue(UUID id, K key, Consumer<V> consumer) {
         runTaskAsync(() -> {
             Map<K, CacheItem<K, V>> innerMap = localCache.get(id);
             CacheItem<K, V> cacheItem = innerMap == null ? null : innerMap.get(key);
@@ -94,7 +94,7 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
     }
 
     @Override
-    public void getWithMetadata(UUID id, K key, Consumer<CacheItem<K, V>> consumer) {
+    public void get(UUID id, K key, Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             Map<K, CacheItem<K, V>> innerMap = localCache.get(id);
             CacheItem<K, V> cacheItem = innerMap == null ? null : innerMap.get(key);
@@ -103,7 +103,7 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
     }
 
     @Override
-    public void getWithMetaData(UUID id, Consumer<Map<K, CacheItem<K, V>>> consumer) {
+    public void get(UUID id, Consumer<Map<K, CacheItem<K, V>>> consumer) {
         runTaskAsync(() -> {
             Map<K, CacheItem<K,V>> map = localCache.get(id);
             consumer.accept(map);

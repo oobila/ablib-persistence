@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public interface AsyncWriteCache<K, V> extends WriteCache<K, V>, AsyncReadCache<K, V> {
 
-    void put(K key, V value, Consumer<CacheItem<K,V>> consumer);
+    void putValue(K key, V value, Consumer<CacheItem<K,V>> consumer);
 
     void remove(K key, Consumer<CacheItem<K,V>> consumer);
 

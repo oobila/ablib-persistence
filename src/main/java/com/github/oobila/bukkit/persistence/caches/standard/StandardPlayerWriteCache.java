@@ -10,7 +10,7 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public interface StandardPlayerWriteCache<K, V>  extends PlayerWriteCache<K, V>, StandardPlayerReadCache<K, V> {
 
-    CacheItem<K,V> put(UUID id, K key, V value);
+    CacheItem<K,V> putValue(UUID id, K key, V value);
 
     CacheItem<K,V> remove(UUID id, K key);
 

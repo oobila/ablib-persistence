@@ -45,7 +45,7 @@ public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> imp
     }
 
     @Override
-    public CacheItem<K, V> put(UUID id, K key, V value) {
+    public CacheItem<K, V> putValue(UUID id, K key, V value) {
         localCache.putIfAbsent(id, new HashMap<>());
         return localCache.get(id).put(key, new CacheItem<>(key, value, 0, ZonedDateTime.now()));
     }

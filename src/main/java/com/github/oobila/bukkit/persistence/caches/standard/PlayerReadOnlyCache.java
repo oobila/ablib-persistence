@@ -7,6 +7,7 @@ import com.github.oobila.bukkit.persistence.observers.PlayerLoadObserver;
 import com.github.oobila.bukkit.persistence.observers.PlayerObserver;
 import com.github.oobila.bukkit.persistence.observers.PlayerUnloadObserver;
 import lombok.Getter;
+import lombok.experimental.Delegate;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -16,12 +17,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Getter
-public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V> {
+public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>, Map<UUID, Map<K, CacheItem<K,V>>>{
 
     private Plugin plugin;
     private final String name;
     private final List<PlayerPersistenceVehicle<K, V>> readVehicles;
     protected final List<PlayerObserver<K, V>> playerObservers = new ArrayList<>();
+    @Delegate
     protected final Map<UUID, Map<K, CacheItem<K,V>>> localCache = new HashMap<>();
 
     public PlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
@@ -70,7 +72,7 @@ public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V> 
     }
 
     @Override
-    public V get(UUID id, K key) {
+    public V getValue(UUID id, K key) {
         return getWithMetadata(id, key).getData();
     }
 

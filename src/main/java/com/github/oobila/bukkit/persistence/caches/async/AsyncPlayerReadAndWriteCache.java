@@ -42,7 +42,7 @@ public class AsyncPlayerReadAndWriteCache<K, V> extends AsyncPlayerReadOnlyCache
         runTaskAsync(() -> {
             writeVehicle.savePlayer(getPlugin(), getName(), id, localCache.get(id));
             if (consumer != null) {
-                getWithMetaData(id, consumer);
+                get(id, consumer);
             }
             runTaskAsync(() ->
                     playerObservers.forEach(observer -> {
@@ -55,7 +55,7 @@ public class AsyncPlayerReadAndWriteCache<K, V> extends AsyncPlayerReadOnlyCache
     }
 
     @Override
-    public void put(UUID id, K key, V value, Consumer<CacheItem<K, V>> consumer) {
+    public void putValue(UUID id, K key, V value, Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             localCache.putIfAbsent(id, new HashMap<>());
             CacheItem<K, V> cacheItem = localCache.get(id).put(key, new CacheItem<>(key, value, 0, ZonedDateTime.now()));

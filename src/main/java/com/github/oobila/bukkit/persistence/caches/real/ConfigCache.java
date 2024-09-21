@@ -42,54 +42,54 @@ public class ConfigCache extends ReadOnlyCache<String, String> {
     }
 
     public String getString(String key) {
-        return get(key);
+        return getValue(key);
     }
 
     public int getInt(String key) {
-        return Integer.parseInt(get(key));
+        return Integer.parseInt(getValue(key));
     }
 
     public double getDouble(String key) {
-        return Double.parseDouble(get(key));
+        return Double.parseDouble(getValue(key));
     }
 
     public float getFloat(String key) {
-        return Float.parseFloat(get(key));
+        return Float.parseFloat(getValue(key));
     }
 
     public boolean getBoolean(String key) {
-        return Boolean.parseBoolean(get(key));
+        return Boolean.parseBoolean(getValue(key));
     }
 
     public LocalDate getDate(String key) {
-        return LocalDate.from(DateTimeFormatter.ISO_DATE.parse(get(key)));
+        return LocalDate.from(DateTimeFormatter.ISO_DATE.parse(getValue(key)));
     }
 
     public ZonedDateTime getDateTime(String key) {
-        return ZonedDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(get(key)));
+        return ZonedDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(getValue(key)));
     }
 
     public LocalTime getTime(String key) {
-        return LocalTime.from(DateTimeFormatter.ISO_TIME.parse(get(key)));
+        return LocalTime.from(DateTimeFormatter.ISO_TIME.parse(getValue(key)));
     }
 
     public UUID getUuid(String key) {
-        return Serialization.deserialize(UUID.class, get(key));
+        return Serialization.deserialize(UUID.class, getValue(key));
     }
 
     public ABID getAbid(String key) {
-        return Serialization.deserialize(ABID.class, get(key));
+        return Serialization.deserialize(ABID.class, getValue(key));
     }
 
     public OfflinePlayer getOfflinePlayer(String key) {
-        return Serialization.deserialize(OfflinePlayer.class, get(key));
+        return Serialization.deserialize(OfflinePlayer.class, getValue(key));
     }
 
     public World getWorld(String key) {
-        return Serialization.deserialize(World.class, get(key));
+        return Serialization.deserialize(World.class, getValue(key));
     }
 
     public Location getLocation(String key) {
-        return Serialization.deserialize(Location.class, get(key));
+        return Serialization.deserialize(Location.class, getValue(key));
     }
 }

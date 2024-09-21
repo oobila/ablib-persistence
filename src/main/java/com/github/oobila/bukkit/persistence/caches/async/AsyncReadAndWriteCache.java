@@ -32,7 +32,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void put(K key, V value, Consumer<CacheItem<K, V>> consumer) {
+    public void putValue(K key, V value, Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             CacheItem<K,V> cacheItem = localCache.put(key, new CacheItem<>(key, value, 0, ZonedDateTime.now()));
             consumer.accept(cacheItem);

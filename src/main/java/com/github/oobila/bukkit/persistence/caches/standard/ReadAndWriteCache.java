@@ -28,13 +28,8 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
     }
 
     @Override
-    public CacheItem<K,V> put(K key, V value) {
+    public CacheItem<K,V> putValue(K key, V value) {
         return localCache.put(key, new CacheItem<>(key, value, 0, ZonedDateTime.now()));
-    }
-
-    @Override
-    public CacheItem<K,V> remove(K key) {
-        return localCache.remove(key);
     }
 
     @Override

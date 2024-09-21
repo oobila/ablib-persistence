@@ -3,6 +3,7 @@ package com.github.oobila.bukkit.persistence.caches.standard;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.Getter;
+import lombok.experimental.Delegate;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
@@ -10,12 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
+public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, CacheItem<K,V>> {
 
     private Plugin plugin;
     private final String name;
     private final PersistenceVehicle<K, V> writeVehicle;
     private final List<PersistenceVehicle<K, V>> readVehicles;
+
+    @Delegate
     protected final Map<K, CacheItem<K,V>> localCache = new HashMap<>();
 
     public ReadOnlyCache(String name, PersistenceVehicle<K, V> vehicle) {
@@ -50,12 +53,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     }
 
     @Override
-    public V get(K key) {
-        return getWithMetadata(key).getData();
-    }
-
-    @Override
-    public CacheItem<K, V> getWithMetadata(K key) {
-        return localCache.get(key);
+    public V getValue(K key) {
+        return get(key).getData();
     }
 }

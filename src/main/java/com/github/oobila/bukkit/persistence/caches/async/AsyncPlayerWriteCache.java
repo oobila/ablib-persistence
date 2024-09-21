@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public interface AsyncPlayerWriteCache<K, V> extends PlayerWriteCache<K, V>, AsyncPlayerReadCache<K, V> {
 
-    void put(UUID id, K key, V value, Consumer<CacheItem<K,V>> consumer);
+    void putValue(UUID id, K key, V value, Consumer<CacheItem<K,V>> consumer);
 
     void remove(UUID id, K key, Consumer<CacheItem<K,V>> consumer);
 

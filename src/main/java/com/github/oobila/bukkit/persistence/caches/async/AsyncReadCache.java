@@ -8,8 +8,8 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public interface AsyncReadCache<K, V> extends ReadCache<K, V> {
 
-    void get(K key, Consumer<V> consumer);
+    void getValue(K key, Consumer<V> consumer);
 
-    void getWithMetadata(K key, Consumer<CacheItem<K,V>> consumer);
+    void get(K key, Consumer<CacheItem<K,V>> consumer);
 
 }

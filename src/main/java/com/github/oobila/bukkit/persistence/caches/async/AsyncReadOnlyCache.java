@@ -54,7 +54,7 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     }
 
     @Override
-    public void get(K key, Consumer<V> consumer) {
+    public void getValue(K key, Consumer<V> consumer) {
         runTaskAsync(() -> {
             V value = localCache.get(key).getData();
             consumer.accept(value);
@@ -62,7 +62,7 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     }
 
     @Override
-    public void getWithMetadata(K key, Consumer<CacheItem<K, V>> consumer) {
+    public void get(K key, Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = localCache.get(key);
             consumer.accept(cacheItem);
