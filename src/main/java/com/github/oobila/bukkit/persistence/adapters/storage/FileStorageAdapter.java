@@ -3,6 +3,7 @@ package com.github.oobila.bukkit.persistence.adapters.storage;
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.bukkit.plugin.Plugin;
 
@@ -75,6 +76,7 @@ public class FileStorageAdapter implements StorageAdapter {
         try {
             Path path = getPath(plugin, directory);
             Files.delete(path);
+            FileUtils.forceMkdir(path.getParent().toFile());
             Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.WRITE);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not write contents to file: {}", directory);
@@ -88,6 +90,7 @@ public class FileStorageAdapter implements StorageAdapter {
         Path path = getPath(plugin, directory);
         try (InputStream inputStream = plugin.getResource(directory);
              OutputStream outputStream = new FileOutputStream(path.toFile())) {
+            FileUtils.forceMkdir(path.getParent().toFile());
             if (inputStream != null) {
                 log(Level.INFO, "Copying defaults for: {}", directory);
                 byte[] buffer = new byte[1024];
