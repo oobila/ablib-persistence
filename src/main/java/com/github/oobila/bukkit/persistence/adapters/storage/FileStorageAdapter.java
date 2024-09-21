@@ -35,6 +35,9 @@ public class FileStorageAdapter implements StorageAdapter {
         try {
             Path path = getPath(plugin, directory);
             String name = FilenameUtils.getBaseName(path.toString());
+            if (!Files.exists(path)) {
+                return Collections.emptyList();
+            }
             String data = Files.readString(path);
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
             return Collections.singletonList(new StoredData(
