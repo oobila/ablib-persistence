@@ -74,8 +74,8 @@ public class FileStorageAdapter implements StorageAdapter {
         }
         try {
             Path path = getPath(plugin, name);
-            Files.delete(path);
-            FileUtils.forceMkdir(path.getParent().toFile());
+            sneakyDelete(path.toFile());
+            sneakyForceMkdir(path.getParent().toFile());
             Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.WRITE);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not write contents to file: {}", getFileName(name));
@@ -88,9 +88,9 @@ public class FileStorageAdapter implements StorageAdapter {
     public void copyDefaults(Plugin plugin, String name) {
         Path path = getPath(plugin, name);
         String fileName = getFileName(name);
+        sneakyForceMkdir(path.getParent().toFile());
         try (InputStream inputStream = plugin.getResource(fileName);
              OutputStream outputStream = new FileOutputStream(path.toFile())) {
-            FileUtils.forceMkdir(path.getParent().toFile());
             if (inputStream != null) {
                 log(Level.INFO, "Copying defaults for: {}", fileName);
                 byte[] buffer = new byte[1024];
@@ -118,5 +118,21 @@ public class FileStorageAdapter implements StorageAdapter {
 
     protected String getFileName(String directory) {
         return String.format("%s.%s", directory, getExtension());
+    }
+
+    protected void sneakyDelete(File file) {
+        try {
+            FileUtils.delete(file);
+        } catch (IOException e) {
+            //do nothing
+        }
+    }
+
+    protected void sneakyForceMkdir(File file) {
+        try {
+            FileUtils.forceMkdir(file);
+        } catch (IOException e) {
+            //do nothing
+        }
     }
 }
