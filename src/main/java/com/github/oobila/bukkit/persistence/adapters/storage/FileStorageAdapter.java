@@ -32,10 +32,9 @@ public class FileStorageAdapter implements StorageAdapter {
     private final String extension;
 
     @Override
-    public List<StoredData> read(Plugin plugin, String directory) {
+    public List<StoredData> read(Plugin plugin, String name) {
         try {
-            Path path = getPath(plugin, directory);
-            String name = FilenameUtils.getBaseName(path.toString());
+            Path path = getPath(plugin, name);
             if (!Files.exists(path)) {
                 return Collections.emptyList();
             }
@@ -48,15 +47,15 @@ public class FileStorageAdapter implements StorageAdapter {
                     attributes.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault())
             ));
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not read contents of file: {}", directory);
+            log(Level.SEVERE, "Could not read contents of file: {}", getFileName(name));
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
     }
 
     @Override
-    public List<String> poll(Plugin plugin, String directory) {
-        File file = new File(plugin.getDataFolder(), directory);
+    public List<String> poll(Plugin plugin, String name) {
+        File file = new File(plugin.getDataFolder(), name);
         if (Objects.requireNonNull(file.listFiles()).length > 0) {
             return Arrays.stream(Objects.requireNonNull(file.listFiles()))
                     .map(f -> FilenameUtils.getBaseName(f.getName()))
@@ -67,32 +66,33 @@ public class FileStorageAdapter implements StorageAdapter {
     }
 
     @Override
-    public void write(Plugin plugin, String directory, List<StoredData> storedDataList) {
+    public void write(Plugin plugin, String name, List<StoredData> storedDataList) {
         if (storedDataList.size() != 1) {
             log(Level.SEVERE, "Unsupported operation, tried writing {} items but this method only allows 1",
                     storedDataList.size());
             throw new PersistenceRuntimeException("unsupported operation");
         }
         try {
-            Path path = getPath(plugin, directory);
+            Path path = getPath(plugin, name);
             Files.delete(path);
             FileUtils.forceMkdir(path.getParent().toFile());
             Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.WRITE);
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not write contents to file: {}", directory);
+            log(Level.SEVERE, "Could not write contents to file: {}", getFileName(name));
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
     }
 
     @Override
-    public void copyDefaults(Plugin plugin, String directory) {
-        Path path = getPath(plugin, directory);
-        try (InputStream inputStream = plugin.getResource(directory);
+    public void copyDefaults(Plugin plugin, String name) {
+        Path path = getPath(plugin, name);
+        String fileName = getFileName(name);
+        try (InputStream inputStream = plugin.getResource(fileName);
              OutputStream outputStream = new FileOutputStream(path.toFile())) {
             FileUtils.forceMkdir(path.getParent().toFile());
             if (inputStream != null) {
-                log(Level.INFO, "Copying defaults for: {}", directory);
+                log(Level.INFO, "Copying defaults for: {}", fileName);
                 byte[] buffer = new byte[1024];
                 int len;
                 while((len = inputStream.read(buffer))>0) {
@@ -100,19 +100,23 @@ public class FileStorageAdapter implements StorageAdapter {
                 }
             }
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not copy defaults for: {}", directory);
+            log(Level.SEVERE, "Could not copy defaults for: {}", fileName);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
     }
 
     @Override
-    public boolean exists(Plugin plugin, String directory) {
-        Path path = getPath(plugin, directory);
+    public boolean exists(Plugin plugin, String name) {
+        Path path = getPath(plugin, name);
         return path.toFile().exists();
     }
 
     protected Path getPath(Plugin plugin, String directory) {
-        return new File(plugin.getDataFolder(), String.format("%s.%s", directory, getExtension())).toPath();
+        return new File(plugin.getDataFolder(), getFileName(directory)).toPath();
+    }
+
+    protected String getFileName(String directory) {
+        return String.format("%s.%s", directory, getExtension());
     }
 }

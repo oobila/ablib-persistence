@@ -27,9 +27,9 @@ public class ZipStorageAdapter extends FileStorageAdapter {
     }
 
     @Override
-    public List<StoredData> read(Plugin plugin, String directory) {
+    public List<StoredData> read(Plugin plugin, String name) {
         List<StoredData> storedDataList = new ArrayList<>();
-        Path path = getPath(plugin, directory);
+        Path path = getPath(plugin, name);
         try (ZipFile zip = new ZipFile(path.toFile())) {
             for (Enumeration<? extends ZipEntry> zipEntries = zip.entries(); zipEntries.hasMoreElements(); ) {
                 ZipEntry entry = zipEntries.nextElement();
@@ -38,7 +38,7 @@ public class ZipStorageAdapter extends FileStorageAdapter {
                 }
             }
         } catch (IOException e) {
-            log(Level.SEVERE, "Failed reading zip: {0}", directory);
+            log(Level.SEVERE, "Failed reading zip: {0}", name);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
@@ -64,8 +64,8 @@ public class ZipStorageAdapter extends FileStorageAdapter {
     }
 
     @Override
-    public void write(Plugin plugin, String directory, List<StoredData> storedDataList) {
-        Path path = getPath(plugin, directory);
+    public void write(Plugin plugin, String name, List<StoredData> storedDataList) {
+        Path path = getPath(plugin, name);
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(path.toFile()))) {
             if (path.toFile().exists()) {
                 Files.delete(path);
@@ -77,7 +77,7 @@ public class ZipStorageAdapter extends FileStorageAdapter {
             }
             zipOutputStream.flush();
         } catch (IOException e) {
-            log(Level.SEVERE, "Failed writing zip: {0}", directory);
+            log(Level.SEVERE, "Failed writing zip: {0}", name);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }

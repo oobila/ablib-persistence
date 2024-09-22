@@ -6,14 +6,14 @@ import java.util.List;
 
 public interface StorageAdapter {
 
-    List<StoredData> read(Plugin plugin, String directory);
-    List<String> poll(Plugin plugin, String directory);
+    List<StoredData> read(Plugin plugin, String name);
+    List<String> poll(Plugin plugin, String name);
 
-    void write(Plugin plugin, String directory, List<StoredData> storedDataList);
+    void write(Plugin plugin, String name, List<StoredData> storedDataList);
 
-    void copyDefaults(Plugin plugin, String directory);
+    void copyDefaults(Plugin plugin, String name);
 
-    boolean exists(Plugin plugin, String directory);
+    boolean exists(Plugin plugin, String name);
 
     String getExtension();
 
