@@ -1,10 +1,9 @@
 package com.github.oobila.bukkit.persistence.caches.real;
 
 import com.github.alastairbooth.abid.ABID;
-import com.github.oobila.bukkit.persistence.adapters.code.StringCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
-import com.github.oobila.bukkit.persistence.adapters.vehicle.YamlMultiItemVehicle;
+import com.github.oobila.bukkit.persistence.adapters.vehicle.YamlConfigVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.ReadOnlyCache;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.bukkit.Location;
@@ -14,82 +13,80 @@ import org.bukkit.World;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-public class ConfigCache extends ReadOnlyCache<String, String> {
+public class ConfigCache extends ReadOnlyCache<String, Object> {
 
     public ConfigCache(String name) {
         super(
                 name,
-                new YamlMultiItemVehicle<>(
+                new YamlConfigVehicle<>(
                         String.class,
-                        new FileStorageAdapter("yml"),
-                        new StringCodeAdapter()
+                        new FileStorageAdapter("yml")
                 )
         );
     }
 
-    public ConfigCache(String name, PersistenceVehicle<String, String> vehicle) {
+    public ConfigCache(String name, PersistenceVehicle<String, Object> vehicle) {
         super(name, vehicle);
     }
 
-    public ConfigCache(String name, PersistenceVehicle<String, String> writeVehicle,
-                       List<PersistenceVehicle<String, String>> readVehicles) {
+    public ConfigCache(String name, PersistenceVehicle<String, Object> writeVehicle,
+                       List<PersistenceVehicle<String, Object>> readVehicles) {
         super(name, writeVehicle, readVehicles);
     }
 
     public String getString(String key) {
-        return getValue(key);
+        return (String) getValue(key);
     }
 
     public int getInt(String key) {
-        return Integer.parseInt(getValue(key));
+        return (int) getValue(key);
     }
 
     public double getDouble(String key) {
-        return Double.parseDouble(getValue(key));
+        return (double) getValue(key);
     }
 
     public float getFloat(String key) {
-        return Float.parseFloat(getValue(key));
+        return (float) getValue(key);
     }
 
     public boolean getBoolean(String key) {
-        return Boolean.parseBoolean(getValue(key));
+        return (boolean) getValue(key);
     }
 
     public LocalDate getDate(String key) {
-        return LocalDate.from(DateTimeFormatter.ISO_DATE.parse(getValue(key)));
+        return Serialization.deserialize(LocalDate.class, (String) getValue(key));
     }
 
     public ZonedDateTime getDateTime(String key) {
-        return ZonedDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(getValue(key)));
+        return Serialization.deserialize(ZonedDateTime.class, (String) getValue(key));
     }
 
     public LocalTime getTime(String key) {
-        return LocalTime.from(DateTimeFormatter.ISO_TIME.parse(getValue(key)));
+        return Serialization.deserialize(LocalTime.class, (String) getValue(key));
     }
 
     public UUID getUuid(String key) {
-        return Serialization.deserialize(UUID.class, getValue(key));
+        return Serialization.deserialize(UUID.class, (String) getValue(key));
     }
 
     public ABID getAbid(String key) {
-        return Serialization.deserialize(ABID.class, getValue(key));
+        return Serialization.deserialize(ABID.class, (String) getValue(key));
     }
 
     public OfflinePlayer getOfflinePlayer(String key) {
-        return Serialization.deserialize(OfflinePlayer.class, getValue(key));
+        return Serialization.deserialize(OfflinePlayer.class, (String) getValue(key));
     }
 
     public World getWorld(String key) {
-        return Serialization.deserialize(World.class, getValue(key));
+        return Serialization.deserialize(World.class, (String) getValue(key));
     }
 
     public Location getLocation(String key) {
-        return Serialization.deserialize(Location.class, getValue(key));
+        return Serialization.deserialize(Location.class, (String) getValue(key));
     }
 }

@@ -1,7 +1,6 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
-import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
@@ -24,12 +23,12 @@ import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityU
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class PlayerYamlMultiItemVehicle<K, V> extends BasePlayerPersistenceVehicle<K, V> {
+public class PlayerYamlConfigVehicle<K, V> extends BasePlayerPersistenceVehicle<K, V> {
 
     private final Class<K> keyType;
     private final StorageAdapter storageAdapter;
-    private final CodeAdapter<V> codeAdapter;
 
+    @SuppressWarnings("unchecked")
     @Override
     public Map<K, CacheItem<K,V>> loadPlayer(Plugin plugin, String directory, UUID playerId) {
         String playerIdString = Serialization.serialize(playerId);
@@ -40,16 +39,16 @@ public class PlayerYamlMultiItemVehicle<K, V> extends BasePlayerPersistenceVehic
                     String.format("%s%s/%s", getPlayerDirectory(), playerIdString, directory)
             );
             for (StoredData storedData : storedDataList) {
+                storedData = compatibility(this, storedData);
                 YamlConfiguration yamlConfiguration = new YamlConfiguration();
                 yamlConfiguration.loadFromString(storedData.getData());
                 Map<String, Object> objects = yamlConfiguration.getValues(false);
-                objects.forEach((name, object) -> {
-                    StoredData item = new StoredData(name, (String) object, 0, storedData.getUpdatedDate());
-                    K key = Serialization.deserialize(getKeyType(), name);
-                    V value = codeAdapter.toObject(compatibility(this, item));
-                    CacheItem<K,V> cacheItem = new CacheItem<>(key, value, storedData);
+                for (Map.Entry<String, Object> entry : objects.entrySet()) {
+                    K key = Serialization.deserialize(getKeyType(), entry.getKey());
+                    V value = (V) entry.getValue();
+                    CacheItem<K, V> cacheItem = new CacheItem<>(key, value, storedData);
                     map.put(key, cacheItem);
-                });
+                }
             }
         } catch (InvalidConfigurationException e) {
             log(
@@ -77,8 +76,7 @@ public class PlayerYamlMultiItemVehicle<K, V> extends BasePlayerPersistenceVehic
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         map.forEach((key, value) -> {
             String name = Serialization.serialize(key);
-            String data = codeAdapter.fromObject(value.getData());
-            yamlConfiguration.set(name, data);
+            yamlConfiguration.set(name, value.getData());
         });
         String data = yamlConfiguration.saveToString();
         StoredData storedData = new StoredData(directory, data, 0, null);
