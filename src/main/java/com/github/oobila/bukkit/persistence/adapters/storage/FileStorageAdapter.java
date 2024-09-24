@@ -56,8 +56,8 @@ public class FileStorageAdapter implements StorageAdapter {
     @Override
     public List<String> poll(Plugin plugin, String name) {
         Path path = getPath(plugin, name);
-        sneakyForceMkdir(path.getParent().toFile());
         File file = path.toFile();
+        sneakyForceMkdir(file);
         if (Objects.requireNonNull(file.listFiles()).length > 0) {
             return Arrays.stream(Objects.requireNonNull(file.listFiles()))
                     .map(f -> FilenameUtils.getBaseName(f.getName()))
