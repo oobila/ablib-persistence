@@ -76,7 +76,7 @@ public class FileStorageAdapter implements StorageAdapter {
             Path path = getPath(plugin, name);
             sneakyDelete(path.toFile());
             sneakyForceMkdir(path.getParent().toFile());
-            Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.WRITE);
+            Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not write contents to file: {}", getFileName(name));
             log(Level.SEVERE, e);
