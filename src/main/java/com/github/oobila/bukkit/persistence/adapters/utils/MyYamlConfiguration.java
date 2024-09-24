@@ -93,9 +93,13 @@ public class MyYamlConfiguration extends FileConfiguration {
         types.add(type);
         for (Field field : type.getDeclaredFields()) {
             addClassTags(types, field.getType());
-            Arrays.stream(((ParameterizedType) field.getGenericType()).getActualTypeArguments()).forEach(pt ->
-                    addClassTags(types, pt.getClass())
-            );
+            if (field.getGenericType() instanceof ParameterizedType parameterizedType) {
+                Arrays.stream(parameterizedType.getActualTypeArguments()).forEach(pt ->
+                        addClassTags(types, pt.getClass())
+                );
+            } else {
+                addClassTags(types, field.getGenericType().getClass());
+            }
         }
     }
 
