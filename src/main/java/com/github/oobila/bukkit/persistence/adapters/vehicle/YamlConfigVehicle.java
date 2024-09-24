@@ -3,12 +3,12 @@ package com.github.oobila.bukkit.persistence.adapters.vehicle;
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
+import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
@@ -35,7 +35,8 @@ public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
             List<StoredData> storedDataList = storageAdapter.read(plugin, directory);
             for (StoredData storedData : storedDataList) {
                 storedData = compatibility(this, storedData);
-                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
+
                 yamlConfiguration.loadFromString(storedData.getData());
                 Map<String, Object> objects = yamlConfiguration.getValues(false);
                 for (Map.Entry<String, Object> entry : objects.entrySet()) {
@@ -55,7 +56,7 @@ public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
     @Override
     public void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map) {
-        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+        MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
         map.forEach((key, value) -> {
             String name = Serialization.serialize(key);
             yamlConfiguration.set(name, value.getData());

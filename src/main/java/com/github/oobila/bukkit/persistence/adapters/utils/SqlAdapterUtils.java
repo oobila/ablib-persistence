@@ -60,7 +60,7 @@ public class SqlAdapterUtils {
 //
 //    public static <V extends PersistedObject> String serializeData(V data) {
 //        Map<String,Object> map = data.serialize();
-//        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+//        YamlConfiguration yamlConfiguration = new MyYamlConfiguration();
 //        map.forEach(yamlConfiguration::set);
 //        String yaml = yamlConfiguration.saveToString();
 //        return StringUtils.replace(yaml, "'", "''");
