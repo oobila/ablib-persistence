@@ -1,15 +1,12 @@
 package com.github.oobila.bukkit.persistence.adapters.utils;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConstructor;
 import org.bukkit.configuration.file.YamlRepresenter;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -17,6 +14,13 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An implementation of {@link Configuration} which saves all files in Yaml.
@@ -32,8 +36,8 @@ public class MyYamlConfiguration extends FileConfiguration {
     @NotNull
     @Override
     public String saveToString() {
-        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
-        yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         addClassTags(yamlRepresenter);
 
         String header = "";
@@ -78,12 +82,21 @@ public class MyYamlConfiguration extends FileConfiguration {
     private void addClassTags(Representer representer) {
         Map<String, Object> valueMap = getValues(true);
         Set<Class<?>> types = new HashSet<>();
-        valueMap.forEach((string, object) -> {
-            if (!object.getClass().isPrimitive() && !object.getClass().isEnum()) {
-                types.add(object.getClass());
-            }
-        });
+        valueMap.forEach((string, object) -> addClassTags(types, object.getClass()));
         types.forEach(type -> representer.addClassTag(type, Tag.MAP));
+    }
+
+    private void addClassTags(Set<Class<?>> types, Class<?> type) {
+        if (types.contains(type) || !ConfigurationSerializable.class.isAssignableFrom(type)) {
+            return;
+        }
+        types.add(type);
+        for (Field field : type.getDeclaredFields()) {
+            addClassTags(types, field.getType());
+            Arrays.stream(((ParameterizedType) field.getGenericType()).getActualTypeArguments()).forEach(pt ->
+                    addClassTags(types, pt.getClass())
+            );
+        }
     }
 
 }
