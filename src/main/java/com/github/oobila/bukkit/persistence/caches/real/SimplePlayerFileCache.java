@@ -5,10 +5,9 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerPersistenceVe
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerYamlConfigVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.PlayerReadAndWriteCache;
 import com.github.oobila.bukkit.persistence.observers.PlayerSaveObserver;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 @SuppressWarnings("unused")
-public class SimplePlayerFileCache<K, V extends ConfigurationSerializable> extends PlayerReadAndWriteCache<K, V> {
+public class SimplePlayerFileCache<K, V> extends PlayerReadAndWriteCache<K, V> {
 
     public SimplePlayerFileCache(String name, Class<K> keyType) {
         this(
