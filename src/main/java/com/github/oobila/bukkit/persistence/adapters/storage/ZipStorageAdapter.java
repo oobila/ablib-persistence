@@ -57,7 +57,7 @@ public class ZipStorageAdapter extends FileStorageAdapter {
                     ZonedDateTime.ofInstant(entry.getLastModifiedTime().toInstant(), ZoneId.systemDefault())
             );
         } catch (IOException e) {
-            log(Level.SEVERE, "Failed reading zip entry: {}", name);
+            log(Level.SEVERE, "Failed reading zip entry: {0}", name);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }

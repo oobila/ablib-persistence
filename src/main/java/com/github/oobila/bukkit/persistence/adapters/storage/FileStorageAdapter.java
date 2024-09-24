@@ -47,7 +47,7 @@ public class FileStorageAdapter implements StorageAdapter {
                     attributes.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault())
             ));
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not read contents of file: {}", getFileName(name));
+            log(Level.SEVERE, "Could not read contents of file: {0}", getFileName(name));
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
@@ -68,7 +68,7 @@ public class FileStorageAdapter implements StorageAdapter {
     @Override
     public void write(Plugin plugin, String name, List<StoredData> storedDataList) {
         if (storedDataList.size() != 1) {
-            log(Level.SEVERE, "Unsupported operation, tried writing {} items but this method only allows 1",
+            log(Level.SEVERE, "Unsupported operation, tried writing {0} items but this method only allows 1",
                     storedDataList.size());
             throw new PersistenceRuntimeException("unsupported operation");
         }
@@ -78,7 +78,7 @@ public class FileStorageAdapter implements StorageAdapter {
             sneakyForceMkdir(path.getParent().toFile());
             Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not write contents to file: {}", getFileName(name));
+            log(Level.SEVERE, "Could not write contents to file: {0}", getFileName(name));
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
@@ -92,7 +92,7 @@ public class FileStorageAdapter implements StorageAdapter {
         try (InputStream inputStream = plugin.getResource(fileName);
              OutputStream outputStream = new FileOutputStream(path.toFile())) {
             if (inputStream != null) {
-                log(Level.INFO, "Copying defaults for: {}", fileName);
+                log(Level.INFO, "Copying defaults for: {0}", fileName);
                 byte[] buffer = new byte[1024];
                 int len;
                 while((len = inputStream.read(buffer))>0) {
@@ -100,7 +100,7 @@ public class FileStorageAdapter implements StorageAdapter {
                 }
             }
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not copy defaults for: {}", fileName);
+            log(Level.SEVERE, "Could not copy defaults for: {0}", fileName);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }

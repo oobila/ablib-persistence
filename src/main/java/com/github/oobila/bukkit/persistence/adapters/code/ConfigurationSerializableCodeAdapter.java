@@ -28,11 +28,11 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
             Map<String, Object> map = yamlConfiguration.getValues(false);
             return type.cast(type.getDeclaredMethod("deserialize", Map.class).invoke(null, map));
         } catch (InvalidConfigurationException e) {
-            log(Level.SEVERE, "Could not load object for type: {}. Could not read data", getTypeName());
+            log(Level.SEVERE, "Could not load object for type: {0}. Could not read data", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         } catch (ClassCastException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-            log(Level.SEVERE, "Could not load object for type: {}. Bad class setup.", getTypeName());
+            log(Level.SEVERE, "Could not load object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
@@ -47,7 +47,7 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
             map.forEach(yamlConfiguration::set);
             return yamlConfiguration.saveToString();
         } catch (ClassCastException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-            log(Level.SEVERE, "Could not save object for type: {}. Bad class setup.", getTypeName());
+            log(Level.SEVERE, "Could not save object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }

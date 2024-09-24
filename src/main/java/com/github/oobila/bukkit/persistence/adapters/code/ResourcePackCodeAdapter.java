@@ -40,7 +40,7 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
                 return getResource(storedData, object);
             }
         }
-        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {}", storedData.getName());
+        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", storedData.getName());
         throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
     }
 
@@ -52,7 +52,7 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
     @Override
     public String fromObject(Resource<?> resource) {
         if (!typeMap.containsKey(resource.getData().getClass())) {
-            log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {}", resource.getData().getClass().getName());
+            log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getData().getClass().getName());
             throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
         }
         CodeAdapter<?> codeAdapter = typeMap.get(resource.getData().getClass());

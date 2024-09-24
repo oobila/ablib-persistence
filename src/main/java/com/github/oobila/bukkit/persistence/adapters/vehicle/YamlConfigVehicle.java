@@ -47,7 +47,7 @@ public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
             }
             return map;
         } catch (InvalidConfigurationException e) {
-            log(Level.SEVERE, "Could not load Yaml from: {}", directory);
+            log(Level.SEVERE, "Could not load Yaml from: {0}", directory);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }

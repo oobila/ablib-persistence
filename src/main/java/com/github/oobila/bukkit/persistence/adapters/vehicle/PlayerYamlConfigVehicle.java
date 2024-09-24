@@ -53,7 +53,7 @@ public class PlayerYamlConfigVehicle<K, V> extends BasePlayerPersistenceVehicle<
         } catch (InvalidConfigurationException e) {
             log(
                     Level.SEVERE,
-                    "Could not load Yaml from: {}{}/{}",
+                    "Could not load Yaml from: {0}{1}/{2}",
                     getPlayerDirectory(),
                     playerIdString,
                     directory
