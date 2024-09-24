@@ -5,7 +5,10 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +23,18 @@ public class Serialization {
         register(ABID.class, new ABIDSerializer());
         register(UUID.class, new UUIDSerializer());
         register(OfflinePlayer.class, new OfflinePlayerSerializer());
+        register(World.class, new WorldSerializer());
         register(Location.class, new LocationSerializer());
         register(ZonedDateTime.class, new ZonedDateTimeSerializer());
+        register(LocalDate.class, new LocalDateSerializer());
+        register(LocalTime.class, new LocalTimeSerializer());
     }
 
     public static <T> void register(Class<T> type, KeySerializer<T> serializer) {
         keySerializers.put(type, serializer);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> String serialize(T t) {
         KeySerializer<T> keySerializer = (KeySerializer<T>) getKeySerializer(t.getClass());
         return keySerializer.serialize(t);
@@ -38,6 +45,7 @@ public class Serialization {
         return keySerializer.deserialize(s);
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> KeySerializer<T> getKeySerializer(Class<T> type) {
         for (Map.Entry<Class<?>, KeySerializer<?>> entry : Serialization.keySerializers.entrySet()) {
             if (entry.getKey().isAssignableFrom(type)) {
