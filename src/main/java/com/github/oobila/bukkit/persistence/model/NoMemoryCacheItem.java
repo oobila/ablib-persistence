@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.caches.standard.NoMemoryClusterCache;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
 
 import java.time.ZonedDateTime;
 
@@ -28,7 +29,7 @@ public class NoMemoryCacheItem<K, D> extends CacheItem<K, D> {
             CacheItem<K, D> cacheItem = cache.getVehicle().loadSingle(
                     cache.getPlugin(),
                     cache.getName(),
-                    Serialization.serialize(getKey())
+                    FilenameUtils.getBaseName(Serialization.serialize(getKey()))
             );
             this.data = cacheItem.data;
         }
