@@ -10,6 +10,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
@@ -25,7 +26,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     @Override
     public Clipboard toObject(StoredData storedData) {
         try (
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes());
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes(StandardCharsets.UTF_8));
                 ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(inputStream)
         ) {
             return clipboardReader.read();
@@ -42,7 +43,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
             try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(outputStream)) {
                 clipboardWriter.write(clipboard);
             }
-            return outputStream.toString();
+            return outputStream.toString(StandardCharsets.UTF_8);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
             log(Level.SEVERE, e);
