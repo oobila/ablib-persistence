@@ -34,6 +34,7 @@ public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map
     public NoMemoryClusterCache(String name, Class<K> keyType, StorageAdapter storageAdapter, CodeAdapter<V> codeAdapter) {
         this.name = name;
         this.vehicle = new NoMemoryClusterVehicle<>(keyType, storageAdapter, codeAdapter);
+        vehicle.setCache(this);
     }
 
     @Override
