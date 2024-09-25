@@ -9,6 +9,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.io.FileUtils;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -38,6 +39,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     public Clipboard toObject(StoredData storedData) {
         try {
             File file = new File(plugin.getDataFolder(), "temp/schematic.schem");
+            sneakyForceMkdir(file.getParentFile());
             Files.writeString(file.toPath(), storedData.getData(), StandardCharsets.ISO_8859_1);
             try (FileInputStream fis = new FileInputStream(file);
                  ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(fis)) {
@@ -52,7 +54,8 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
     @Override
     public String fromObject(Clipboard clipboard) {
-        File file = new File(plugin.getDataFolder(), "temp/schematic.schem");
+        File file = new File(plugin.getDataFolder(), "data/temp/schematic.schem");
+        sneakyForceMkdir(file.getParentFile());
         try (FileOutputStream fos = new FileOutputStream(file)) {
             try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(fos)) {
                 clipboardWriter.write(clipboard);
@@ -62,6 +65,14 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
             log(Level.SEVERE, "Could not save clipboard.");
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
+        }
+    }
+
+    protected void sneakyForceMkdir(File file) {
+        try {
+            FileUtils.forceMkdir(file);
+        } catch (IOException e) {
+            //do nothing
         }
     }
 }
