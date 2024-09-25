@@ -25,7 +25,8 @@ public class MyYamlConfiguration extends FileConfiguration {
             ################################################################
             # This is a data file created by your plugin (not a config)
             # Do not edit unless you know what you are doing
-            ################################################################""";
+            ################################################################
+            """;
     private final DumperOptions dumperOptions = new DumperOptions();
     private final Representer yamlRepresenter = new YamlRepresenter(dumperOptions);
 
