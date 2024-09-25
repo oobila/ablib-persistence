@@ -39,11 +39,10 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     @Override
     public String fromObject(Clipboard clipboard) {
         try (
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream(8192);
                 ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(new ByteArrayOutputStream())
         ) {
             clipboardWriter.write(clipboard);
-            outputStream.flush();
             return outputStream.toString();
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
