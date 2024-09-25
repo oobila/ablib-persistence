@@ -29,6 +29,7 @@ public class PlayerClusterVehicle<K, V> extends BasePlayerPersistenceVehicle<K, 
 
     @Override
     public Map<K, CacheItem<K,V>> loadPlayer(Plugin plugin, String directory, UUID playerId) {
+        codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         List<String> items = storageAdapter.poll(
                 plugin,

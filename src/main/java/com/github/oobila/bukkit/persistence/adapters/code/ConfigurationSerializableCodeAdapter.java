@@ -5,7 +5,9 @@ import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -19,6 +21,9 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
 
     private final Class<T> type;
+
+    @Setter
+    private Plugin plugin;
 
     @Override
     public T toObject(StoredData storedData) {

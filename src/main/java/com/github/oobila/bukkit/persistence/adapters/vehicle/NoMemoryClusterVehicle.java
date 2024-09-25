@@ -21,6 +21,7 @@ public class NoMemoryClusterVehicle<K, V> extends ClusterVehicle<K, V> {
 
     @SuppressWarnings("unchecked")
     public NoMemoryCacheItem<K,V> loadMetadataSingle(Plugin plugin, String directory) {
+        getCodeAdapter().setPlugin(plugin);
         Map<K, NoMemoryCacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = getStorageAdapter().read(plugin, directory);
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());

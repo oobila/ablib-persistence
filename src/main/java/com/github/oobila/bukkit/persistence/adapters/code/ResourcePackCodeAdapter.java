@@ -4,6 +4,8 @@ import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.model.Resource;
 import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +19,9 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
 
     private final Map<Class<?>, CodeAdapter<?>> typeMap = new HashMap<>();
     private final Map<Pattern, CodeAdapter<?>> patternMap = new HashMap<>();
+
+    @Setter
+    private Plugin plugin;
 
     public ResourcePackCodeAdapter(Map<Pattern, CodeAdapter<?>> codeAdapterMap) {
         codeAdapterMap.forEach((string, codeAdapter) -> {

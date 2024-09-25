@@ -27,6 +27,7 @@ public class SingleItemVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
     @Override
     public Map<K, CacheItem<K,V>> load(Plugin plugin, String directory) {
+        codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = storageAdapter.read(plugin, directory);
         storedDataList.forEach(storedData -> {

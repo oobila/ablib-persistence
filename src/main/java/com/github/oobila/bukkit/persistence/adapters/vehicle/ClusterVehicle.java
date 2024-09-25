@@ -27,6 +27,7 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
     @Override
     public Map<K, CacheItem<K,V>> load(Plugin plugin, String directory) {
+        codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
             CacheItem<K, V> cacheItem = loadSingle(plugin, directory, item);
@@ -36,6 +37,7 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     }
 
     public CacheItem<K,V> loadSingle(Plugin plugin, String directory, String name) {
+        codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());

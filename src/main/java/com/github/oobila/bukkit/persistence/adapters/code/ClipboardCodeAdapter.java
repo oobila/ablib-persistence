@@ -6,22 +6,27 @@ import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.bukkit.plugin.Plugin;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
+@Getter
 public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
-    private final String tempDir;
+    @Setter
+    private Plugin plugin;
 
     @Override
     public Class<Clipboard> getType() {
@@ -31,8 +36,9 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     @Override
     public Clipboard toObject(StoredData storedData) {
         try {
-            Files.writeString(Path.of(tempDir), storedData.getData());
-            try (FileInputStream fis = new FileInputStream(tempDir);
+            File file = new File(plugin.getDataFolder(), "temp/schematic.schem");
+            Files.writeString(file.toPath(), storedData.getData());
+            try (FileInputStream fis = new FileInputStream(file);
                  ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(fis)) {
                 return clipboardReader.read();
             }
@@ -45,11 +51,12 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
     @Override
     public String fromObject(Clipboard clipboard) {
-        try (FileOutputStream fos = new FileOutputStream(tempDir)) {
+        File file = new File(plugin.getDataFolder(), "temp/schematic.schem");
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(fos)) {
                 clipboardWriter.write(clipboard);
             }
-            return Files.readString(Path.of(tempDir));
+            return Files.readString(file.toPath());
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
             log(Level.SEVERE, e);

@@ -28,6 +28,7 @@ public class PlayerSingleItemVehicle<K, V> extends BasePlayerPersistenceVehicle<
 
     @Override
     public Map<K, CacheItem<K,V>> loadPlayer(Plugin plugin, String directory, UUID playerId) {
+        codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = storageAdapter.read(
                 plugin,

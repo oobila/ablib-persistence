@@ -36,6 +36,7 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
 
     @Override
     public Map<K, CacheItem<K, ResourcePack>> load(Plugin plugin, String directory) {
+        codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,ResourcePack>> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
             long size = 0;
