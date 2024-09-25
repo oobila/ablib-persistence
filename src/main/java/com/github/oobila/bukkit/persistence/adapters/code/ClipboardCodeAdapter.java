@@ -7,6 +7,7 @@ import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.plugin.Plugin;
 
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
 @SuppressWarnings("unused")
+@RequiredArgsConstructor
 @Getter
 public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
@@ -33,7 +35,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     @Override
     public Clipboard toObject(StoredData storedData) {
         try (
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes(StandardCharsets.US_ASCII));
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes(StandardCharsets.ISO_8859_1));
                 ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(inputStream)
         ) {
             return clipboardReader.read();
@@ -50,7 +52,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
             try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(outputStream)) {
                 clipboardWriter.write(clipboard);
             }
-            return outputStream.toString(StandardCharsets.US_ASCII);
+            return outputStream.toString(StandardCharsets.ISO_8859_1);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
             log(Level.SEVERE, e);
