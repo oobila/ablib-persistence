@@ -26,7 +26,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     public Clipboard toObject(StoredData storedData) {
         try (
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes());
-                ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(inputStream)
+                ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(inputStream)
         ) {
             return clipboardReader.read();
         } catch (IOException e) {
@@ -40,7 +40,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
     public String fromObject(Clipboard clipboard) {
         try (
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(outputStream)
+                ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(new ByteArrayOutputStream())
         ) {
             clipboardWriter.write(clipboard);
             return outputStream.toString();
