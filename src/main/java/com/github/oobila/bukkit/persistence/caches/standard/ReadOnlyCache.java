@@ -15,8 +15,8 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, Cach
 
     private Plugin plugin;
     private final String name;
-    private final PersistenceVehicle<K, V> writeVehicle;
     private final List<PersistenceVehicle<K, V>> readVehicles;
+    private final PersistenceVehicle<K, V> writeVehicle;
 
     @Delegate
     protected final Map<K, CacheItem<K,V>> localCache = new HashMap<>();
@@ -25,16 +25,16 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, Cach
         this( name, vehicle, vehicle);
     }
 
-    public ReadOnlyCache(String name, PersistenceVehicle<K, V> writeVehicle,
-                         PersistenceVehicle<K, V> readVehicle) {
-        this(name, writeVehicle, List.of(readVehicle));
+    public ReadOnlyCache(String name, PersistenceVehicle<K, V> readVehicle, PersistenceVehicle<K, V> writeVehicle) {
+        this(name, List.of(readVehicle), writeVehicle);
     }
 
-    public ReadOnlyCache(String name, PersistenceVehicle<K, V> writeVehicle,
-                         List<PersistenceVehicle<K, V>> readVehicles) {
+    public ReadOnlyCache(String name, List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
         this.name = name;
-        this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
+        readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
+        this.writeVehicle = writeVehicle;
+        writeVehicle.setCache(this);
     }
 
     @Override

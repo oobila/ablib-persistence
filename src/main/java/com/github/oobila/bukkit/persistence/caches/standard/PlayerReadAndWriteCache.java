@@ -19,14 +19,14 @@ public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> imp
     private final PlayerPersistenceVehicle<K, V> writeVehicle;
 
     public PlayerReadAndWriteCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
-        super(name, vehicle);
-        this.writeVehicle = vehicle;
+        this(name, List.of(vehicle), vehicle);
     }
 
     public PlayerReadAndWriteCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles,
                                    PlayerPersistenceVehicle<K, V> writeVehicle) {
         super(name, readVehicles);
         this.writeVehicle = writeVehicle;
+        writeVehicle.setCache(this);
     }
 
     @Override

@@ -13,6 +13,8 @@ public interface StorageAdapter {
 
     void copyDefaults(Plugin plugin, String name);
 
+    void delete(Plugin plugin, String name);
+
     boolean exists(Plugin plugin, String name);
 
     String getExtension();

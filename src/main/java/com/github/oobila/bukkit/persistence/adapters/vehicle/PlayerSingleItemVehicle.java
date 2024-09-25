@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.playerDir;
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
 @SuppressWarnings("unused")
@@ -27,11 +28,10 @@ public class PlayerSingleItemVehicle<K, V> extends BasePlayerPersistenceVehicle<
 
     @Override
     public Map<K, CacheItem<K,V>> loadPlayer(Plugin plugin, String directory, UUID playerId) {
-        String playerIdString = Serialization.serialize(playerId);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = storageAdapter.read(
                 plugin,
-                String.format("%s%s/%s", getPlayerDirectory(), playerIdString, directory)
+                playerDir(getPlayerDirectory(), playerId, directory)
         );
         storedDataList.forEach(storedData -> {
             K key = Serialization.deserialize(getKeyType(), storedData.getName());
@@ -60,7 +60,7 @@ public class PlayerSingleItemVehicle<K, V> extends BasePlayerPersistenceVehicle<
         StoredData storedData = new StoredData(name, data, 0, null);
         storageAdapter.write(
                 plugin,
-                String.format("%s%s/%s", getPlayerDirectory(), Serialization.serialize(playerId), directory),
+                playerDir(getPlayerDirectory(), playerId, directory),
                 List.of(storedData)
         );
     }

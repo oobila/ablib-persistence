@@ -108,6 +108,12 @@ public class FileStorageAdapter implements StorageAdapter {
     }
 
     @Override
+    public void delete(Plugin plugin, String name) {
+        File file = new File(plugin.getDataFolder(), name);
+        sneakyDelete(file);
+    }
+
+    @Override
     public boolean exists(Plugin plugin, String name) {
         Path path = getPath(plugin, name);
         return path.toFile().exists();

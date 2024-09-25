@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 @Getter
 public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>, Map<UUID, Map<K, CacheItem<K,V>>>{
 
@@ -33,6 +34,7 @@ public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>,
     public PlayerReadOnlyCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles) {
         this.name = name;
         this.readVehicles = readVehicles;
+        readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
         CacheManager.register(this);
     }
 

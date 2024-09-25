@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
+import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.playerDir;
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
 @SuppressWarnings("unused")
@@ -31,12 +32,11 @@ public class PlayerYamlConfigVehicle<K, V> extends BasePlayerPersistenceVehicle<
     @SuppressWarnings("unchecked")
     @Override
     public Map<K, CacheItem<K,V>> loadPlayer(Plugin plugin, String directory, UUID playerId) {
-        String playerIdString = Serialization.serialize(playerId);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         try {
             List<StoredData> storedDataList = storageAdapter.read(
                     plugin,
-                    String.format("%s%s/%s", getPlayerDirectory(), playerIdString, directory)
+                    playerDir(getPlayerDirectory(), playerId, directory)
             );
             for (StoredData storedData : storedDataList) {
                 storedData = compatibility(this, storedData);
@@ -55,7 +55,7 @@ public class PlayerYamlConfigVehicle<K, V> extends BasePlayerPersistenceVehicle<
                     Level.SEVERE,
                     "Could not load Yaml from: {0}{1}/{2}",
                     getPlayerDirectory(),
-                    playerIdString,
+                    Serialization.serialize(playerId),
                     directory
             );
             log(Level.SEVERE, e);
@@ -82,7 +82,7 @@ public class PlayerYamlConfigVehicle<K, V> extends BasePlayerPersistenceVehicle<
         StoredData storedData = new StoredData(directory, data, 0, null);
         storageAdapter.write(
                 plugin,
-                String.format("%s%s/%s", getPlayerDirectory(), Serialization.serialize(playerId), directory),
+                playerDir(getPlayerDirectory(), playerId, directory),
                 List.of(storedData)
         );
     }

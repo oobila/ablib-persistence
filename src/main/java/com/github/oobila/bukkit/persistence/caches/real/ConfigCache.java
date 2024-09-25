@@ -33,9 +33,9 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
         super(name, vehicle);
     }
 
-    public ConfigCache(String name, PersistenceVehicle<String, Object> writeVehicle,
-                       List<PersistenceVehicle<String, Object>> readVehicles) {
-        super(name, writeVehicle, readVehicles);
+    public ConfigCache(String name, List<PersistenceVehicle<String, Object>> readVehicles,
+                       PersistenceVehicle<String, Object> writeVehicle) {
+        super(name, readVehicles, writeVehicle);
     }
 
     public String getString(String key) {

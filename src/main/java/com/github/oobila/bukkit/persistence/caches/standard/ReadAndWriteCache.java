@@ -16,9 +16,8 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         super(name, vehicle, vehicle);
     }
 
-    public ReadAndWriteCache(String name, PersistenceVehicle<K, V> writeVehicle,
-                             List<PersistenceVehicle<K, V>> readVehicles) {
-        super(name, writeVehicle, readVehicles);
+    public ReadAndWriteCache(String name, List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
+        super(name, readVehicles, writeVehicle);
     }
 
 

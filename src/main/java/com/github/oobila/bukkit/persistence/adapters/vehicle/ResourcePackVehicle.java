@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
         for (String item : storageAdapter.poll(plugin, directory)) {
             long size = 0;
             ZonedDateTime updatedDate = OLD_DATE;
-            List<StoredData> storedDataList = storageAdapter.read(plugin, String.format("%s/%s", directory, item));
+            List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, item));
             ResourcePack resourcePack = new ResourcePack(FilenameUtils.getBaseName(item));
             for (StoredData storedData : storedDataList) {
                 size += storedData.getSize();
@@ -78,6 +79,6 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
             String data = codeAdapter.fromObject(entry.getValue());
             storedDataList.add(new StoredData(name, data, 0, null));
         }
-        storageAdapter.write(plugin, String.format("%s/%s", directory, name), storedDataList);
+        storageAdapter.write(plugin, append(directory, name), storedDataList);
     }
 }

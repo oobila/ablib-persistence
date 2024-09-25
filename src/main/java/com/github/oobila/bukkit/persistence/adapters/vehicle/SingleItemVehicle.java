@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
 @SuppressWarnings("unused")
@@ -48,6 +49,6 @@ public class SingleItemVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         String name = Serialization.serialize(cacheItem.getKey());
         String data = codeAdapter.fromObject(cacheItem.getData());
         StoredData storedData = new StoredData(directory, data, 0, null);
-        storageAdapter.write(plugin, String.format("%s/%s", directory, name), List.of(storedData));
+        storageAdapter.write(plugin, append(directory, name), List.of(storedData));
     }
 }
