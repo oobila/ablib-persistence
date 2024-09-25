@@ -30,7 +30,6 @@ public class MyYamlConfiguration extends FileConfiguration {
     protected static final String BLANK_CONFIG = "{}\n";
     private final DumperOptions dumperOptions = new DumperOptions();
     private final Representer yamlRepresenter = new YamlRepresenter(dumperOptions);
-    private final Yaml yaml = new Yaml(new YamlConstructor(new LoaderOptions()), yamlRepresenter, dumperOptions);
 
     @NotNull
     @Override
@@ -38,6 +37,7 @@ public class MyYamlConfiguration extends FileConfiguration {
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         addClassTags(yamlRepresenter);
+        Yaml yaml = new Yaml(new YamlConstructor(new LoaderOptions()), yamlRepresenter, dumperOptions);
 
         String header = "";
         String dump = yaml.dump(getValues(false));
@@ -53,6 +53,7 @@ public class MyYamlConfiguration extends FileConfiguration {
     public void loadFromString(@NotNull String contents) throws InvalidConfigurationException {
         Map<?, ?> input;
         try {
+            Yaml yaml = new Yaml(new YamlConstructor(new LoaderOptions()), yamlRepresenter, dumperOptions);
             input = yaml.load(contents);
         } catch (YAMLException e) {
             throw new InvalidConfigurationException(e);
