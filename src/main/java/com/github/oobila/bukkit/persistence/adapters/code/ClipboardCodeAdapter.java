@@ -6,17 +6,22 @@ import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import lombok.RequiredArgsConstructor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
 @SuppressWarnings("unused")
+@RequiredArgsConstructor
 public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
+
+    private final String tempDir;
 
     @Override
     public Class<Clipboard> getType() {
@@ -25,11 +30,12 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
     @Override
     public Clipboard toObject(StoredData storedData) {
-        try (
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes());
-                ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(inputStream)
-        ) {
-            return clipboardReader.read();
+        try {
+            Files.writeString(Path.of(tempDir), storedData.getData());
+            try (FileInputStream fis = new FileInputStream(tempDir);
+                 ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(fis)) {
+                return clipboardReader.read();
+            }
         } catch (IOException e) {
             log(Level.SEVERE, "Could not load clipboard.");
             log(Level.SEVERE, e);
@@ -39,14 +45,11 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
     @Override
     public String fromObject(Clipboard clipboard) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(8192); FileOutputStream fos = new FileOutputStream("D:\\Minecraft\\Server\\plugins\\blaa.schem")) {
-            try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(outputStream)) {
-                clipboardWriter.write(clipboard);
-            }
+        try (FileOutputStream fos = new FileOutputStream(tempDir)) {
             try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(fos)) {
                 clipboardWriter.write(clipboard);
             }
-            return outputStream.toString();
+            return Files.readString(Path.of(tempDir));
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
             log(Level.SEVERE, e);
