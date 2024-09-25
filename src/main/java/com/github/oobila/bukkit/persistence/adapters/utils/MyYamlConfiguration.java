@@ -17,7 +17,6 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -94,13 +93,26 @@ public class MyYamlConfiguration extends FileConfiguration {
         for (Field field : type.getDeclaredFields()) {
             addClassTags(types, field.getType());
             if (field.getGenericType() instanceof ParameterizedType parameterizedType) {
-                Arrays.stream(parameterizedType.getActualTypeArguments()).forEach(pt ->
-                        addClassTags(types, pt.getClass())
-                );
+                classes(parameterizedType).forEach(aClass -> addClassTags(types, aClass));
             } else {
                 addClassTags(types, field.getGenericType().getClass());
             }
         }
+    }
+
+    private Set<Class<?>> classes(ParameterizedType parameterizedType) {
+        //bit of a hack, hope it works
+        Set<Class<?>> classes = new HashSet<>();
+        String[] nameSegments = parameterizedType.getTypeName().split("[<,>]");
+        for (String nameSegment : nameSegments) {
+            try {
+                Class<?> c = Class.forName(nameSegment);
+                classes.add(c);
+            } catch (Exception e){
+                //do nothing
+            }
+        }
+        return classes;
     }
 
 }
