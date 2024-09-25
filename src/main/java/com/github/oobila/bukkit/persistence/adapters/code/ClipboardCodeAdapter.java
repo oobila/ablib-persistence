@@ -11,10 +11,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.plugin.Plugin;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
@@ -34,11 +36,13 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
     @Override
     public Clipboard toObject(StoredData storedData) {
-        try (
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(storedData.getData().getBytes(StandardCharsets.ISO_8859_1));
-                ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(inputStream)
-        ) {
-            return clipboardReader.read();
+        try {
+            File file = new File(plugin.getDataFolder(), "temp/schematic.schem");
+            Files.writeString(file.toPath(), storedData.getData(), StandardCharsets.ISO_8859_1);
+            try (FileInputStream fis = new FileInputStream(file);
+                 ClipboardReader clipboardReader = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getReader(fis)) {
+                return clipboardReader.read();
+            }
         } catch (IOException e) {
             log(Level.SEVERE, "Could not load clipboard.");
             log(Level.SEVERE, e);
@@ -48,11 +52,12 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
 
     @Override
     public String fromObject(Clipboard clipboard) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(8192)) {
-            try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(outputStream)) {
+        File file = new File(plugin.getDataFolder(), "temp/schematic.schem");
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            try (ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(fos)) {
                 clipboardWriter.write(clipboard);
             }
-            return outputStream.toString(StandardCharsets.ISO_8859_1);
+            return Files.readString(file.toPath(), StandardCharsets.ISO_8859_1);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
             log(Level.SEVERE, e);
