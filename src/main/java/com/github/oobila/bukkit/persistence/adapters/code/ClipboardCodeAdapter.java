@@ -43,6 +43,7 @@ public class ClipboardCodeAdapter implements CodeAdapter<Clipboard> {
                 ClipboardWriter clipboardWriter = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(new ByteArrayOutputStream())
         ) {
             clipboardWriter.write(clipboard);
+            outputStream.flush();
             return outputStream.toString();
         } catch (IOException e) {
             log(Level.SEVERE, "Could not save clipboard.");
