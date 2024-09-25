@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -38,7 +39,7 @@ public class FileStorageAdapter implements StorageAdapter {
             if (!Files.exists(path)) {
                 return Collections.emptyList();
             }
-            String data = Files.readString(path);
+            String data = Files.readString(path, StandardCharsets.ISO_8859_1);
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
             return Collections.singletonList(new StoredData(
                     name,
@@ -59,6 +60,7 @@ public class FileStorageAdapter implements StorageAdapter {
         sneakyForceMkdir(file);
         if (Objects.requireNonNull(file.listFiles()).length > 0) {
             return Arrays.stream(Objects.requireNonNull(file.listFiles()))
+                    .filter(f -> FilenameUtils.getExtension(f.getPath()).equals(extension))
                     .map(f -> FilenameUtils.getBaseName(f.getName()))
                     .toList();
         } else {
@@ -77,7 +79,7 @@ public class FileStorageAdapter implements StorageAdapter {
             Path path = getPath(plugin, name);
             sneakyDelete(path.toFile());
             sneakyForceMkdir(path.getParent().toFile());
-            Files.writeString(path, storedDataList.get(0).getData(), StandardOpenOption.CREATE_NEW);
+            Files.writeString(path, storedDataList.get(0).getData(), StandardCharsets.ISO_8859_1,StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
             log(Level.SEVERE, "Could not write contents to file: {0}", getFileName(name));
             log(Level.SEVERE, e);
