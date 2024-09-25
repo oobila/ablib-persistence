@@ -7,8 +7,6 @@ import lombok.Getter;
 
 import java.time.ZonedDateTime;
 
-import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
-
 @Getter
 public class NoMemoryCacheItem<K, D> extends CacheItem<K, D> {
 
@@ -29,7 +27,8 @@ public class NoMemoryCacheItem<K, D> extends CacheItem<K, D> {
         if (data == null) {
             CacheItem<K, D> cacheItem = cache.getVehicle().loadSingle(
                     cache.getPlugin(),
-                    append(cache.getName(), Serialization.serialize(getKey()))
+                    cache.getName(),
+                    Serialization.serialize(getKey())
             );
             this.data = cacheItem.data;
         }

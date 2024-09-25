@@ -6,7 +6,6 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.NoMemoryClusterVehi
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.NoMemoryCacheItem;
-import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import org.bukkit.plugin.Plugin;
@@ -76,10 +75,10 @@ public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map
         localCache.get(key).unload();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public NoMemoryCacheItem<K, V> remove(Object key) {
-        String item = Serialization.serialize(key);
-        vehicle.deleteSingle(getPlugin(), append(name, item));
+        vehicle.deleteSingle(getPlugin(), name, (K) key);
         return localCache.remove(key);
     }
 
@@ -92,8 +91,7 @@ public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map
     @Override
     public CacheItem<K, V> putValue(K key, V value) {
         NoMemoryCacheItem<K, V> cacheItem = new NoMemoryCacheItem<>(key, value, 0, ZonedDateTime.now(), this);
-        String item = Serialization.serialize(key);
-        vehicle.saveSingle(plugin, append(name, item), cacheItem);
+        vehicle.saveSingle(plugin, name, cacheItem);
         cacheItem.unload();
         localCache.put(key, cacheItem);
         return cacheItem;

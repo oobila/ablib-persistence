@@ -29,15 +29,15 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     public Map<K, CacheItem<K,V>> load(Plugin plugin, String directory) {
         Map<K, CacheItem<K,V>> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
-            CacheItem<K, V> cacheItem = loadSingle(plugin, append(directory, item));
+            CacheItem<K, V> cacheItem = loadSingle(plugin, directory, item);
             map.put(cacheItem.getKey(), cacheItem);
         }
         return map;
     }
 
-    public CacheItem<K,V> loadSingle(Plugin plugin, String directory) {
+    public CacheItem<K,V> loadSingle(Plugin plugin, String directory, String name) {
         Map<K, CacheItem<K,V>> map = new HashMap<>();
-        List<StoredData> storedDataList = storageAdapter.read(plugin, directory);
+        List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());
         V value = codeAdapter.toObject(compatibility(this, storedDataList.get(0)));
         return new CacheItem<>(key, value, storedDataList.get(0));
@@ -46,8 +46,7 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map) {
         map.forEach((key, value) -> {
-            String item = Serialization.serialize(key);
-            deleteSingle(plugin, append(directory, item));
+            deleteSingle(plugin, directory, key);
             saveSingle(plugin, directory, value);
         });
     }
@@ -60,7 +59,8 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         storageAdapter.write(plugin, append(directory, name), List.of(storedData));
     }
 
-    public void deleteSingle(Plugin plugin, String directory) {
-        storageAdapter.delete(plugin, directory);
+    public void deleteSingle(Plugin plugin, String directory, K key) {
+        String name = Serialization.serialize(key);
+        storageAdapter.delete(plugin, append(directory, name));
     }
 }
