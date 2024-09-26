@@ -1,15 +1,16 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
+import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.code.ResourcePackCodeAdapter;
-import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.storage.ZipStorageAdapter;
+import com.github.oobila.bukkit.persistence.caches.real.ResourcePackCache;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
+import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import com.github.oobila.bukkit.persistence.model.Resource;
 import com.github.oobila.bukkit.persistence.model.ResourcePack;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.bukkit.plugin.Plugin;
 
@@ -19,48 +20,33 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
-@RequiredArgsConstructor
 @Getter
-public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePack> {
+public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePack> implements OnDemandPersistenceVehicle<K, ResourcePack> {
 
     private static final ZonedDateTime OLD_DATE = ZonedDateTime.of(
             2000,1,1,0,0,0,0, ZoneOffset.UTC);
 
     private final Class<K> keyType;
-    private final StorageAdapter storageAdapter = new ZipStorageAdapter();
     private final ResourcePackCodeAdapter codeAdapter;
+    private final ZipStorageAdapter storageAdapter = new ZipStorageAdapter();
+
+    public ResourcePackVehicle(Class<K> keyType, Map<Pattern, CodeAdapter<?>> codeAdapterMap) {
+        this.keyType = keyType;
+        this.codeAdapter = new ResourcePackCodeAdapter(codeAdapterMap);
+    }
 
     @Override
     public Map<K, CacheItem<K, ResourcePack>> load(Plugin plugin, String directory) {
         codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,ResourcePack>> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
-            long size = 0;
-            ZonedDateTime updatedDate = OLD_DATE;
-            List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, item));
-            ResourcePack resourcePack = new ResourcePack(FilenameUtils.getBaseName(item));
-            for (StoredData storedData : storedDataList) {
-                size += storedData.getSize();
-                if (updatedDate.isBefore(storedData.getUpdatedDate())) {
-                    updatedDate = storedData.getUpdatedDate();
-                }
-                Object object = codeAdapter.toObject(compatibility(this, storedData));
-                Resource<?> resource = new Resource<>(
-                        storedData.getName(),
-                        object,
-                        storedData.getSize(),
-                        storedData.getUpdatedDate()
-                );
-                resourcePack.put(resource.getKey(), resource);
-            }
             K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(item));
-            StoredData storedData = new StoredData(null, null, size, updatedDate);
-            CacheItem<K, ResourcePack> cacheItem = new CacheItem<>(key, resourcePack, storedData);
-            map.put(key, cacheItem);
+            map.put(key, loadSingle(plugin, directory, item));
         }
         return map;
     }
@@ -73,6 +59,44 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
     }
 
     @Override
+    public CacheItem<K, ResourcePack> loadSingle(Plugin plugin, String directory, String name) {
+        long size = 0;
+        ZonedDateTime updatedDate = OLD_DATE;
+        List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
+        ResourcePack resourcePack = new ResourcePack(FilenameUtils.getBaseName(name));
+        for (StoredData storedData : storedDataList) {
+            size += storedData.getSize();
+            if (updatedDate.isBefore(storedData.getUpdatedDate())) {
+                updatedDate = storedData.getUpdatedDate();
+            }
+            Object object = codeAdapter.toObject(compatibility(this, storedData));
+            Resource<?> resource = new Resource<>(
+                    storedData.getName(),
+                    object,
+                    storedData.getSize(),
+                    storedData.getUpdatedDate()
+            );
+            resourcePack.put(resource.getKey(), resource);
+        }
+        K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(name));
+        StoredData storedData = new StoredData(null, null, size, updatedDate);
+        return new CacheItem<>(key, resourcePack, storedData);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public OnDemandCacheItem<K, ResourcePack> loadMetadataSingle(Plugin plugin, String directory, String name) {
+        CacheItem<K, ResourcePack> cacheItem = loadSingle(plugin, directory, name);
+        return new OnDemandCacheItem<>(
+                cacheItem.getKey(),
+                cacheItem.getData(),
+                cacheItem.getSize(),
+                cacheItem.getUpdatedDate(),
+                (ResourcePackCache<K>) getCache()
+        );
+    }
+
+    @Override
     public void saveSingle(Plugin plugin, String directory, CacheItem<K, ResourcePack> cacheItem) {
         String name = Serialization.serialize(cacheItem.getKey());
         List<StoredData> storedDataList = new ArrayList<>();
@@ -81,5 +105,11 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
             storedDataList.add(new StoredData(name, data, 0, null));
         }
         storageAdapter.write(plugin, append(directory, name), storedDataList);
+    }
+
+    @Override
+    public void deleteSingle(Plugin plugin, String directory, K key) {
+        String name = Serialization.serialize(key);
+        storageAdapter.delete(plugin, append(directory, name));
     }
 }

@@ -16,7 +16,6 @@ public interface PersistenceVehicle<K, V> {
     void setCache(Cache cache);
     Map<K, CacheItem<K,V>> load(Plugin plugin, String directory);
     void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map);
-    void saveSingle(Plugin plugin, String directory, CacheItem<K,V> cacheItem);
     StorageAdapter getStorageAdapter();
     Class<K> getKeyType();
     void addBackwardsCompatibility(BackwardsCompatibility backwardsCompatibility);

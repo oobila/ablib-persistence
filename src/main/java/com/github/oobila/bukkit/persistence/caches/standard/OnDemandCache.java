@@ -1,11 +1,9 @@
 package com.github.oobila.bukkit.persistence.caches.standard;
 
-import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
-import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
-import com.github.oobila.bukkit.persistence.adapters.vehicle.NoMemoryClusterVehicle;
+import com.github.oobila.bukkit.persistence.adapters.vehicle.OnDemandPersistenceVehicle;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
-import com.github.oobila.bukkit.persistence.model.NoMemoryCacheItem;
+import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import org.bukkit.plugin.Plugin;
@@ -18,22 +16,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
-
 @SuppressWarnings("unused")
 @Getter
-public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map<K, NoMemoryCacheItem<K,V>> {
+public class OnDemandCache<K, V> implements StandardWriteCache<K, V>, Map<K, OnDemandCacheItem<K,V>> {
 
     private final String name;
     private Plugin plugin;
-    private final NoMemoryClusterVehicle<K, V> vehicle;
+    private final OnDemandPersistenceVehicle<K, V> vehicle;
 
     @Delegate(excludes = Excludes.class)
-    protected final Map<K, NoMemoryCacheItem<K,V>> localCache = new HashMap<>();
+    protected final Map<K, OnDemandCacheItem<K,V>> localCache = new HashMap<>();
 
-    public NoMemoryClusterCache(String name, Class<K> keyType, StorageAdapter storageAdapter, CodeAdapter<V> codeAdapter) {
+    public OnDemandCache(String name, OnDemandPersistenceVehicle<K, V> clusterVehicle) {
         this.name = name;
-        this.vehicle = new NoMemoryClusterVehicle<>(keyType, storageAdapter, codeAdapter);
+        this.vehicle = clusterVehicle;
         vehicle.setCache(this);
     }
 
@@ -52,7 +48,7 @@ public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map
         this.plugin = plugin;
         List<String> items = vehicle.getStorageAdapter().poll(plugin, name);
         for (String item : items) {
-            NoMemoryCacheItem<K, V> current = vehicle.loadMetadataSingle(plugin, append(name, item));
+            OnDemandCacheItem<K, V> current = vehicle.loadMetadataSingle(plugin, name, item);
             localCache.put(current.getKey(), current);
         }
     }
@@ -72,13 +68,9 @@ public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map
         return localCache.get(key).getData();
     }
 
-    public void unloadValue(K key) {
-        localCache.get(key).unload();
-    }
-
     @SuppressWarnings("unchecked")
     @Override
-    public NoMemoryCacheItem<K, V> remove(Object key) {
+    public OnDemandCacheItem<K, V> remove(Object key) {
         vehicle.deleteSingle(getPlugin(), name, (K) key);
         return localCache.remove(key);
     }
@@ -91,7 +83,7 @@ public class NoMemoryClusterCache<K, V> implements StandardWriteCache<K, V>, Map
 
     @Override
     public CacheItem<K, V> putValue(K key, V value) {
-        NoMemoryCacheItem<K, V> cacheItem = new NoMemoryCacheItem<>(key, value, 0, ZonedDateTime.now(), this);
+        OnDemandCacheItem<K, V> cacheItem = new OnDemandCacheItem<>(key, value, 0, ZonedDateTime.now(), this);
         vehicle.saveSingle(plugin, name, cacheItem);
         cacheItem.unload();
         localCache.put(key, cacheItem);

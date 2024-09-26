@@ -19,7 +19,7 @@ import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityU
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
+public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> implements ClusterPersistenceVehicle<K, V> {
 
     private final Class<K> keyType;
     private final StorageAdapter storageAdapter;
@@ -36,6 +36,7 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         return map;
     }
 
+    @Override
     public CacheItem<K,V> loadSingle(Plugin plugin, String directory, String name) {
         codeAdapter.setPlugin(plugin);
         Map<K, CacheItem<K,V>> map = new HashMap<>();
@@ -61,6 +62,7 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         storageAdapter.write(plugin, append(directory, name), List.of(storedData));
     }
 
+    @Override
     public void deleteSingle(Plugin plugin, String directory, K key) {
         String name = Serialization.serialize(key);
         storageAdapter.delete(plugin, append(directory, name));

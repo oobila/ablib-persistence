@@ -42,13 +42,8 @@ public class SingleItemVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map) {
         Map.Entry<K, CacheItem<K,V>> entry = map.entrySet().iterator().next();
-        saveSingle(plugin, directory, entry.getValue());
-    }
-
-    @Override
-    public void saveSingle(Plugin plugin, String directory, CacheItem<K, V> cacheItem) {
-        String name = Serialization.serialize(cacheItem.getKey());
-        String data = codeAdapter.fromObject(cacheItem.getData());
+        String name = Serialization.serialize(entry.getValue().getKey());
+        String data = codeAdapter.fromObject(entry.getValue().getData());
         StoredData storedData = new StoredData(directory, data, 0, null);
         storageAdapter.write(plugin, append(directory, name), List.of(storedData));
     }

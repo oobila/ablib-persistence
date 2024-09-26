@@ -65,9 +65,4 @@ public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         StoredData storedData = new StoredData(directory, data, 0, null);
         storageAdapter.write(plugin, directory, List.of(storedData));
     }
-
-    @Override
-    public void saveSingle(Plugin plugin, String directory, CacheItem<K, V> cacheItem) {
-        log(Level.WARNING, "Unsupported operation. saveSingle attempted on YamlMultiItemVehicle");
-    }
 }
