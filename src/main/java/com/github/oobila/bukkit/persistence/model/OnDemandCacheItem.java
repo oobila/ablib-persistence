@@ -26,6 +26,12 @@ public class OnDemandCacheItem<K, D> extends CacheItem<K, D> {
 
     @Override
     public D getData() {
+        if (data != null) {
+            D temp = data;
+            data = null;
+            return temp;
+        }
+
         CacheItem<K, D> cacheItem = ((ClusterPersistenceVehicle<K, D>) cache.getWriteVehicle()).loadSingle(
                 cache.getPlugin(),
                 cache.getName(),
