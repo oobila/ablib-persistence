@@ -102,7 +102,7 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
         List<StoredData> storedDataList = new ArrayList<>();
         for (Map.Entry<String, Resource<?>> entry : cacheItem.getData().entrySet()) {
             String data = codeAdapter.fromObject(entry.getValue());
-            storedDataList.add(new StoredData(name, data, 0, null));
+            storedDataList.add(new StoredData(entry.getKey(), data, 0, null));
         }
         storageAdapter.write(plugin, append(directory, name), storedDataList);
     }
