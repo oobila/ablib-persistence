@@ -56,10 +56,9 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
 
     @Override
     public String fromObject(Resource<?> resource) {
-        for (Class<?> type : typeMap.keySet()) {
-            if (type.isAssignableFrom(resource.getData().getClass())) {
-                CodeAdapter<?> codeAdapter = typeMap.get(resource.getData().getClass());
-                return fromObject(codeAdapter, resource.getData());
+        for (Map.Entry<Class<?>, CodeAdapter<?>> entry : typeMap.entrySet()) {
+            if (entry.getKey().isAssignableFrom(resource.getData().getClass())) {
+                return fromObject(entry.getValue(), resource.getData());
             }
         }
         log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getData().getClass().getName());
