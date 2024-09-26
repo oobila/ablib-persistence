@@ -6,7 +6,6 @@ import org.bukkit.plugin.Plugin;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -66,10 +65,10 @@ public class ZipStorageAdapter extends FileStorageAdapter {
     @Override
     public void write(Plugin plugin, String name, List<StoredData> storedDataList) {
         Path path = getPath(plugin, name);
+        if (path.toFile().exists()) {
+            sneakyDelete(path.toFile());
+        }
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(path.toFile()))) {
-            if (path.toFile().exists()) {
-                Files.delete(path);
-            }
             for (StoredData storedData : storedDataList) {
                 ZipEntry zipEntry = new ZipEntry(storedData.getName());
                 zipOutputStream.putNextEntry(zipEntry);
