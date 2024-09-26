@@ -6,6 +6,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -48,7 +49,7 @@ public class ZipStorageAdapter extends FileStorageAdapter {
         String name = entry.getName();
         long size = entry.getSize();
         try(InputStream inputStream = zip.getInputStream(entry)) {
-            String data = new String(inputStream.readAllBytes());
+            String data = new String(inputStream.readAllBytes(), StandardCharsets.ISO_8859_1);
             return new StoredData(
                     name,
                     data,
@@ -72,7 +73,7 @@ public class ZipStorageAdapter extends FileStorageAdapter {
             for (StoredData storedData : storedDataList) {
                 ZipEntry zipEntry = new ZipEntry(storedData.getName());
                 zipOutputStream.putNextEntry(zipEntry);
-                zipOutputStream.write(storedData.getData().getBytes());
+                zipOutputStream.write(storedData.getData().getBytes(StandardCharsets.ISO_8859_1));
             }
             zipOutputStream.flush();
         } catch (IOException e) {
