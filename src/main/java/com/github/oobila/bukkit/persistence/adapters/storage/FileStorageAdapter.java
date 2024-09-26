@@ -42,7 +42,7 @@ public class FileStorageAdapter implements StorageAdapter {
             String data = Files.readString(path, StandardCharsets.ISO_8859_1);
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
             return Collections.singletonList(new StoredData(
-                    name,
+                    FilenameUtils.getBaseName(name),
                     data,
                     attributes.size(),
                     attributes.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault())
