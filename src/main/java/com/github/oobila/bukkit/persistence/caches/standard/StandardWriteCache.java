@@ -7,10 +7,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public interface StandardWriteCache<K, V>  extends WriteCache<K, V>, StandardReadCache<K, V> {
+public interface StandardWriteCache<K, V, C extends CacheItem<K, V>>
+        extends WriteCache<K, V, C>, StandardReadCache<K, V, C> {
 
-    CacheItem<K,V> putValue(K key, V value);
+    C putValue(K key, V value);
 
-    List<CacheItem<K,V>> removeBefore(ZonedDateTime zonedDateTime);
+    List<C> removeBefore(ZonedDateTime zonedDateTime);
 
 }

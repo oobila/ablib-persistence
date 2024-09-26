@@ -14,16 +14,20 @@ import java.util.UUID;
 
 @SuppressWarnings("unused")
 @Getter
-public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> implements StandardPlayerWriteCache<K, V> {
+public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V>
+        implements StandardPlayerWriteCache<K, V, CacheItem<K, V>> {
 
-    private final PlayerPersistenceVehicle<K, V> writeVehicle;
+    private final PlayerPersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
 
-    public PlayerReadAndWriteCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+    public PlayerReadAndWriteCache(String name, PlayerPersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this(name, List.of(vehicle), vehicle);
     }
 
-    public PlayerReadAndWriteCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles,
-                                   PlayerPersistenceVehicle<K, V> writeVehicle) {
+    public PlayerReadAndWriteCache(
+            String name,
+            List<PlayerPersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles,
+            PlayerPersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle
+    ) {
         super(name, readVehicles);
         this.writeVehicle = writeVehicle;
         writeVehicle.setCache(this);
@@ -38,7 +42,7 @@ public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> imp
     public void savePlayer(UUID id) {
         writeVehicle.savePlayer(getPlugin(), getName(), id, localCache.get(id));
         playerObservers.forEach(observer -> {
-            if (observer instanceof PlayerSaveObserver<K,V> playerSaveObserver) {
+            if (observer instanceof PlayerSaveObserver<K, V, CacheItem<K, V>> playerSaveObserver) {
                 playerSaveObserver.onSave(id, localCache.get(id));
             }
         });
@@ -52,7 +56,7 @@ public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> imp
 
     @Override
     public CacheItem<K, V> remove(UUID id, K key) {
-        Map<K, CacheItem<K,V>> innerMap = localCache.get(id);
+        Map<K, CacheItem<K, V>> innerMap = localCache.get(id);
         if (innerMap != null) {
             return innerMap.remove(key);
         }
@@ -60,9 +64,9 @@ public class PlayerReadAndWriteCache<K, V> extends PlayerReadOnlyCache<K, V> imp
     }
 
     @Override
-    public List<CacheItem<K,V>> removeBefore(ZonedDateTime zonedDateTime) {
+    public List<CacheItem<K, V>> removeBefore(ZonedDateTime zonedDateTime) {
         List<K> itemsToRemove = new ArrayList<>();
-        List<CacheItem<K,V>> itemsRemoved = new ArrayList<>();
+        List<CacheItem<K, V>> itemsRemoved = new ArrayList<>();
         localCache.forEach((uuid, innerMap) -> {
             innerMap.forEach((key, cacheItem) -> {
                 if (cacheItem.getUpdatedDate().isBefore(zonedDateTime)) {

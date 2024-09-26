@@ -13,15 +13,17 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 @SuppressWarnings("unused")
 @Getter
-public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> implements AsyncWriteCache<K, V> {
+public class AsyncReadAndWriteCache<K, V>
+        extends AsyncReadOnlyCache<K, V>
+        implements AsyncWriteCache<K, V, CacheItem<K, V>> {
 
 
-    public AsyncReadAndWriteCache(String name, PersistenceVehicle<K, V> vehicle) {
+    public AsyncReadAndWriteCache(String name, PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(name, vehicle, vehicle);
     }
 
-    public AsyncReadAndWriteCache(String name, List<PersistenceVehicle<K, V>> readVehicles,
-                                  PersistenceVehicle<K, V> writeVehicle) {
+    public AsyncReadAndWriteCache(String name, List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles,
+                                  PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle) {
         super(name, writeVehicle, readVehicles);
     }
 

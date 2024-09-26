@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public interface AsyncWriteCache<K, V> extends WriteCache<K, V>, AsyncReadCache<K, V> {
+public interface AsyncWriteCache<K, V, C extends CacheItem<K, V>> extends WriteCache<K, V, C>, AsyncReadCache<K, V, C> {
 
-    void putValue(K key, V value, Consumer<CacheItem<K,V>> consumer);
+    void putValue(K key, V value, Consumer<C> consumer);
 
-    void remove(K key, Consumer<CacheItem<K,V>> consumer);
+    void remove(K key, Consumer<C> consumer);
 
-    void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<CacheItem<K,V>>> consumer);
+    void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<C>> consumer);
 
 }

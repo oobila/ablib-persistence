@@ -17,17 +17,22 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 @SuppressWarnings("unused")
 @Getter
-public class AsyncPlayerReadAndWriteCache<K, V> extends AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerWriteCache<K, V> {
+public class AsyncPlayerReadAndWriteCache<K, V>
+        extends AsyncPlayerReadOnlyCache<K, V>
+        implements AsyncPlayerWriteCache<K, V, CacheItem<K, V>> {
 
-    private final PlayerPersistenceVehicle<K, V> writeVehicle;
+    private final PlayerPersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
 
-    public AsyncPlayerReadAndWriteCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+    public AsyncPlayerReadAndWriteCache(String name, PlayerPersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(name, vehicle);
         this.writeVehicle = vehicle;
     }
 
-    public AsyncPlayerReadAndWriteCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles,
-                                        PlayerPersistenceVehicle<K, V> writeVehicle) {
+    public AsyncPlayerReadAndWriteCache(
+            String name,
+            List<PlayerPersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles,
+            PlayerPersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle
+    ) {
         super(name, readVehicles);
         this.writeVehicle = writeVehicle;
     }
@@ -42,11 +47,11 @@ public class AsyncPlayerReadAndWriteCache<K, V> extends AsyncPlayerReadOnlyCache
         runTaskAsync(() -> {
             writeVehicle.savePlayer(getPlugin(), getName(), id, localCache.get(id));
             if (consumer != null) {
-                get(id, consumer);
+                consumer.accept(values(id));
             }
             runTaskAsync(() ->
                     playerObservers.forEach(observer -> {
-                        if (observer instanceof PlayerSaveObserver<K,V> playerSaveObserver) {
+                        if (observer instanceof PlayerSaveObserver<K, V, CacheItem<K, V>> playerSaveObserver) {
                             playerSaveObserver.onSave(id, localCache.get(id));
                         }
                     }

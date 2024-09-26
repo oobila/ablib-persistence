@@ -19,35 +19,37 @@ import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityU
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> implements ClusterPersistenceVehicle<K, V> {
+public class ClusterVehicle<K, V, C extends CacheItem<K, V>>
+        extends BasePersistenceVehicle<K, V, C> implements ClusterPersistenceVehicle<K, V, C> {
 
     private final Class<K> keyType;
     private final StorageAdapter storageAdapter;
     private final CodeAdapter<V> codeAdapter;
 
     @Override
-    public Map<K, CacheItem<K,V>> load(Plugin plugin, String directory) {
+    public Map<K, C> load(Plugin plugin, String directory) {
         codeAdapter.setPlugin(plugin);
-        Map<K, CacheItem<K,V>> map = new HashMap<>();
+        Map<K, C> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
-            CacheItem<K, V> cacheItem = loadSingle(plugin, directory, item);
+            C cacheItem = loadSingle(plugin, directory, item);
             map.put(cacheItem.getKey(), cacheItem);
         }
         return map;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public CacheItem<K,V> loadSingle(Plugin plugin, String directory, String name) {
+    public C loadSingle(Plugin plugin, String directory, String name) {
         codeAdapter.setPlugin(plugin);
-        Map<K, CacheItem<K,V>> map = new HashMap<>();
+        Map<K, C> map = new HashMap<>();
         List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());
         V value = codeAdapter.toObject(compatibility(this, storedDataList.get(0)));
-        return new CacheItem<>(key, value, storedDataList.get(0));
+        return (C) new CacheItem<>(key, value, storedDataList.get(0));
     }
 
     @Override
-    public void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map) {
+    public void save(Plugin plugin, String directory, Map<K, C> map) {
         map.forEach((key, value) -> {
             deleteSingle(plugin, directory, key);
             saveSingle(plugin, directory, value);
@@ -55,7 +57,7 @@ public class ClusterVehicle<K, V> extends BasePersistenceVehicle<K, V> implement
     }
 
     @Override
-    public void saveSingle(Plugin plugin, String directory, CacheItem<K, V> cacheItem) {
+    public void saveSingle(Plugin plugin, String directory, C cacheItem) {
         String name = Serialization.serialize(cacheItem.getKey());
         String data = codeAdapter.fromObject(cacheItem.getData());
         StoredData storedData = new StoredData(name, data, 0, null);

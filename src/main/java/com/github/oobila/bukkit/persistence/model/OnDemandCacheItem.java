@@ -12,14 +12,14 @@ import java.time.ZonedDateTime;
 @Getter
 public class OnDemandCacheItem<K, D> extends CacheItem<K, D> {
 
-    private final WriteCache<K, D> cache;
+    private final WriteCache<K, D, OnDemandCacheItem<K, D>> cache;
 
-    public OnDemandCacheItem(K key, D data, StoredData storedData, WriteCache<K, D> cache) {
+    public OnDemandCacheItem(K key, D data, StoredData storedData, WriteCache<K, D, OnDemandCacheItem<K, D>> cache) {
         super(key, data, storedData);
         this.cache = cache;
     }
 
-    public OnDemandCacheItem(K key, D data, long size, ZonedDateTime updatedDate, WriteCache<K, D> cache) {
+    public OnDemandCacheItem(K key, D data, long size, ZonedDateTime updatedDate, WriteCache<K, D, OnDemandCacheItem<K, D>> cache) {
         super(key, data, size, updatedDate);
         this.cache = cache;
     }
@@ -32,7 +32,7 @@ public class OnDemandCacheItem<K, D> extends CacheItem<K, D> {
             return temp;
         }
 
-        CacheItem<K, D> cacheItem = ((ClusterPersistenceVehicle<K, D>) cache.getWriteVehicle()).loadSingle(
+        CacheItem<K, D> cacheItem = ((ClusterPersistenceVehicle<K, D, OnDemandCacheItem<K, D>>) cache.getWriteVehicle()).loadSingle(
                 cache.getPlugin(),
                 cache.getName(),
                 FilenameUtils.getBaseName(Serialization.serialize(getKey()))

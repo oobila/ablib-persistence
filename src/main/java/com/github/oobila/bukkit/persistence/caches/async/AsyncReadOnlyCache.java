@@ -5,6 +5,7 @@ import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,25 +15,25 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 @SuppressWarnings("unused")
 @Getter
-public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
+public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<K, V>> {
 
     private Plugin plugin;
     private final String name;
-    private final PersistenceVehicle<K, V> writeVehicle;
-    private final List<PersistenceVehicle<K, V>> readVehicles;
+    private final PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
+    private final List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
     protected final Map<K, CacheItem<K,V>> localCache = new HashMap<>();
 
-    public AsyncReadOnlyCache(String name, PersistenceVehicle<K, V> vehicle) {
+    public AsyncReadOnlyCache(String name, PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this(name, vehicle, vehicle);
     }
 
-    public AsyncReadOnlyCache(String name, PersistenceVehicle<K, V> writeVehicle,
-                              PersistenceVehicle<K, V> readVehicle) {
+    public AsyncReadOnlyCache(String name, PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle,
+                              PersistenceVehicle<K, V, CacheItem<K, V>> readVehicle) {
         this(name, writeVehicle, List.of(readVehicle));
     }
 
-    public AsyncReadOnlyCache(String name, PersistenceVehicle<K, V> writeVehicle,
-                              List<PersistenceVehicle<K, V>> readVehicles) {
+    public AsyncReadOnlyCache(String name, PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle,
+                              List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
         this.name = name;
         this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
@@ -70,10 +71,12 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     }
 
     @Override
-    public void get(K key, Consumer<CacheItem<K, V>> consumer) {
-        runTaskAsync(() -> {
-            CacheItem<K, V> cacheItem = localCache.get(key);
-            consumer.accept(cacheItem);
-        });
+    public CacheItem<K, V> get(K key) {
+        return localCache.get(key);
+    }
+
+    @Override
+    public Collection<CacheItem<K, V>> values() {
+        return localCache.values();
     }
 }

@@ -26,7 +26,9 @@ import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
 @Getter
-public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePack> implements OnDemandPersistenceVehicle<K, ResourcePack> {
+public class ResourcePackVehicle<K>
+        extends BasePersistenceVehicle<K, ResourcePack, OnDemandCacheItem<K, ResourcePack>>
+        implements OnDemandPersistenceVehicle<K, ResourcePack, OnDemandCacheItem<K, ResourcePack>> {
 
     private static final ZonedDateTime OLD_DATE = ZonedDateTime.of(
             2000,1,1,0,0,0,0, ZoneOffset.UTC);
@@ -41,9 +43,9 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
     }
 
     @Override
-    public Map<K, CacheItem<K, ResourcePack>> load(Plugin plugin, String directory) {
+    public Map<K, OnDemandCacheItem<K, ResourcePack>> load(Plugin plugin, String directory) {
         codeAdapter.setPlugin(plugin);
-        Map<K, CacheItem<K,ResourcePack>> map = new HashMap<>();
+        Map<K, OnDemandCacheItem<K,ResourcePack>> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
             K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(item));
             map.put(key, loadSingle(plugin, directory, item));
@@ -52,14 +54,15 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
     }
 
     @Override
-    public void save(Plugin plugin, String directory, Map<K, CacheItem<K, ResourcePack>> map) {
+    public void save(Plugin plugin, String directory, Map<K, OnDemandCacheItem<K, ResourcePack>> map) {
         map.forEach((key, value) ->
                 saveSingle(plugin, directory, value)
         );
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public CacheItem<K, ResourcePack> loadSingle(Plugin plugin, String directory, String name) {
+    public OnDemandCacheItem<K, ResourcePack> loadSingle(Plugin plugin, String directory, String name) {
         long size = 0;
         ZonedDateTime updatedDate = OLD_DATE;
         List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
@@ -80,7 +83,7 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
         }
         K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(name));
         StoredData storedData = new StoredData(null, null, size, updatedDate);
-        return new CacheItem<>(key, resourcePack, storedData);
+        return new OnDemandCacheItem<>(key, resourcePack, storedData, (ResourcePackCache<K>) getCache());
     }
 
     @SuppressWarnings("unchecked")
@@ -97,7 +100,7 @@ public class ResourcePackVehicle<K> extends BasePersistenceVehicle<K, ResourcePa
     }
 
     @Override
-    public void saveSingle(Plugin plugin, String directory, CacheItem<K, ResourcePack> cacheItem) {
+    public void saveSingle(Plugin plugin, String directory, OnDemandCacheItem<K, ResourcePack> cacheItem) {
         String name = Serialization.serialize(cacheItem.getKey());
         List<StoredData> storedDataList = new ArrayList<>();
         for (Map.Entry<String, Resource<?>> entry : cacheItem.getData().entrySet()) {

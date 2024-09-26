@@ -1,6 +1,8 @@
 package com.github.oobila.bukkit.persistence.caches;
 
-public interface WriteCache<K, V> extends ReadCache<K, V> {
+import com.github.oobila.bukkit.persistence.model.CacheItem;
+
+public interface WriteCache<K, V, C extends CacheItem<K, V>> extends ReadCache<K, V, C> {
 
     void save();
 

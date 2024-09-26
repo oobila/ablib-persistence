@@ -19,9 +19,9 @@ public class PersistencePlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         CacheManager.getPlayerReadCaches().forEach(playerReadCache -> {
             //LOAD
-            if (playerReadCache instanceof StandardPlayerReadCache<?, ?> standardPlayerReadCache) {
+            if (playerReadCache instanceof StandardPlayerReadCache<?, ?, ?> standardPlayerReadCache) {
                 standardPlayerReadCache.loadPlayer(event.getPlayer().getUniqueId());
-            } else if (playerReadCache instanceof AsyncPlayerReadCache<?, ?> asyncPlayerReadCache) {
+            } else if (playerReadCache instanceof AsyncPlayerReadCache<?, ?, ?> asyncPlayerReadCache) {
                 asyncPlayerReadCache.loadPlayer(event.getPlayer().getUniqueId(), null);
             }
         });
@@ -31,15 +31,15 @@ public class PersistencePlayerJoinListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         CacheManager.getPlayerReadCaches().forEach(playerReadCache -> {
             //SAVE
-            if (playerReadCache instanceof StandardPlayerWriteCache<?, ?> standardPlayerWriteCache) {
+            if (playerReadCache instanceof StandardPlayerWriteCache<?, ?, ?> standardPlayerWriteCache) {
                 standardPlayerWriteCache.savePlayer(event.getPlayer().getUniqueId());
-            } else if (playerReadCache instanceof AsyncPlayerWriteCache<?, ?> asyncPlayerWriteCache) {
+            } else if (playerReadCache instanceof AsyncPlayerWriteCache<?, ?, ?> asyncPlayerWriteCache) {
                 asyncPlayerWriteCache.savePlayer(event.getPlayer().getUniqueId(), null);
             }
             //UNLOAD
-            if (playerReadCache instanceof StandardPlayerReadCache<?,?> standardPlayerReadCache) {
+            if (playerReadCache instanceof StandardPlayerReadCache<?, ?, ?> standardPlayerReadCache) {
                 standardPlayerReadCache.unloadPlayer(event.getPlayer().getUniqueId());
-            } else if (playerReadCache instanceof AsyncPlayerReadCache<?,?> asyncPlayerReadCache) {
+            } else if (playerReadCache instanceof AsyncPlayerReadCache<?, ?, ?> asyncPlayerReadCache) {
                 asyncPlayerReadCache.unloadPlayer(event.getPlayer().getUniqueId());
             }
         });

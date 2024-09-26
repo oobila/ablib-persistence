@@ -22,16 +22,16 @@ import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityU
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
+public class YamlConfigVehicle<K, V, C extends CacheItem<K, V>> extends BasePersistenceVehicle<K, V, C> {
 
     private final Class<K> keyType;
     private final StorageAdapter storageAdapter;
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<K, CacheItem<K,V>> load(Plugin plugin, String directory) {
+    public Map<K, C> load(Plugin plugin, String directory) {
         try {
-            Map<K, CacheItem<K,V>> map = new HashMap<>();
+            Map<K, C> map = new HashMap<>();
             List<StoredData> storedDataList = storageAdapter.read(plugin, directory);
             for (StoredData storedData : storedDataList) {
                 storedData = compatibility(this, storedData);
@@ -42,7 +42,7 @@ public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
                 for (Map.Entry<String, Object> entry : objects.entrySet()) {
                     K key = Serialization.deserialize(getKeyType(), entry.getKey());
                     V value = (V) entry.getValue();
-                    CacheItem<K, V> cacheItem = new CacheItem<>(key, value, storedData);
+                    C cacheItem = (C) new CacheItem<>(key, value, storedData);
                     map.put(key, cacheItem);
                 }
             }
@@ -55,7 +55,7 @@ public class YamlConfigVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     }
 
     @Override
-    public void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map) {
+    public void save(Plugin plugin, String directory, Map<K, C> map) {
         MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
         map.forEach((key, value) -> {
             String name = Serialization.serialize(key);

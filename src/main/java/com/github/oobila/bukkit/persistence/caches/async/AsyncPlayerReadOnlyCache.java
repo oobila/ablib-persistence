@@ -20,19 +20,19 @@ import java.util.function.Consumer;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 @Getter
-public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V> {
+public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V, CacheItem<K, V>> {
 
     private Plugin plugin;
     private final String name;
-    private final List<PlayerPersistenceVehicle<K, V>> readVehicles;
-    protected final List<PlayerObserver<K, V>> playerObservers = new ArrayList<>();
+    private final List<PlayerPersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
+    protected final List<PlayerObserver<K, V, CacheItem<K, V>>> playerObservers = new ArrayList<>();
     protected final Map<UUID, Map<K, CacheItem<K,V>>> localCache = new HashMap<>();
 
-    public AsyncPlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+    public AsyncPlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this(name, List.of(vehicle));
     }
 
-    public AsyncPlayerReadOnlyCache(String name,List<PlayerPersistenceVehicle<K, V>> readVehicles) {
+    public AsyncPlayerReadOnlyCache(String name,List<PlayerPersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
         this.name = name;
         this.readVehicles = readVehicles;
         CacheManager.register(this);
@@ -53,11 +53,11 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
             }
             readVehicles.forEach(vehicle -> localCache.get(id).putAll(vehicle.loadPlayer(plugin, name, id)));
             if (consumer != null) {
-                get(id, consumer);
+                consumer.accept(values(id));
             }
             runTaskAsync(() ->
                     playerObservers.forEach(playerObserver -> {
-                        if (playerObserver instanceof PlayerLoadObserver<K, V> playerLoadObserver) {
+                        if (playerObserver instanceof PlayerLoadObserver<K, V, CacheItem<K, V>> playerLoadObserver) {
                             playerLoadObserver.onLoad(id, localCache.get(id));
                         }
                     }
@@ -71,7 +71,7 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
             Map<K, CacheItem<K, V>> unloadedData = localCache.remove(id);
             runTaskAsync(() ->
                     playerObservers.forEach(observer -> {
-                        if (observer instanceof PlayerUnloadObserver<K,V> playerUnloadObserver) {
+                        if (observer instanceof PlayerUnloadObserver<K,V, CacheItem<K, V>> playerUnloadObserver) {
                             playerUnloadObserver.onUnload(id, unloadedData);
                         }
                     }
@@ -80,7 +80,7 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
     }
 
     @Override
-    public void addPlayerObserver(PlayerObserver<K, V> playerObserver) {
+    public void addPlayerObserver(PlayerObserver<K, V, CacheItem<K, V>> playerObserver) {
         playerObservers.add(playerObserver);
     }
 
@@ -94,19 +94,13 @@ public class AsyncPlayerReadOnlyCache<K, V> implements AsyncPlayerReadCache<K, V
     }
 
     @Override
-    public void get(UUID id, K key, Consumer<CacheItem<K, V>> consumer) {
-        runTaskAsync(() -> {
-            Map<K, CacheItem<K, V>> innerMap = localCache.get(id);
-            CacheItem<K, V> cacheItem = innerMap == null ? null : innerMap.get(key);
-            consumer.accept(cacheItem);
-        });
+    public CacheItem<K, V> get(UUID id, K key) {
+        Map<K, CacheItem<K, V>> innerMap = localCache.get(id);
+        return innerMap == null ? null : innerMap.get(key);
     }
 
     @Override
-    public void get(UUID id, Consumer<Map<K, CacheItem<K, V>>> consumer) {
-        runTaskAsync(() -> {
-            Map<K, CacheItem<K,V>> map = localCache.get(id);
-            consumer.accept(map);
-        });
+    public Map<K, CacheItem<K, V>> values(UUID id) {
+        return localCache.get(id);
     }
 }

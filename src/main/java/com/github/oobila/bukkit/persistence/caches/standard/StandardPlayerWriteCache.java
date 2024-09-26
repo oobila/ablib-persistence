@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-public interface StandardPlayerWriteCache<K, V>  extends PlayerWriteCache<K, V>, StandardPlayerReadCache<K, V> {
+public interface StandardPlayerWriteCache<K, V, C extends CacheItem<K, V>>
+        extends PlayerWriteCache<K, V, C>, StandardPlayerReadCache<K, V, C> {
 
-    CacheItem<K,V> putValue(UUID id, K key, V value);
+    C putValue(UUID id, K key, V value);
 
-    CacheItem<K,V> remove(UUID id, K key);
+    C remove(UUID id, K key);
 
-    List<CacheItem<K,V>> removeBefore(ZonedDateTime zonedDateTime);
+    List<C> removeBefore(ZonedDateTime zonedDateTime);
 
     void savePlayer(UUID id);
 

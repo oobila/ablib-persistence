@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public interface PersistenceVehicle<K, V> {
+public interface PersistenceVehicle<K, V, C extends CacheItem<K, V>> {
 
     Cache getCache();
     void setCache(Cache cache);
-    Map<K, CacheItem<K,V>> load(Plugin plugin, String directory);
-    void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map);
+    Map<K, C> load(Plugin plugin, String directory);
+    void save(Plugin plugin, String directory, Map<K, C> map);
     StorageAdapter getStorageAdapter();
     Class<K> getKeyType();
     void addBackwardsCompatibility(BackwardsCompatibility backwardsCompatibility);

@@ -2,7 +2,6 @@ package com.github.oobila.bukkit.persistence.caches.standard;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.OnDemandPersistenceVehicle;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
-import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import lombok.Getter;
 import lombok.experimental.Delegate;
@@ -18,28 +17,29 @@ import java.util.Set;
 
 @SuppressWarnings("unused")
 @Getter
-public class OnDemandCache<K, V> implements StandardWriteCache<K, V>, Map<K, OnDemandCacheItem<K,V>> {
+public class OnDemandCache<K, V>
+        implements StandardWriteCache<K, V, OnDemandCacheItem<K, V>>, Map<K, OnDemandCacheItem<K, V>> {
 
     private final String name;
     private Plugin plugin;
-    private final OnDemandPersistenceVehicle<K, V> vehicle;
+    private final OnDemandPersistenceVehicle<K, V, OnDemandCacheItem<K, V>> vehicle;
 
     @Delegate(excludes = Excludes.class)
-    protected final Map<K, OnDemandCacheItem<K,V>> localCache = new HashMap<>();
+    protected final Map<K, OnDemandCacheItem<K, V>> localCache = new HashMap<>();
 
-    public OnDemandCache(String name, OnDemandPersistenceVehicle<K, V> clusterVehicle) {
+    public OnDemandCache(String name, OnDemandPersistenceVehicle<K, V, OnDemandCacheItem<K, V>> clusterVehicle) {
         this.name = name;
         this.vehicle = clusterVehicle;
         vehicle.setCache(this);
     }
 
     @Override
-    public PersistenceVehicle<K, V> getWriteVehicle() {
+    public PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> getWriteVehicle() {
         return vehicle;
     }
 
     @Override
-    public List<PersistenceVehicle<K, V>> getReadVehicles() {
+    public List<PersistenceVehicle<K, V, OnDemandCacheItem<K, V>>> getReadVehicles() {
         return List.of(vehicle);
     }
 
@@ -82,7 +82,7 @@ public class OnDemandCache<K, V> implements StandardWriteCache<K, V>, Map<K, OnD
     }
 
     @Override
-    public CacheItem<K, V> putValue(K key, V value) {
+    public OnDemandCacheItem<K, V> putValue(K key, V value) {
         OnDemandCacheItem<K, V> cacheItem = new OnDemandCacheItem<>(key, value, 0, ZonedDateTime.now(), this);
         vehicle.saveSingle(plugin, name, cacheItem);
         cacheItem.unload();
@@ -91,14 +91,14 @@ public class OnDemandCache<K, V> implements StandardWriteCache<K, V>, Map<K, OnD
     }
 
     @Override
-    public List<CacheItem<K, V>> removeBefore(ZonedDateTime zonedDateTime) {
+    public List<OnDemandCacheItem<K, V>> removeBefore(ZonedDateTime zonedDateTime) {
         List<K> itemsToRemove = new ArrayList<>();
         localCache.forEach((key, cacheItem) -> {
             if (cacheItem.getUpdatedDate().isBefore(zonedDateTime)) {
                 itemsToRemove.add(key);
             }
         });
-        List<CacheItem<K,V>> itemsRemoved = new ArrayList<>();
+        List<OnDemandCacheItem<K, V>> itemsRemoved = new ArrayList<>();
         itemsToRemove.forEach(key -> itemsRemoved.add(remove(key)));
         return itemsRemoved;
     }

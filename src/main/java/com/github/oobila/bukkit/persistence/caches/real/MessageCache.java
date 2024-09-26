@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerPersistenceVehicle;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerYamlConfigVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.PlayerReadAndWriteCache;
+import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.observers.PlayerLoadObserver;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -27,13 +28,18 @@ public class MessageCache extends PlayerReadAndWriteCache<ZonedDateTime, String>
         );
     }
 
-    public MessageCache(String name, PlayerPersistenceVehicle<ZonedDateTime, String> vehicle) {
+    public MessageCache(
+            String name,
+            PlayerPersistenceVehicle<ZonedDateTime, String, CacheItem<ZonedDateTime, String>> vehicle
+    ) {
         super(name, vehicle);
-        addPlayerObserver((PlayerLoadObserver<ZonedDateTime, String>) (playerId, loadedData) ->
-                loadedData.entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey())
-                        .map(entry -> entry.getValue().getData())
-                        .forEach(s -> Objects.requireNonNull(Bukkit.getPlayer(playerId)).sendMessage(s))
+        addPlayerObserver(
+                (PlayerLoadObserver<ZonedDateTime, String, CacheItem<ZonedDateTime, String>>)
+                (playerId, loadedData) ->
+                        loadedData.entrySet().stream()
+                                .sorted(Map.Entry.comparingByKey())
+                                .map(entry -> entry.getValue().getData())
+                                .forEach(s -> Objects.requireNonNull(Bukkit.getPlayer(playerId)).sendMessage(s))
         );
     }
 

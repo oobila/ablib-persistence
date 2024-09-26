@@ -15,7 +15,8 @@ import java.util.Map;
 import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
 
 @SuppressWarnings("unused")
-public class OnDemandVehicle<K, V> extends ClusterVehicle<K, V> implements OnDemandPersistenceVehicle<K, V> {
+public class OnDemandVehicle<K, V, C extends OnDemandCacheItem<K, V>>
+        extends ClusterVehicle<K, V, C> implements OnDemandPersistenceVehicle<K, V, C> {
 
     public OnDemandVehicle(Class<K> keyType, StorageAdapter storageAdapter, CodeAdapter<V> codeAdapter) {
         super(keyType, storageAdapter, codeAdapter);
@@ -23,12 +24,12 @@ public class OnDemandVehicle<K, V> extends ClusterVehicle<K, V> implements OnDem
 
     @SuppressWarnings("unchecked")
     @Override
-    public OnDemandCacheItem<K,V> loadMetadataSingle(Plugin plugin, String directory, String name) {
+    public C loadMetadataSingle(Plugin plugin, String directory, String name) {
         getCodeAdapter().setPlugin(plugin);
         Map<K, OnDemandCacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = getStorageAdapter().read(plugin, append(directory, name));
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());
-        return new OnDemandCacheItem<>(key, null, storedDataList.get(0), (OnDemandCache<K, V>) getCache());
+        return (C) new OnDemandCacheItem<>(key, null, storedDataList.get(0), (OnDemandCache<K, V>) getCache());
     }
 
 }

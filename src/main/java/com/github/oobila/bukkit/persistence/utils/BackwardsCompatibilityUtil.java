@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BackwardsCompatibilityUtil {
 
-    public static StoredData compatibility(PersistenceVehicle<?, ?> vehicle, StoredData storedData) {
+    public static StoredData compatibility(PersistenceVehicle<?, ?, ?> vehicle, StoredData storedData) {
         for (BackwardsCompatibility backwardsCompatibility : vehicle.getBackwardsCompatibilityList()) {
             storedData = storedData.toBuilder()
                     .data(storedData.getData().replaceAll(
@@ -22,7 +22,7 @@ public class BackwardsCompatibilityUtil {
         return storedData;
     }
 
-    public static StoredData compatibility(PlayerPersistenceVehicle<?, ?> vehicle, StoredData storedData) {
+    public static StoredData compatibility(PlayerPersistenceVehicle<?, ?, ?> vehicle, StoredData storedData) {
         for (BackwardsCompatibility backwardsCompatibility : vehicle.getBackwardsCompatibilityList()) {
             storedData = storedData.toBuilder()
                     .data(storedData.getData().replaceAll(

@@ -10,13 +10,17 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 @Getter
-public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V> {
+public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V, CacheItem<K, V>> {
 
-    public ReadAndWriteCache(String name, PersistenceVehicle<K, V> vehicle) {
+    public ReadAndWriteCache(String name, PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(name, vehicle, vehicle);
     }
 
-    public ReadAndWriteCache(String name, List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
+    public ReadAndWriteCache(
+            String name,
+            List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles,
+            PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle
+    ) {
         super(name, readVehicles, writeVehicle);
     }
 
@@ -27,12 +31,12 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
     }
 
     @Override
-    public CacheItem<K,V> putValue(K key, V value) {
+    public CacheItem<K, V> putValue(K key, V value) {
         return localCache.put(key, new CacheItem<>(key, value, 0, ZonedDateTime.now()));
     }
 
     @Override
-    public List<CacheItem<K,V>> removeBefore(ZonedDateTime zonedDateTime) {
+    public List<CacheItem<K, V>> removeBefore(ZonedDateTime zonedDateTime) {
         List<K> itemsToRemove = new ArrayList<>();
         localCache.forEach((key, cacheItem) -> {
             if (cacheItem.getUpdatedDate().isBefore(zonedDateTime)) {

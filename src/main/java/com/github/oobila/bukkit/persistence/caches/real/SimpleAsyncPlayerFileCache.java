@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerPersistenceVehicle;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PlayerYamlConfigVehicle;
 import com.github.oobila.bukkit.persistence.caches.async.AsyncPlayerReadAndWriteCache;
+import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.observers.PlayerSaveObserver;
 
 @SuppressWarnings("unused")
@@ -19,9 +20,9 @@ public class SimpleAsyncPlayerFileCache<K, V> extends AsyncPlayerReadAndWriteCac
         );
     }
 
-    public SimpleAsyncPlayerFileCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+    public SimpleAsyncPlayerFileCache(String name, PlayerPersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(name, vehicle);
-        addPlayerObserver((PlayerSaveObserver<K, V>) (playerId, savedData) -> unloadPlayer(playerId));
+        addPlayerObserver((PlayerSaveObserver<K, V, CacheItem<K, V>>) (playerId, savedData) -> unloadPlayer(playerId));
     }
 
 }

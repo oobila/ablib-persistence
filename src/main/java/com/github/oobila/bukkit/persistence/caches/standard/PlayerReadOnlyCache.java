@@ -18,20 +18,21 @@ import java.util.UUID;
 
 @SuppressWarnings("unused")
 @Getter
-public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>, Map<UUID, Map<K, CacheItem<K,V>>>{
+public class PlayerReadOnlyCache<K, V>
+        implements StandardPlayerReadCache<K, V, CacheItem<K, V>>, Map<UUID, Map<K, CacheItem<K, V>>>{
 
     private Plugin plugin;
     private final String name;
-    private final List<PlayerPersistenceVehicle<K, V>> readVehicles;
-    protected final List<PlayerObserver<K, V>> playerObservers = new ArrayList<>();
+    private final List<PlayerPersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
+    protected final List<PlayerObserver<K, V, CacheItem<K, V>>> playerObservers = new ArrayList<>();
     @Delegate
-    protected final Map<UUID, Map<K, CacheItem<K,V>>> localCache = new HashMap<>();
+    protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
-    public PlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V> vehicle) {
+    public PlayerReadOnlyCache(String name, PlayerPersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this(name, List.of(vehicle));
     }
 
-    public PlayerReadOnlyCache(String name, List<PlayerPersistenceVehicle<K, V>> readVehicles) {
+    public PlayerReadOnlyCache(String name, List<PlayerPersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
         this.name = name;
         this.readVehicles = readVehicles;
         readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
@@ -52,7 +53,7 @@ public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>,
         }
         readVehicles.forEach(vehicle -> localCache.get(id).putAll(vehicle.loadPlayer(plugin, name, id)));
         playerObservers.forEach(observer -> {
-            if (observer instanceof PlayerLoadObserver<K,V> playerLoadObserver) {
+            if (observer instanceof PlayerLoadObserver<K, V, CacheItem<K, V>> playerLoadObserver) {
                 playerLoadObserver.onLoad(id, localCache.get(id));
             }
         });
@@ -62,14 +63,14 @@ public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>,
     public void unloadPlayer(UUID id) {
         Map<K, CacheItem<K, V>> unloadedData = localCache.remove(id);
         playerObservers.forEach(observer -> {
-            if (observer instanceof PlayerUnloadObserver<K,V> playerUnloadObserver) {
+            if (observer instanceof PlayerUnloadObserver<K, V, CacheItem<K, V>> playerUnloadObserver) {
                 playerUnloadObserver.onUnload(id, unloadedData);
             }
         });
     }
 
     @Override
-    public void addPlayerObserver(PlayerObserver<K, V> playerObserver) {
+    public void addPlayerObserver(PlayerObserver<K, V, CacheItem<K, V>> playerObserver) {
         playerObservers.add(playerObserver);
     }
 
@@ -85,7 +86,7 @@ public class PlayerReadOnlyCache<K, V> implements StandardPlayerReadCache<K, V>,
     }
 
     @Override
-    public Map<K, CacheItem<K,V>> getWithMetadata(UUID id) {
+    public Map<K, CacheItem<K, V>> getWithMetadata(UUID id) {
         return localCache.get(id);
     }
 

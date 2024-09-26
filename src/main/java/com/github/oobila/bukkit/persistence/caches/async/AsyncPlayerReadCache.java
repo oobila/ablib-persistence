@@ -8,14 +8,16 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"unused","java:S1845"})
-public interface AsyncPlayerReadCache<K, V> extends PlayerReadCache<K, V> {
+public interface AsyncPlayerReadCache<K, V, C extends CacheItem<K, V>> extends PlayerReadCache<K, V, C> {
 
     void getValue(UUID id, K key, Consumer<V> consumer);
 
-    void get(UUID id, K key, Consumer<CacheItem<K,V>> consumer);
+    C get(UUID id, K key);
 
-    void get(UUID id, Consumer<Map<K, CacheItem<K,V>>> consumer);
+    Map<K, C> values(UUID id);
 
-    void loadPlayer(UUID id, Consumer<Map<K, CacheItem<K, V>>> consumer);
+    void loadPlayer(UUID id, Consumer<Map<K, C>> consumer);
+
+
 
 }

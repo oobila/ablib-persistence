@@ -11,25 +11,33 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, CacheItem<K,V>> {
+public class ReadOnlyCache<K, V> implements StandardReadCache<K, V, CacheItem<K, V>>, Map<K, CacheItem<K, V>> {
 
     private Plugin plugin;
     private final String name;
-    private final List<PersistenceVehicle<K, V>> readVehicles;
-    private final PersistenceVehicle<K, V> writeVehicle;
+    private final List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
+    private final PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
 
     @Delegate
-    protected final Map<K, CacheItem<K,V>> localCache = new HashMap<>();
+    protected final Map<K, CacheItem<K, V>> localCache = new HashMap<>();
 
-    public ReadOnlyCache(String name, PersistenceVehicle<K, V> vehicle) {
+    public ReadOnlyCache(String name, PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this( name, vehicle, vehicle);
     }
 
-    public ReadOnlyCache(String name, PersistenceVehicle<K, V> readVehicle, PersistenceVehicle<K, V> writeVehicle) {
+    public ReadOnlyCache(
+            String name,
+            PersistenceVehicle<K, V, CacheItem<K, V>> readVehicle,
+            PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle
+    ) {
         this(name, List.of(readVehicle), writeVehicle);
     }
 
-    public ReadOnlyCache(String name, List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
+    public ReadOnlyCache(
+            String name,
+            List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles,
+            PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle
+    ) {
         this.name = name;
         this.readVehicles = readVehicles;
         readVehicles.forEach(readVehicle -> readVehicle.setCache(this));

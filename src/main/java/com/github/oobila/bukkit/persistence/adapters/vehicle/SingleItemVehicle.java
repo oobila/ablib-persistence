@@ -19,29 +19,30 @@ import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityU
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class SingleItemVehicle<K, V> extends BasePersistenceVehicle<K, V> {
+public class SingleItemVehicle<K, V, C extends CacheItem<K, V>> extends BasePersistenceVehicle<K, V, C> {
 
     private final Class<K> keyType;
     private final StorageAdapter storageAdapter;
     private final CodeAdapter<V> codeAdapter;
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Map<K, CacheItem<K,V>> load(Plugin plugin, String directory) {
+    public Map<K, C> load(Plugin plugin, String directory) {
         codeAdapter.setPlugin(plugin);
-        Map<K, CacheItem<K,V>> map = new HashMap<>();
+        Map<K, C> map = new HashMap<>();
         List<StoredData> storedDataList = storageAdapter.read(plugin, directory);
         storedDataList.forEach(storedData -> {
             K key = Serialization.deserialize(getKeyType(), storedData.getName());
             V value = codeAdapter.toObject(compatibility(this, storedData));
-            CacheItem<K,V> cacheItem = new CacheItem<>(key, value, storedData);
+            C cacheItem = (C) new CacheItem<>(key, value, storedData);
             map.put(key, cacheItem);
         });
         return map;
     }
 
     @Override
-    public void save(Plugin plugin, String directory, Map<K, CacheItem<K,V>> map) {
-        Map.Entry<K, CacheItem<K,V>> entry = map.entrySet().iterator().next();
+    public void save(Plugin plugin, String directory, Map<K, C> map) {
+        Map.Entry<K, C> entry = map.entrySet().iterator().next();
         String name = Serialization.serialize(entry.getValue().getKey());
         String data = codeAdapter.fromObject(entry.getValue().getData());
         StoredData storedData = new StoredData(directory, data, 0, null);

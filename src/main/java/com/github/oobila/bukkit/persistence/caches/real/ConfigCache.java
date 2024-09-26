@@ -5,6 +5,7 @@ import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.YamlConfigVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.ReadOnlyCache;
+import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -29,12 +30,15 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
         );
     }
 
-    public ConfigCache(String name, PersistenceVehicle<String, Object> vehicle) {
+    public ConfigCache(String name, PersistenceVehicle<String, Object, CacheItem<String, Object>> vehicle) {
         super(name, vehicle);
     }
 
-    public ConfigCache(String name, List<PersistenceVehicle<String, Object>> readVehicles,
-                       PersistenceVehicle<String, Object> writeVehicle) {
+    public ConfigCache(
+            String name,
+            List<PersistenceVehicle<String, Object, CacheItem<String, Object>>> readVehicles,
+            PersistenceVehicle<String, Object, CacheItem<String, Object>> writeVehicle
+    ) {
         super(name, readVehicles, writeVehicle);
     }
 

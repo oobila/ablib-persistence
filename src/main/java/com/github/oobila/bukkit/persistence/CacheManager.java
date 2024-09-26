@@ -12,9 +12,9 @@ import java.util.List;
 public class CacheManager {
 
     @Getter
-    private static final List<PlayerReadCache<?, ?>> playerReadCaches = new ArrayList<>();
+    private static final List<PlayerReadCache<?, ?, ?>> playerReadCaches = new ArrayList<>();
 
-    public static void register(PlayerReadCache<?, ?> cache) {
+    public static void register(PlayerReadCache<?, ?, ?> cache) {
         playerReadCaches.add(cache);
     }
 

@@ -10,14 +10,15 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public interface AsyncPlayerWriteCache<K, V> extends PlayerWriteCache<K, V>, AsyncPlayerReadCache<K, V> {
+public interface AsyncPlayerWriteCache<K, V, C extends CacheItem<K, V>>
+        extends PlayerWriteCache<K, V, C>, AsyncPlayerReadCache<K, V, C> {
 
-    void putValue(UUID id, K key, V value, Consumer<CacheItem<K,V>> consumer);
+    void putValue(UUID id, K key, V value, Consumer<C> consumer);
 
-    void remove(UUID id, K key, Consumer<CacheItem<K,V>> consumer);
+    void remove(UUID id, K key, Consumer<C> consumer);
 
-    void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<CacheItem<K,V>>> consumer);
+    void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<C>> consumer);
 
-    void savePlayer(UUID id, Consumer<Map<K, CacheItem<K, V>>> consumer);
+    void savePlayer(UUID id, Consumer<Map<K, C>> consumer);
 
 }
