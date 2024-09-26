@@ -56,12 +56,14 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
 
     @Override
     public String fromObject(Resource<?> resource) {
-        if (!typeMap.containsKey(resource.getData().getClass())) {
-            log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getData().getClass().getName());
-            throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
+        for (Class<?> type : typeMap.keySet()) {
+            if (type.isAssignableFrom(resource.getData().getClass())) {
+                CodeAdapter<?> codeAdapter = typeMap.get(resource.getData().getClass());
+                return fromObject(codeAdapter, resource.getData());
+            }
         }
-        CodeAdapter<?> codeAdapter = typeMap.get(resource.getData().getClass());
-        return fromObject(codeAdapter, resource.getData());
+        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getData().getClass().getName());
+        throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
     }
 
     @SuppressWarnings("unchecked")
