@@ -44,7 +44,9 @@ public class PlayerClusterVehicle<K, V, C extends CacheItem<K, V>> extends BaseP
             storedDataList.forEach(storedData -> {
                 K key = Serialization.deserialize(getKeyType(), storedData.getName());
                 V value = codeAdapter.toObject(compatibility(this, storedData));
-                C cacheItem = (C) new CacheItem<>(key, value, storedData);
+                C cacheItem = (C) new CacheItem<>(
+                        getCodeAdapter().getType(), key, value, storedData
+                );
                 map.put(key, cacheItem);
             });
         }

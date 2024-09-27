@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
+import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.caches.Cache;
 import com.github.oobila.bukkit.persistence.model.BackwardsCompatibility;
@@ -20,6 +21,7 @@ public interface PlayerPersistenceVehicle<K, V, C extends CacheItem<K, V>> {
     void savePlayer(Plugin plugin, String directory, UUID playerId, Map<K, C> map);
     void saveSingle(Plugin plugin, String directory, UUID playerId, C cacheItem);
     StorageAdapter getStorageAdapter();
+    CodeAdapter<V> getCodeAdapter();
     Class<K> getKeyType();
     default String getPlayerDirectory() {
         return "playerData/";

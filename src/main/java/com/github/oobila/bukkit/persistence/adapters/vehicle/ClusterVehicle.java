@@ -45,7 +45,9 @@ public class ClusterVehicle<K, V, C extends CacheItem<K, V>>
         List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());
         V value = codeAdapter.toObject(compatibility(this, storedDataList.get(0)));
-        return (C) new CacheItem<>(key, value, storedDataList.get(0));
+        return (C) new CacheItem<>(
+                this.getCodeAdapter().getType(), key, value, storedDataList.get(0)
+        );
     }
 
     @Override

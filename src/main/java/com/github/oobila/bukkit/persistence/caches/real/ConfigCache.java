@@ -25,6 +25,7 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
                 name,
                 new YamlConfigVehicle<>(
                         String.class,
+                        Object.class,
                         new FileStorageAdapter("yml")
                 )
         );

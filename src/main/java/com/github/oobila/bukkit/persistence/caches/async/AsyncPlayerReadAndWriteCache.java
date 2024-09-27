@@ -63,7 +63,9 @@ public class AsyncPlayerReadAndWriteCache<K, V>
     public void putValue(UUID id, K key, V value, Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             localCache.putIfAbsent(id, new HashMap<>());
-            CacheItem<K, V> cacheItem = localCache.get(id).put(key, new CacheItem<>(key, value, 0, ZonedDateTime.now()));
+            CacheItem<K, V> cacheItem = localCache.get(id).put(key, new CacheItem<>(
+                    getWriteVehicle().getCodeAdapter().getType(), key, value, 0, ZonedDateTime.now()
+            ));
             consumer.accept(cacheItem);
         });
     }

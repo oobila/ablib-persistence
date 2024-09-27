@@ -23,6 +23,7 @@ public class MessageCache extends PlayerReadAndWriteCache<ZonedDateTime, String>
                 name,
                 new PlayerYamlConfigVehicle<>(
                         ZonedDateTime.class,
+                        String.class,
                         new FileStorageAdapter("yml")
                 )
         );

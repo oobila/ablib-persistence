@@ -14,13 +14,13 @@ public class OnDemandCacheItem<K, D> extends CacheItem<K, D> {
 
     private final WriteCache<K, D, OnDemandCacheItem<K, D>> cache;
 
-    public OnDemandCacheItem(K key, D data, StoredData storedData, WriteCache<K, D, OnDemandCacheItem<K, D>> cache) {
-        super(key, data, storedData);
+    public OnDemandCacheItem(Class<D> type, K key, D data, StoredData storedData, WriteCache<K, D, OnDemandCacheItem<K, D>> cache) {
+        super(type, key, data, storedData);
         this.cache = cache;
     }
 
-    public OnDemandCacheItem(K key, D data, long size, ZonedDateTime updatedDate, WriteCache<K, D, OnDemandCacheItem<K, D>> cache) {
-        super(key, data, size, updatedDate);
+    public OnDemandCacheItem(Class<D> type, K key, D data, long size, ZonedDateTime updatedDate, WriteCache<K, D, OnDemandCacheItem<K, D>> cache) {
+        super(type, key, data, size, updatedDate);
         this.cache = cache;
     }
 

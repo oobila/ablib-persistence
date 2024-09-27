@@ -1,13 +1,13 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
+import com.github.oobila.bukkit.persistence.adapters.code.DummyCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 
@@ -22,13 +22,19 @@ import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils
 import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
 
 @SuppressWarnings("unused")
-@RequiredArgsConstructor
 @Getter
 public class PlayerYamlConfigVehicle<K, V, C extends CacheItem<K, V>>
         extends BasePlayerPersistenceVehicle<K, V, C> {
 
     private final Class<K> keyType;
     private final StorageAdapter storageAdapter;
+    private final DummyCodeAdapter<V> codeAdapter;
+
+    public PlayerYamlConfigVehicle(Class<K> keyType, Class<V> valueType, StorageAdapter storageAdapter) {
+        this.keyType = keyType;
+        this.storageAdapter = storageAdapter;
+        this.codeAdapter = new DummyCodeAdapter<>(valueType);
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -47,7 +53,9 @@ public class PlayerYamlConfigVehicle<K, V, C extends CacheItem<K, V>>
                 for (Map.Entry<String, Object> entry : objects.entrySet()) {
                     K key = Serialization.deserialize(getKeyType(), entry.getKey());
                     V value = (V) entry.getValue();
-                    C cacheItem = (C) new CacheItem<>(key, value, storedData);
+                    C cacheItem = (C) new CacheItem<>(
+                            getCodeAdapter().getType(), key, value, storedData
+                    );
                     map.put(key, cacheItem);
                 }
             }

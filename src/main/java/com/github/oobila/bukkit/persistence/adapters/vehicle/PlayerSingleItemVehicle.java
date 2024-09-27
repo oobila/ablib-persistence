@@ -38,7 +38,9 @@ public class PlayerSingleItemVehicle<K, V, C extends CacheItem<K, V>> extends Ba
         storedDataList.forEach(storedData -> {
             K key = Serialization.deserialize(getKeyType(), storedData.getName());
             V value = codeAdapter.toObject(compatibility(this, storedData));
-            C cacheItem = (C) new CacheItem<>(key, value, storedData);
+            C cacheItem = (C) new CacheItem<>(
+                    getCodeAdapter().getType(), key, value, storedData
+            );
             map.put(key, cacheItem);
         });
         return map;

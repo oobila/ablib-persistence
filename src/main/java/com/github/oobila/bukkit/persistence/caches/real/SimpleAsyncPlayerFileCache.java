@@ -10,11 +10,12 @@ import com.github.oobila.bukkit.persistence.observers.PlayerSaveObserver;
 @SuppressWarnings("unused")
 public class SimpleAsyncPlayerFileCache<K, V> extends AsyncPlayerReadAndWriteCache<K, V> {
 
-    public SimpleAsyncPlayerFileCache(String name, Class<K> keyType) {
+    public SimpleAsyncPlayerFileCache(String name, Class<K> keyType, Class<V> valueType) {
         this(
                 name,
                 new PlayerYamlConfigVehicle<>(
                         keyType,
+                        valueType,
                         new FileStorageAdapter("yml")
                 )
         );

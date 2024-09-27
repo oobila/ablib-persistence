@@ -1,6 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
 import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
+import com.github.oobila.bukkit.persistence.adapters.code.DummyCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.code.ResourcePackCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.storage.ZipStorageAdapter;
@@ -34,17 +35,18 @@ public class ResourcePackVehicle<K>
             2000,1,1,0,0,0,0, ZoneOffset.UTC);
 
     private final Class<K> keyType;
-    private final ResourcePackCodeAdapter codeAdapter;
+    private final ResourcePackCodeAdapter resourceCodeAdapter;
+    private final DummyCodeAdapter<ResourcePack> codeAdapter = new DummyCodeAdapter<>(ResourcePack.class);
     private final ZipStorageAdapter storageAdapter = new ZipStorageAdapter();
 
     public ResourcePackVehicle(Class<K> keyType, Map<Pattern, CodeAdapter<?>> codeAdapterMap) {
         this.keyType = keyType;
-        this.codeAdapter = new ResourcePackCodeAdapter(codeAdapterMap);
+        this.resourceCodeAdapter = new ResourcePackCodeAdapter(codeAdapterMap);
     }
 
     @Override
     public Map<K, OnDemandCacheItem<K, ResourcePack>> load(Plugin plugin, String directory) {
-        codeAdapter.setPlugin(plugin);
+        resourceCodeAdapter.setPlugin(plugin);
         Map<K, OnDemandCacheItem<K,ResourcePack>> map = new HashMap<>();
         for (String item : storageAdapter.poll(plugin, directory)) {
             K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(item));
@@ -72,18 +74,14 @@ public class ResourcePackVehicle<K>
             if (updatedDate.isBefore(storedData.getUpdatedDate())) {
                 updatedDate = storedData.getUpdatedDate();
             }
-            Object object = codeAdapter.toObject(compatibility(this, storedData));
-            Resource<?> resource = new Resource<>(
-                    storedData.getName(),
-                    object,
-                    storedData.getSize(),
-                    storedData.getUpdatedDate()
-            );
-            resourcePack.put(resource.getKey(), resource);
+            Resource<?> object = resourceCodeAdapter.toObject(compatibility(this, storedData));
+            resourcePack.put(object.getKey(), object);
         }
         K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(name));
         StoredData storedData = new StoredData(null, null, size, updatedDate);
-        return new OnDemandCacheItem<>(key, resourcePack, storedData, (ResourcePackCache<K>) getCache());
+        return new OnDemandCacheItem<>(
+                ResourcePack.class, key, resourcePack, storedData, (ResourcePackCache<K>) getCache()
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -91,6 +89,7 @@ public class ResourcePackVehicle<K>
     public OnDemandCacheItem<K, ResourcePack> loadMetadataSingle(Plugin plugin, String directory, String name) {
         CacheItem<K, ResourcePack> cacheItem = loadSingle(plugin, directory, name);
         return new OnDemandCacheItem<>(
+                ResourcePack.class,
                 cacheItem.getKey(),
                 cacheItem.getData(),
                 cacheItem.getSize(),
@@ -104,7 +103,7 @@ public class ResourcePackVehicle<K>
         String name = Serialization.serialize(cacheItem.getKey());
         List<StoredData> storedDataList = new ArrayList<>();
         for (Map.Entry<String, Resource<?>> entry : cacheItem.getData().entrySet()) {
-            String data = codeAdapter.fromObject(entry.getValue());
+            String data = resourceCodeAdapter.fromObject(entry.getValue());
             storedDataList.add(new StoredData(entry.getKey(), data, 0, null));
         }
         storageAdapter.write(plugin, append(directory, name), storedDataList);

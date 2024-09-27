@@ -34,7 +34,9 @@ public class SingleItemVehicle<K, V, C extends CacheItem<K, V>> extends BasePers
         storedDataList.forEach(storedData -> {
             K key = Serialization.deserialize(getKeyType(), storedData.getName());
             V value = codeAdapter.toObject(compatibility(this, storedData));
-            C cacheItem = (C) new CacheItem<>(key, value, storedData);
+            C cacheItem = (C) new CacheItem<>(
+                    this.getCodeAdapter().getType(), key, value, storedData
+            );
             map.put(key, cacheItem);
         });
         return map;

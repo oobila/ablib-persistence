@@ -83,7 +83,9 @@ public class OnDemandCache<K, V>
 
     @Override
     public OnDemandCacheItem<K, V> putValue(K key, V value) {
-        OnDemandCacheItem<K, V> cacheItem = new OnDemandCacheItem<>(key, value, 0, ZonedDateTime.now(), this);
+        OnDemandCacheItem<K, V> cacheItem = new OnDemandCacheItem<>(
+                getWriteVehicle().getCodeAdapter().getType(), key, value, 0, ZonedDateTime.now(), this
+        );
         vehicle.saveSingle(plugin, name, cacheItem);
         cacheItem.unload();
         localCache.put(key, cacheItem);

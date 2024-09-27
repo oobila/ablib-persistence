@@ -7,11 +7,12 @@ import com.github.oobila.bukkit.persistence.caches.standard.ReadAndWriteCache;
 @SuppressWarnings("unused")
 public class SimpleFileCache<K, V> extends ReadAndWriteCache<K, V> {
 
-    public SimpleFileCache(String name, Class<K> keyType) {
+    public SimpleFileCache(String name, Class<K> keyType, Class<V> valueType) {
         super(
                 name,
                 new YamlConfigVehicle<>(
                         keyType,
+                        valueType,
                         new FileStorageAdapter("yml")
                 )
         );

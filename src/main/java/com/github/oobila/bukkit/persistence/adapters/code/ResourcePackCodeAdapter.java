@@ -50,18 +50,24 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Resource<T> getResource(StoredData storedData, Object object) {
-        return new Resource<>(storedData.getName(), (T) object, storedData.getSize(), storedData.getUpdatedDate());
+    private <T> Resource<T> getResource(StoredData storedData, T object) {
+        return new Resource<>(
+                (Class<T>) object.getClass(),
+                storedData.getName(),
+                object,
+                storedData.getSize(),
+                storedData.getUpdatedDate()
+        );
     }
 
     @Override
     public String fromObject(Resource<?> resource) {
         for (Map.Entry<Class<?>, CodeAdapter<?>> entry : typeMap.entrySet()) {
-            if (entry.getKey().isAssignableFrom(resource.getData().getClass())) {
+            if (entry.getKey().isAssignableFrom(resource.getType())) {
                 return fromObject(entry.getValue(), resource.getData());
             }
         }
-        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getData().getClass().getName());
+        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getType().getName());
         throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
     }
 

@@ -25,11 +25,13 @@ public class OnDemandVehicle<K, V, C extends OnDemandCacheItem<K, V>>
     @SuppressWarnings("unchecked")
     @Override
     public C loadMetadataSingle(Plugin plugin, String directory, String name) {
-        getCodeAdapter().setPlugin(plugin);
+        this.getCodeAdapter().setPlugin(plugin);
         Map<K, OnDemandCacheItem<K,V>> map = new HashMap<>();
         List<StoredData> storedDataList = getStorageAdapter().read(plugin, append(directory, name));
         K key = Serialization.deserialize(getKeyType(), storedDataList.get(0).getName());
-        return (C) new OnDemandCacheItem<>(key, null, storedDataList.get(0), (OnDemandCache<K, V>) getCache());
+        return (C) new OnDemandCacheItem<>(
+                this.getCodeAdapter().getType(), key, null, storedDataList.get(0), (OnDemandCache<K, V>) getCache()
+        );
     }
 
 }
