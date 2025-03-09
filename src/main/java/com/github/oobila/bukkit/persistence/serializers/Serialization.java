@@ -17,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Serialization {
 
-    private static final Map<Class<?>, KeySerializer<?>> keySerializers = new HashMap<>();
+    private static final Map<Class<?>, Serializer<?>> keySerializers = new HashMap<>();
     static {
         register(String.class, new StringSerializer());
         register(ABID.class, new ABIDSerializer());
@@ -30,26 +30,26 @@ public class Serialization {
         register(LocalTime.class, new LocalTimeSerializer());
     }
 
-    public static <T> void register(Class<T> type, KeySerializer<T> serializer) {
+    public static <T> void register(Class<T> type, Serializer<T> serializer) {
         keySerializers.put(type, serializer);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> String serialize(T t) {
-        KeySerializer<T> keySerializer = (KeySerializer<T>) getKeySerializer(t.getClass());
-        return keySerializer.serialize(t);
+        Serializer<T> serializer = (Serializer<T>) getKeySerializer(t.getClass());
+        return serializer.serialize(t);
     }
 
     public static <T> T deserialize(Class<T> type, String s) {
-        KeySerializer<T> keySerializer = getKeySerializer(type);
-        return keySerializer.deserialize(s);
+        Serializer<T> serializer = getKeySerializer(type);
+        return serializer.deserialize(s);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> KeySerializer<T> getKeySerializer(Class<T> type) {
-        for (Map.Entry<Class<?>, KeySerializer<?>> entry : Serialization.keySerializers.entrySet()) {
+    private static <T> Serializer<T> getKeySerializer(Class<T> type) {
+        for (Map.Entry<Class<?>, Serializer<?>> entry : Serialization.keySerializers.entrySet()) {
             if (entry.getKey().isAssignableFrom(type)) {
-                return (KeySerializer<T>) entry.getValue();
+                return (Serializer<T>) entry.getValue();
             }
         }
         throw new NullPointerException("There is no key serializer for type: " + type.getName());

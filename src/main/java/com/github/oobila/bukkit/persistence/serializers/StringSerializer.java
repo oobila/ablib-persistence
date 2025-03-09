@@ -1,6 +1,6 @@
 package com.github.oobila.bukkit.persistence.serializers;
 
-public class StringSerializer implements KeySerializer<String> {
+public class StringSerializer implements Serializer<String> {
 
     @Override
     public String serialize(String object) {

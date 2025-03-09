@@ -3,7 +3,7 @@ package com.github.oobila.bukkit.persistence.serializers;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
-public class WorldSerializer implements KeySerializer<World> {
+public class WorldSerializer implements Serializer<World> {
 
     private final UUIDSerializer uuidSerializer = new UUIDSerializer();
 

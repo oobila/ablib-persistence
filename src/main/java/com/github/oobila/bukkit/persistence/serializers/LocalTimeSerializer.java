@@ -3,7 +3,7 @@ package com.github.oobila.bukkit.persistence.serializers;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public class LocalTimeSerializer implements KeySerializer<LocalTime> {
+public class LocalTimeSerializer implements Serializer<LocalTime> {
 
     @Override
     public String serialize(LocalTime localTime) {

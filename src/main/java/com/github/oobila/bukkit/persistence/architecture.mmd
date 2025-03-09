@@ -1,0 +1,6 @@
+flowchart TD
+    n1["Repository"] <--> n2["Cache"]
+    n3["CodeAdapter"] <--> n2 & n4["StorageAdapter"] & n8["StorageAdapter"]
+    n4 <--> n5["Disk Storage"]
+    n1 <--> n3
+    n8 <--> n7["Database"]

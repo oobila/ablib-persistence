@@ -2,7 +2,7 @@ package com.github.oobila.bukkit.persistence.serializers;
 
 import org.bukkit.Location;
 
-public class LocationSerializer implements KeySerializer<Location> {
+public class LocationSerializer implements Serializer<Location> {
 
     WorldSerializer worldSerializer = new WorldSerializer();
 
