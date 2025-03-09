@@ -5,7 +5,7 @@ import org.bukkit.OfflinePlayer;
 
 import java.util.UUID;
 
-public class OfflinePlayerSerializer implements Serializer<OfflinePlayer> {
+public class OfflinePlayerSerializer implements KeySerializer<OfflinePlayer> {
 
     @Override
     public String serialize(OfflinePlayer object) {
