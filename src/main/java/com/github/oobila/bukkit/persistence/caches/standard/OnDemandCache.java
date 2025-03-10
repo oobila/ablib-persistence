@@ -9,6 +9,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +67,11 @@ public class OnDemandCache<K, V>
     @Override
     public V getValue(K key) {
         return localCache.get(key).getData();
+    }
+
+    @Override
+    public Collection<K> keys() {
+        return localCache.keySet();
     }
 
     @SuppressWarnings("unchecked")

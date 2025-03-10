@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.experimental.Delegate;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,5 +72,10 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V, CacheItem<K,
     @Override
     public V getValue(K key) {
         return get(key).getData();
+    }
+
+    @Override
+    public Collection<K> keys() {
+        return localCache.keySet();
     }
 }
