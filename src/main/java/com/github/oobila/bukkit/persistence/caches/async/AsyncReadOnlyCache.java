@@ -76,6 +76,11 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
     }
 
     @Override
+    public Collection<K> keys() {
+        return localCache.keySet();
+    }
+
+    @Override
     public Collection<CacheItem<K, V>> values() {
         return localCache.values();
     }

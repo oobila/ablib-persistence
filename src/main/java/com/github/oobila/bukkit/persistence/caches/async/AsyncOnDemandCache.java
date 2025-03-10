@@ -70,6 +70,11 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     }
 
     @Override
+    public Collection<K> keys() {
+        return clusterCache.keySet();
+    }
+
+    @Override
     public Collection<OnDemandCacheItem<K, V>> values() {
         return clusterCache.values();
     }

@@ -15,4 +15,6 @@ public interface AsyncReadCache<K, V, C extends CacheItem<K, V>> extends ReadCac
 
     Collection<C> values();
 
+    Collection<K> keys();
+
 }
