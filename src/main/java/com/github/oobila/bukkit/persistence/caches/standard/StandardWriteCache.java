@@ -5,13 +5,22 @@ import com.github.oobila.bukkit.persistence.model.CacheItem;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("unused")
-public interface StandardWriteCache<K, V, C extends CacheItem<K, V>>
-        extends WriteCache<K, V, C>, StandardReadCache<K, V, C> {
+public interface StandardWriteCache<K, V>
+        extends WriteCache<K, V>, StandardReadCache<K, V> {
 
-    C putValue(K key, V value);
+    CacheItem<K, V> putValue(K key, V value);
 
-    List<C> removeBefore(ZonedDateTime zonedDateTime);
+    CacheItem<K, V> putValue(UUID partition, K key, V value);
+
+    CacheItem<K, V> remove(K key);
+
+    CacheItem<K, V> remove(UUID partition, K key);
+
+    List<CacheItem<K, V>> clear(UUID partition);
+
+    List<CacheItem<K, V>> removeBefore(ZonedDateTime zonedDateTime);
 
 }

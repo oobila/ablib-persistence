@@ -1,6 +1,6 @@
 package com.github.oobila.bukkit.persistence;
 
-import com.github.oobila.bukkit.persistence.caches.PlayerReadCache;
+import com.github.oobila.bukkit.persistence.caches.ReadCache;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +12,9 @@ import java.util.List;
 public class CacheManager {
 
     @Getter
-    private static final List<PlayerReadCache<?, ?, ?>> playerReadCaches = new ArrayList<>();
+    private static final List<ReadCache<?, ?>> playerReadCaches = new ArrayList<>();
 
-    public static void register(PlayerReadCache<?, ?, ?> cache) {
+    public static void registerPlayerCache(ReadCache<?, ?> cache) {
         playerReadCaches.add(cache);
     }
 

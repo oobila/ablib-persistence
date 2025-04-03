@@ -1,10 +1,7 @@
 package com.github.oobila.bukkit.persistence.listeners;
 
 import com.github.oobila.bukkit.persistence.CacheManager;
-import com.github.oobila.bukkit.persistence.caches.async.AsyncPlayerReadCache;
-import com.github.oobila.bukkit.persistence.caches.async.AsyncPlayerWriteCache;
-import com.github.oobila.bukkit.persistence.caches.standard.StandardPlayerReadCache;
-import com.github.oobila.bukkit.persistence.caches.standard.StandardPlayerWriteCache;
+import com.github.oobila.bukkit.persistence.caches.WriteCache;
 import lombok.AllArgsConstructor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,31 +14,22 @@ public class PersistencePlayerJoinListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        CacheManager.getPlayerReadCaches().forEach(playerReadCache -> {
+        CacheManager.getPlayerReadCaches().forEach(readCache ->
             //LOAD
-            if (playerReadCache instanceof StandardPlayerReadCache<?, ?, ?> standardPlayerReadCache) {
-                standardPlayerReadCache.loadPlayer(event.getPlayer().getUniqueId());
-            } else if (playerReadCache instanceof AsyncPlayerReadCache<?, ?, ?> asyncPlayerReadCache) {
-                asyncPlayerReadCache.loadPlayer(event.getPlayer().getUniqueId(), null);
-            }
-        });
+            readCache.load(event.getPlayer().getUniqueId())
+        );
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        CacheManager.getPlayerReadCaches().forEach(playerReadCache -> {
+        CacheManager.getPlayerReadCaches().forEach(readCache -> {
             //SAVE
-            if (playerReadCache instanceof StandardPlayerWriteCache<?, ?, ?> standardPlayerWriteCache) {
-                standardPlayerWriteCache.savePlayer(event.getPlayer().getUniqueId());
-            } else if (playerReadCache instanceof AsyncPlayerWriteCache<?, ?, ?> asyncPlayerWriteCache) {
-                asyncPlayerWriteCache.savePlayer(event.getPlayer().getUniqueId(), null);
+            if (readCache instanceof WriteCache<?,?> writeCache) {
+                writeCache.save(event.getPlayer().getUniqueId());
             }
+
             //UNLOAD
-            if (playerReadCache instanceof StandardPlayerReadCache<?, ?, ?> standardPlayerReadCache) {
-                standardPlayerReadCache.unloadPlayer(event.getPlayer().getUniqueId());
-            } else if (playerReadCache instanceof AsyncPlayerReadCache<?, ?, ?> asyncPlayerReadCache) {
-                asyncPlayerReadCache.unloadPlayer(event.getPlayer().getUniqueId());
-            }
+            readCache.unload(event.getPlayer().getUniqueId());
         });
     }
 

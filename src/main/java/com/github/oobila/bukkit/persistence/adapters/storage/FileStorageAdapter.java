@@ -55,6 +55,27 @@ public class FileStorageAdapter implements StorageAdapter {
     }
 
     @Override
+    public List<StoredData> readMetaData(Plugin plugin, String name) {
+        try {
+            Path path = getPath(plugin, name);
+            if (!Files.exists(path)) {
+                return Collections.emptyList();
+            }
+            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            return Collections.singletonList(new StoredData(
+                    FilenameUtils.getBaseName(name),
+                    null,
+                    attributes.size(),
+                    attributes.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault())
+            ));
+        } catch (Exception e) {
+            log(Level.SEVERE, "Could not read metadata of file: {0}", getFileName(name));
+            log(Level.SEVERE, e);
+            throw new PersistenceRuntimeException(e);
+        }
+    }
+
+    @Override
     public List<String> poll(Plugin plugin, String name) {
         File file = new File(plugin.getDataFolder(), name);
         sneakyForceMkdir(file);

@@ -6,19 +6,19 @@ import lombok.Getter;
 import java.time.ZonedDateTime;
 
 @Getter
-public class CacheItem<K, D> {
+public class CacheItem<K, V> {
 
     private final K key;
-    private final Class<D> type;
-    protected D data;
+    private final Class<V> type;
+    protected V data;
     private final long size;
     protected final ZonedDateTime updatedDate;
 
-    public CacheItem(Class<D> type, K key, D data, StoredData storedData) {
+    public CacheItem(Class<V> type, K key, V data, StoredData storedData) {
         this(type, key, data, storedData.getSize(), storedData.getUpdatedDate());
     }
 
-    public CacheItem(Class<D> type, K key, D data, long size, ZonedDateTime updatedDate) {
+    public CacheItem(Class<V> type, K key, V data, long size, ZonedDateTime updatedDate) {
         this.type = type;
         this.key = key;
         this.data = data;

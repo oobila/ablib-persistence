@@ -1,11 +1,10 @@
 package com.github.oobila.bukkit.persistence.caches.real;
 
 import com.github.alastairbooth.abid.ABID;
+import com.github.oobila.bukkit.persistence.adapters.code.ConfigurationSerializableCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
-import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
-import com.github.oobila.bukkit.persistence.adapters.vehicle.YamlConfigVehicle;
+import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.ReadOnlyCache;
-import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -14,33 +13,21 @@ import org.bukkit.World;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
 public class ConfigCache extends ReadOnlyCache<String, Object> {
 
-    public ConfigCache(String name) {
+    public ConfigCache(String pathString) {
         super(
-                name,
-                new YamlConfigVehicle<>(
+                new DynamicVehicle<>(
+                        pathString,
+                        false,
                         String.class,
-                        Object.class,
-                        new FileStorageAdapter("yml")
+                        new FileStorageAdapter(".yml"),
+                        new ConfigurationSerializableCodeAdapter<>(Object.class)
                 )
         );
-    }
-
-    public ConfigCache(String name, PersistenceVehicle<String, Object, CacheItem<String, Object>> vehicle) {
-        super(name, vehicle);
-    }
-
-    public ConfigCache(
-            String name,
-            List<PersistenceVehicle<String, Object, CacheItem<String, Object>>> readVehicles,
-            PersistenceVehicle<String, Object, CacheItem<String, Object>> writeVehicle
-    ) {
-        super(name, readVehicles, writeVehicle);
     }
 
     public String getString(String key) {

@@ -4,7 +4,7 @@ import org.bukkit.plugin.Plugin;
 
 public interface Cache {
 
-    String getName();
+    String getPathString();
 
     Plugin getPlugin();
 
