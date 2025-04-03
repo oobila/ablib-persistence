@@ -6,11 +6,11 @@ import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.apache.logging.log4j.util.Strings;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -19,23 +19,27 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
+public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter<V> {
 
-    private final Class<T> type;
+    private final Class<V> type;
 
     @Setter
     private Plugin plugin;
 
     @Override
-    public Map<String, T> toObjects(StoredData storedData) {
+    public Map<String, V> toObjects(StoredData storedData) {
         try {
             MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
             yamlConfiguration.loadFromString(storedData.getData());
             Map<String, Object> map = yamlConfiguration.getValues(false);
-            return Map.of(
-                    Strings.EMPTY,
-                    type.cast(type.getDeclaredMethod("deserialize", Map.class).invoke(null, map))
-            );
+            Map<String, V> retMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                retMap.put(
+                        entry.getKey(),
+                        type.cast(type.getDeclaredMethod("deserialize", type).invoke(null, entry.getValue()))
+                );
+            }
+            return retMap;
         } catch (InvalidConfigurationException e) {
             log(Level.SEVERE, "Could not load object for type: {0}. Could not read data", getTypeName());
             log(Level.SEVERE, e);
@@ -48,13 +52,15 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
     }
 
     @Override
-    public String fromObjects(Map<String, T> inMap) {
+    public String fromObjects(Map<String, V> map) {
         try {
-            Object object = inMap.values().iterator().next();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> map = (Map<String, Object>) type.getDeclaredMethod("serialize").invoke(object);
             MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
-            map.forEach(yamlConfiguration::set);
+            for (Map.Entry<String, V> entry : map.entrySet()) {
+                yamlConfiguration.set(
+                        entry.getKey(),
+                        type.getDeclaredMethod("serialize").invoke(entry.getValue())
+                );
+            }
             return yamlConfiguration.saveToString();
         } catch (ClassCastException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             log(Level.SEVERE, "Could not save object for type: {0}. Bad class setup.", getTypeName());

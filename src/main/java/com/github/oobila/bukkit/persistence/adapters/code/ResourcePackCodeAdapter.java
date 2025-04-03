@@ -5,6 +5,7 @@ import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.model.Resource;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Strings;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
@@ -36,16 +37,28 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
     }
 
     @Override
-    public Resource<?> toObject(StoredData storedData) {
+    public Map<String, Resource<?>> toObjects(StoredData storedData) {
         for (Map.Entry<Pattern, CodeAdapter<?>> entry : patternMap.entrySet()) {
             Pattern pattern = entry.getKey();
             if (pattern.matcher(storedData.getName()).matches()) {
                 CodeAdapter<?> codeAdapter = entry.getValue();
-                Object object = codeAdapter.toObject(storedData);
-                return getResource(storedData, object);
+                Map<String, ?> object = codeAdapter.toObjects(storedData);
+                return Map.of(Strings.EMPTY, getResource(storedData, object));
             }
         }
         log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", storedData.getName());
+        throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
+    }
+
+    @Override
+    public String fromObjects(Map<String, Resource<?>> map) {
+        Resource<?> resource = map.values().iterator().next();
+        for (Map.Entry<Class<?>, CodeAdapter<?>> entry : typeMap.entrySet()) {
+            if (entry.getKey().isAssignableFrom(resource.getType())) {
+                return fromObject(entry.getValue(), resource.getData());
+            }
+        }
+        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getType().getName());
         throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
     }
 
@@ -60,20 +73,9 @@ public class ResourcePackCodeAdapter implements CodeAdapter<Resource<?>> {
         );
     }
 
-    @Override
-    public String fromObject(Resource<?> resource) {
-        for (Map.Entry<Class<?>, CodeAdapter<?>> entry : typeMap.entrySet()) {
-            if (entry.getKey().isAssignableFrom(resource.getType())) {
-                return fromObject(entry.getValue(), resource.getData());
-            }
-        }
-        log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", resource.getType().getName());
-        throw new PersistenceRuntimeException("Class not registered with the ResourcePackCodeAdapter");
-    }
-
     @SuppressWarnings("unchecked")
     private <T> String fromObject(CodeAdapter<T> codeAdapter, Object object) {
-        return codeAdapter.fromObject((T) object);
+        return codeAdapter.fromObjects(Map.of(Strings.EMPTY, (T) object));
     }
 
 }

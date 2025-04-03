@@ -7,12 +7,14 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.ReadOnlyCache;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
@@ -80,5 +82,9 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
 
     public Location getLocation(String key) {
         return Serialization.deserialize(Location.class, (String) getValue(key));
+    }
+
+    public Material getMaterial(String key) {
+        return Objects.requireNonNull(Material.getMaterial((String) getValue(key)));
     }
 }

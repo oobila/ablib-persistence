@@ -6,10 +6,12 @@ import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.caches.WriteCache;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
+import com.github.oobila.bukkit.persistence.model.CacheItems;
 import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Strings;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -92,13 +94,15 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     public CacheItem<K, V> load(Plugin plugin, UUID partition, K key) {
         this.plugin = plugin;
         codeAdapter.setPlugin(plugin);
-        String name = pathString
-                .replace(PARTITION_STRING, partition.toString())
-                .replace(KEY_STRING, Serialization.serialize(key));
+        if (!pathStringIncludesPartition || !pathStringIncludesKey) {
+            //operation not supported
+            return null;
+        }
+        String name = getPath(partition, Serialization.serialize(key));
         if (storageAdapter.exists(plugin, name)) {
             List<StoredData> storedData = read(name);
             if (storedData.size() == 1) {
-                return createCacheItem(partition, storedData.get(0));
+                return createCacheItems(partition, storedData.get(0)).values().iterator().next();
             }
         }
         return null;
@@ -126,20 +130,33 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
     private Map<K, CacheItem<K, V>> constructCacheMap(UUID partition, List<StoredData> storedDataList) {
         Map<K, CacheItem<K, V>> map = new HashMap<>();
-        storedDataList.forEach(storedData -> {
-            CacheItem<K, V> cacheItem = createCacheItem(partition, storedData);
-            map.put(cacheItem.getKey(), cacheItem);
-        });
+        storedDataList.forEach(storedData ->
+            map.putAll(createCacheItems(partition, storedData))
+        );
         return map;
     }
 
-    private CacheItem<K, V> createCacheItem(UUID partition, StoredData storedData) {
+    private Map<K, CacheItem<K, V>> createCacheItems(UUID partition, StoredData storedData) {
         K key = Serialization.deserialize(keyType, storedData.getName());
         if (isOnDemand) {
-            return new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, null, storedData, writeCache);
+            return Map.of(
+                    key,
+                    new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, null, storedData, writeCache)
+            );
         } else {
-            V value = codeAdapter.toObject(storedData);
-            return new CacheItem<>(codeAdapter.getType(), key, value, storedData);
+            Map<String, V> map = codeAdapter.toObjects(storedData);
+            Map<K, CacheItem<K, V>> retMap = new HashMap<>();
+            if (map.size() == 1) {
+                retMap.put(key, new CacheItem<>(codeAdapter.getType(), key, map.values().iterator().next(), storedData));
+            } else {
+                map.forEach((s, v) ->
+                    retMap.put(
+                            Serialization.deserialize(keyType, s),
+                            new CacheItem<>(codeAdapter.getType(), key, v, storedData)
+                    )
+                );
+            }
+            return retMap;
         }
     }
 
@@ -149,15 +166,14 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
             throw new RuntimeException("This operation is not supported!");
         }
         if (pathStringIncludesKey) {
-            map.forEach((key, cacheItem) -> {
-                StoredData storedData = toStoredData(cacheItem);
-                storageAdapter.write(plugin, pathString.replace(KEY_STRING, storedData.getName()), List.of(storedData));
-            });
+            map.forEach((key, cacheItem) ->
+                save(plugin, null, key, cacheItem)
+            );
         } else {
-            List<StoredData> storedDataList = map.values().stream()
-                    .map(this::toStoredData)
-                    .toList();
-            storageAdapter.write(plugin, pathString, storedDataList);
+            CacheItems<K, V> cacheItems = new CacheItems<>(pathString);
+            cacheItems.putAll(map);
+            StoredData storedData = toStoredData(cacheItems);
+            storageAdapter.write(plugin, pathString, List.of(storedData));
         }
     }
 
@@ -166,9 +182,16 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         if (isOnDemand || !pathStringIncludesPartition) {
             throw new RuntimeException("This operation is not supported!");
         }
-        map.forEach((key, cacheItem) ->
-            save(plugin, partition, key, cacheItem)
-        );
+        if (pathStringIncludesKey) {
+            map.forEach((key, cacheItem) ->
+                    save(plugin, partition, key, cacheItem)
+            );
+        } else {
+            CacheItems<K, V> cacheItems = new CacheItems<>(getPath(partition, null));
+            cacheItems.putAll(map);
+            StoredData storedData = toStoredData(cacheItems);
+            storageAdapter.write(plugin, pathString, List.of(storedData));
+        }
     }
 
     @Override
@@ -176,12 +199,15 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         StoredData storedData = toStoredData(cacheItem);
         storageAdapter.write(
                 plugin,
-                pathString.replace(KEY_STRING, storedData.getName()).replace(PARTITION_STRING, partition.toString()),
+                getPath(partition, storedData.getName()),
                 List.of(storedData));
     }
 
     @Override
     public void delete(Plugin plugin, UUID partition) {
+        if (!pathStringIncludesPartition) {
+            throw new RuntimeException("This operation is not supported!");
+        }
         String name = pathString
                 .replace(PARTITION_STRING, partition.toString());
         storageAdapter.delete(plugin, name);
@@ -189,16 +215,30 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
     @Override
     public void delete(Plugin plugin, UUID partition, K key) {
-        String name = pathString
-                .replace(PARTITION_STRING, partition.toString())
-                .replace(KEY_STRING, Serialization.serialize(key));
+        if (!pathStringIncludesPartition || !pathStringIncludesKey) {
+            throw new RuntimeException("This operation is not supported!");
+        }
+        String name = getPath(partition, Serialization.serialize(key));
         storageAdapter.delete(plugin, name);
     }
 
     private StoredData toStoredData(CacheItem<K, V> cacheItem) {
         return new StoredData(
                 Serialization.serialize(cacheItem.getKey()),
-                codeAdapter.fromObject(cacheItem.getData()),
+                codeAdapter.fromObjects(Map.of(Strings.EMPTY, cacheItem.getData())),
+                0,
+                null
+        );
+    }
+
+    private StoredData toStoredData(CacheItems<K, V> cacheItems) {
+        Map<String, V> map = new HashMap<>();
+        cacheItems.getMap().forEach((k, cacheItem) ->
+            map.put(Serialization.serialize(k), cacheItem.getData())
+        );
+        return new StoredData(
+                cacheItems.getParentKey(),
+                codeAdapter.fromObjects(map),
                 0,
                 null
         );
