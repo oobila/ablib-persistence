@@ -30,46 +30,44 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 @Getter
 public class FileStorageAdapter implements StorageAdapter {
 
-    private final String extension;
-
     @Override
-    public List<StoredData> read(Plugin plugin, String name) {
+    public List<StoredData> read(Plugin plugin, String fileName) {
         try {
-            Path path = getPath(plugin, name);
+            Path path = getPath(plugin, fileName);
             if (!Files.exists(path)) {
                 return Collections.emptyList();
             }
             String data = Files.readString(path, StandardCharsets.ISO_8859_1);
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
             return Collections.singletonList(new StoredData(
-                    FilenameUtils.getBaseName(name),
+                    FilenameUtils.getBaseName(fileName),
                     data,
                     attributes.size(),
                     attributes.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault())
             ));
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not read contents of file: {0}", getFileName(name));
+            log(Level.SEVERE, "Could not read contents of file: {0}", fileName);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
     }
 
     @Override
-    public List<StoredData> readMetaData(Plugin plugin, String name) {
+    public List<StoredData> readMetaData(Plugin plugin, String fileName) {
         try {
-            Path path = getPath(plugin, name);
+            Path path = getPath(plugin, fileName);
             if (!Files.exists(path)) {
                 return Collections.emptyList();
             }
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
             return Collections.singletonList(new StoredData(
-                    FilenameUtils.getBaseName(name),
+                    FilenameUtils.getBaseName(fileName),
                     null,
                     attributes.size(),
                     attributes.lastModifiedTime().toInstant().atZone(ZoneId.systemDefault())
             ));
         } catch (Exception e) {
-            log(Level.SEVERE, "Could not read metadata of file: {0}", getFileName(name));
+            log(Level.SEVERE, "Could not read metadata of file: {0}", fileName);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
@@ -78,6 +76,7 @@ public class FileStorageAdapter implements StorageAdapter {
     @Override
     public List<String> poll(Plugin plugin, String name) {
         File file = new File(plugin.getDataFolder(), name);
+        String extension = FilenameUtils.getExtension(name);
         sneakyForceMkdir(file);
         if (Objects.requireNonNull(file.listFiles()).length > 0) {
             return Arrays.stream(Objects.requireNonNull(file.listFiles()))
@@ -90,28 +89,27 @@ public class FileStorageAdapter implements StorageAdapter {
     }
 
     @Override
-    public void write(Plugin plugin, String name, List<StoredData> storedDataList) {
+    public void write(Plugin plugin, String fileName, List<StoredData> storedDataList) {
         if (storedDataList.size() != 1) {
             log(Level.SEVERE, "Unsupported operation, tried writing {0} items but this method only allows 1",
                     storedDataList.size());
             throw new PersistenceRuntimeException("unsupported operation");
         }
         try {
-            Path path = getPath(plugin, name);
+            Path path = getPath(plugin, fileName);
             sneakyDelete(path.toFile());
             sneakyForceMkdir(path.getParent().toFile());
             Files.writeString(path, storedDataList.get(0).getData(), StandardCharsets.ISO_8859_1,StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
-            log(Level.SEVERE, "Could not write contents to file: {0}", getFileName(name));
+            log(Level.SEVERE, "Could not write contents to file: {0}", fileName);
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
         }
     }
 
     @Override
-    public void copyDefaults(Plugin plugin, String name) {
-        Path path = getPath(plugin, name);
-        String fileName = getFileName(name);
+    public void copyDefaults(Plugin plugin, String fileName) {
+        Path path = getPath(plugin, fileName);
         sneakyForceMkdir(path.getParent().toFile());
         try (InputStream inputStream = plugin.getResource(fileName);
              OutputStream outputStream = new FileOutputStream(path.toFile())) {
@@ -143,11 +141,7 @@ public class FileStorageAdapter implements StorageAdapter {
     }
 
     protected Path getPath(Plugin plugin, String directory) {
-        return new File(plugin.getDataFolder(), getFileName(directory)).toPath();
-    }
-
-    protected String getFileName(String directory) {
-        return String.format("%s.%s", directory, getExtension());
+        return new File(plugin.getDataFolder(), directory).toPath();
     }
 
     protected void sneakyDelete(File file) {

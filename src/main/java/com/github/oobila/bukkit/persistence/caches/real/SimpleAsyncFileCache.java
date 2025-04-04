@@ -14,7 +14,7 @@ public class SimpleAsyncFileCache<K, V> extends AsyncReadAndWriteCache<K, V> {
                         pathString,
                         false,
                         keyType,
-                        new FileStorageAdapter(".yml"),
+                        new FileStorageAdapter(),
                         new ConfigurationSerializableCodeAdapter<>(valueType)
                 )
         );

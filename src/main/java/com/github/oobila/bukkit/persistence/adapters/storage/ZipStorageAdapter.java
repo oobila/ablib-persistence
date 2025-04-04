@@ -22,10 +22,6 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 
 public class ZipStorageAdapter extends FileStorageAdapter {
 
-    public ZipStorageAdapter() {
-        super("zip");
-    }
-
     @Override
     public List<StoredData> read(Plugin plugin, String name) {
         List<StoredData> storedDataList = new ArrayList<>();

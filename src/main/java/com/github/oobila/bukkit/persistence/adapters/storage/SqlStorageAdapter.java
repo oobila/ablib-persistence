@@ -48,8 +48,4 @@ public class SqlStorageAdapter implements StorageAdapter {
         return false;
     }
 
-    @Override
-    public String getExtension() {
-        return null;
-    }
 }

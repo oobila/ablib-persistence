@@ -26,7 +26,7 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
                         pathString,
                         false,
                         String.class,
-                        new FileStorageAdapter(".yml"),
+                        new FileStorageAdapter(),
                         new ConfigurationSerializableCodeAdapter<>(Object.class)
                 )
         );

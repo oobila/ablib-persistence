@@ -14,7 +14,7 @@ public class SimpleFileCache<K, V> extends ReadAndWriteCache<K, V> {
                         pathString,
                         false,
                         keyType,
-                        new FileStorageAdapter(".yml"),
+                        new FileStorageAdapter(),
                         new MapOfConfigurationSerializableCodeAdapter<>(valueType)
                 )
         );

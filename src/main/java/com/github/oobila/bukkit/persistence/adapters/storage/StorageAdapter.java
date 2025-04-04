@@ -20,6 +20,4 @@ public interface StorageAdapter {
 
     boolean exists(Plugin plugin, String name);
 
-    String getExtension();
-
 }
