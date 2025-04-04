@@ -62,6 +62,13 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     }
 
     @Override
+    public void unload() {
+        nullCache.clear();
+        localCache.clear();
+        localCache.putIfAbsent(null, nullCache);
+    }
+
+    @Override
     public void unload(UUID partition) {
         localCache.remove(partition);
     }

@@ -17,6 +17,8 @@ public interface ReadCache<K, V> extends Cache {
 
     void load(UUID partition);
 
+    void unload();
+
     void unload(UUID partition);
 
     default String getPathString(){
