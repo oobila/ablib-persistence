@@ -30,8 +30,8 @@ public class Serialization {
         register(LocalTime.class, new LocalTimeSerializer());
     }
 
-    public static <T> void register(Class<T> type, KeySerializer<T> serializer) {
-        keySerializers.put(type, serializer);
+    public static <T> void register(Class<T> type, KeySerializer<T> keySerializer) {
+        keySerializers.put(type, keySerializer);
     }
 
     @SuppressWarnings("unchecked")

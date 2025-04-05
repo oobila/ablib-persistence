@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +28,7 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
     private Plugin plugin;
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, V> toObjects(StoredData storedData) {
         try {
             MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
@@ -36,7 +38,8 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 retMap.put(
                         entry.getKey(),
-                        type.cast(type.getDeclaredMethod("deserialize", type).invoke(null, entry.getValue()))
+                        !ConfigurationSerializable.class.isAssignableFrom(type) ? (V) entry.getValue() :
+                                type.cast(type.getDeclaredMethod("deserialize", type).invoke(null, entry.getValue()))
                 );
             }
             return retMap;
@@ -58,7 +61,8 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
             for (Map.Entry<String, V> entry : map.entrySet()) {
                 yamlConfiguration.set(
                         entry.getKey(),
-                        type.getDeclaredMethod("serialize").invoke(entry.getValue())
+                        !ConfigurationSerializable.class.isAssignableFrom(type) ? entry.getValue() :
+                                type.getDeclaredMethod("serialize").invoke(entry.getValue())
                 );
             }
             return yamlConfiguration.saveToString();
