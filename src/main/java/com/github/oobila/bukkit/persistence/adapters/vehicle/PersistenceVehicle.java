@@ -14,6 +14,8 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public interface PersistenceVehicle<K, V> {
 
+    void setPlugin(Plugin plugin);
+
     Cache getCache();
 
     String getPathString();

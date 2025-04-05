@@ -36,6 +36,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     private final boolean isOnDemand;
     @Getter
     private final Class<K> keyType;
+    @Setter
     private Plugin plugin;
     @Getter
     private final StorageAdapter storageAdapter;

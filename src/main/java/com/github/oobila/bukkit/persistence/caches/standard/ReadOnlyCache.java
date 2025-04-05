@@ -46,6 +46,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, Cach
     @Override
     public void load(Plugin plugin) {
         this.plugin = plugin;
+        writeVehicle.setPlugin(plugin);
         clear();
         writeVehicle.copyDefaults();
         readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
