@@ -7,10 +7,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.plugin.Plugin;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -38,8 +36,7 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 retMap.put(
                         entry.getKey(),
-                        !ConfigurationSerializable.class.isAssignableFrom(type) ? (V) entry.getValue() :
-                                type.cast(type.getDeclaredMethod("deserialize", type).invoke(null, entry.getValue()))
+                        (V) entry.getValue()
                 );
             }
             return retMap;
@@ -47,7 +44,7 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
             log(Level.SEVERE, "Could not load object for type: {0}. Could not read data", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
-        } catch (ClassCastException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        } catch (ClassCastException e) {
             log(Level.SEVERE, "Could not load object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
@@ -58,15 +55,9 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
     public String fromObjects(Map<String, V> map) {
         try {
             MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
-            for (Map.Entry<String, V> entry : map.entrySet()) {
-                yamlConfiguration.set(
-                        entry.getKey(),
-                        !ConfigurationSerializable.class.isAssignableFrom(type) ? entry.getValue() :
-                                type.getDeclaredMethod("serialize").invoke(entry.getValue())
-                );
-            }
+            map.forEach(yamlConfiguration::set);
             return yamlConfiguration.saveToString();
-        } catch (ClassCastException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        } catch (ClassCastException e) {
             log(Level.SEVERE, "Could not save object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
