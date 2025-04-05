@@ -1,7 +1,7 @@
 package com.github.oobila.bukkit.persistence.caches.real;
 
 import com.github.alastairbooth.abid.ABID;
-import com.github.oobila.bukkit.persistence.adapters.code.ConfigurationSerializableCodeAdapter;
+import com.github.oobila.bukkit.persistence.adapters.code.MapOfConfigurationSerializableCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.ReadOnlyCache;
@@ -27,7 +27,7 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
                         false,
                         String.class,
                         new FileStorageAdapter(),
-                        new ConfigurationSerializableCodeAdapter<>(Object.class)
+                        new MapOfConfigurationSerializableCodeAdapter<>(Object.class)
                 )
         );
     }
