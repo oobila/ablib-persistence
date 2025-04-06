@@ -89,8 +89,7 @@ public class FileStorageAdapter implements StorageAdapter {
             sneakyForceMkdir(path.toFile());
             if (Objects.requireNonNull(file.listFiles()).length > 0) {
                 return Arrays.stream(Objects.requireNonNull(file.listFiles()))
-                        .filter(f -> FilenameUtils.getExtension(f.getPath()).equals(extension))
-                        .map(f -> FilenameUtils.getBaseName(f.getName()))
+                        .map(File::getName)
                         .toList();
             } else {
                 return Collections.emptyList();
