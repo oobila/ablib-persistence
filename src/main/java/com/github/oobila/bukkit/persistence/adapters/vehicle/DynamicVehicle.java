@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.common.utils.JavaUtil;
 import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
+import com.github.oobila.bukkit.persistence.adapters.utils.RegexUtil;
 import com.github.oobila.bukkit.persistence.caches.WriteCache;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.CacheItems;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
@@ -259,13 +261,14 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         }
         List<String> newPaths = new ArrayList<>();
         String pathPart = pathParts[depth];
+        String prev = current;
         current = updateCurrent(depth, current, pathPart);
         if (pathPart.contains(PARTITION_STRING) || pathPart.contains(KEY_STRING)) {
-            String pathPartRegex = pathPart
+            String pathPartRegex = RegexUtil.performWithRegexMatch(pathPart, RegexUtil.ANYTHING_NOT_IN_BRACES, Pattern::quote)
                     .replace(PARTITION_STRING, PARTITION_PATTERN)
                     .replace(KEY_STRING, KEY_PATTERN);
             if (paths == null || paths.isEmpty()) {
-                List<String> options = storageAdapter.poll(plugin, current);
+                List<String> options = storageAdapter.poll(plugin, prev);
                 for (String option : options) {
                     if (option.matches(pathPartRegex) &&
                             (!pathPart.contains(PARTITION_STRING) || option.contains(partition.toString()))) {
@@ -274,7 +277,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
                 }
             } else {
                 for (String path : paths) {
-                    List<String> options = storageAdapter.poll(plugin, current);
+                    List<String> options = storageAdapter.poll(plugin, prev);
                     for (String option : options) {
                         if (option.matches(pathPartRegex) &&
                                 (!pathPart.contains(PARTITION_STRING) || option.contains(partition.toString()))) {
