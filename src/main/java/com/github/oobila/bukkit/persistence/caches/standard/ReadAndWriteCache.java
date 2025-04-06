@@ -26,8 +26,10 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
     public void save() {
         if (localCache.size() > 1) {
             localCache.forEach((uuid, map) -> {
-                if (uuid == null && !map.isEmpty()) {
-                    getWriteVehicle().save(getPlugin(), nullCache);
+                if (uuid == null) {
+                    if (!map.isEmpty()) {
+                        getWriteVehicle().save(getPlugin(), nullCache);
+                    }
                 } else {
                     getWriteVehicle().save(getPlugin(), uuid, map);
                 }
