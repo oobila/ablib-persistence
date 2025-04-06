@@ -15,7 +15,7 @@ public interface StandardWriteCache<K, V>
 
     CacheItem<K, V> putValue(UUID partition, K key, V value);
 
-    CacheItem<K, V> remove(K key);
+    CacheItem<K, V> remove(Object key);
 
     CacheItem<K, V> remove(UUID partition, K key);
 

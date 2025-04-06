@@ -6,23 +6,24 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import lombok.experimental.Delegate;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
-public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, CacheItem<K, V>> {
+public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
 
     @Setter(AccessLevel.PROTECTED)
     private Plugin plugin;
     private final List<PersistenceVehicle<K, V>> readVehicles;
     private final PersistenceVehicle<K, V> writeVehicle;
 
-    @Delegate
     protected final Map<K, CacheItem<K, V>> nullCache = new HashMap<>();
     protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
@@ -47,7 +48,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, Cach
     public void load(Plugin plugin) {
         this.plugin = plugin;
         writeVehicle.setPlugin(plugin);
-        clear();
+        unload();
         writeVehicle.copyDefaults();
         readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
     }
@@ -87,6 +88,44 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V>, Map<K, Cach
     @SneakyThrows
     public V getValue(UUID partition, K key) {
         return get(partition, key).getData();
+    }
+
+    public int size() {
+        return Math.max(nullCache.size(), localCache.size() - 1);
+    }
+
+    public boolean isEmpty() {
+        return nullCache.isEmpty() && localCache.size() < 2;
+    }
+
+    @SuppressWarnings({"unchecked", "java:S1905"})
+    public boolean containsKey(Object key) {
+        return nullCache.containsKey((K) key);
+    }
+
+    @SuppressWarnings({"all"})
+    public boolean containsValue(Object value) {
+        return nullCache.containsValue(value);
+    }
+
+    @SuppressWarnings({"unchecked", "java:S1905"})
+    public CacheItem<K, V> get(Object key) {
+        return nullCache.get((K) key);
+    }
+
+    @NotNull
+    public Set<K> keySet() {
+        return nullCache.keySet();
+    }
+
+    @NotNull
+    public Collection<CacheItem<K, V>> values() {
+        return nullCache.values();
+    }
+
+    @NotNull
+    public Set<Map.Entry<K, CacheItem<K, V>>> entrySet() {
+        return nullCache.entrySet();
     }
 
 }

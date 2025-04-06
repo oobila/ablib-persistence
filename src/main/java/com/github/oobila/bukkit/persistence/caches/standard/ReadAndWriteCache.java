@@ -3,16 +3,18 @@ package com.github.oobila.bukkit.persistence.caches.standard;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.Getter;
+import lombok.experimental.Delegate;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
 @Getter
-public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V> {
+public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V>, Map<K, CacheItem<K, V>> {
 
     public ReadAndWriteCache(PersistenceVehicle<K, V> vehicle) {
         super(vehicle, vehicle);
@@ -83,5 +85,20 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         List<CacheItem<K,V>> itemsRemoved = new ArrayList<>();
         itemsToRemove.forEach(key -> itemsRemoved.add(nullCache.remove(key)));
         return itemsRemoved;
+    }
+
+    public void clear() {
+        nullCache.clear();
+        localCache.clear();
+        localCache.putIfAbsent(null, nullCache);
+    }
+
+    @Delegate(excludes = Excludes.class)
+    private Map<K, CacheItem<K, V>> getNullCacheDelegate() {
+        return nullCache;
+    }
+
+    interface Excludes {
+        void clear();
     }
 }
