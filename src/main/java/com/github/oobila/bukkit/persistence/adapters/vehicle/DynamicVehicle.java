@@ -138,27 +138,33 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     }
 
     private Map<K, CacheItem<K, V>> createCacheItems(UUID partition, StoredData storedData) {
-        K key = Serialization.deserialize(keyType, storedData.getName());
+        K key;
+        try {
+            key = Serialization.deserialize(keyType, storedData.getName());
+        } catch (Exception e) {
+            key = null;
+        }
+        Map<K, CacheItem<K, V>> retMap = new HashMap<>();
         if (isOnDemand) {
-            return Map.of(
+            retMap.put(
                     key,
                     new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, null, storedData, writeCache)
             );
         } else {
             Map<String, V> map = codeAdapter.toObjects(storedData);
-            Map<K, CacheItem<K, V>> retMap = new HashMap<>();
             if (map.size() == 1) {
                 retMap.put(key, new CacheItem<>(codeAdapter.getType(), key, map.values().iterator().next(), storedData));
             } else {
+                K finalKey = key;
                 map.forEach((s, v) ->
                     retMap.put(
                             Serialization.deserialize(keyType, s),
-                            new CacheItem<>(codeAdapter.getType(), key, v, storedData)
+                            new CacheItem<>(codeAdapter.getType(), finalKey, v, storedData)
                     )
                 );
             }
-            return retMap;
         }
+        return retMap;
     }
 
     @Override
