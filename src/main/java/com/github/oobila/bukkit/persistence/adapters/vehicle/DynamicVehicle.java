@@ -190,7 +190,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
             CacheItems<K, V> cacheItems = new CacheItems<>(getPath(partition, null));
             cacheItems.putAll(map);
             StoredData storedData = toStoredData(cacheItems);
-            storageAdapter.write(plugin, pathString, List.of(storedData));
+            storageAdapter.write(plugin, getPath(partition, null), List.of(storedData));
         }
     }
 
