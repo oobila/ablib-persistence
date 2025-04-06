@@ -78,14 +78,23 @@ public class FileStorageAdapter implements StorageAdapter {
         Path path = getPath(plugin, fileName);
         File file = path.toFile();
         String extension = FilenameUtils.getExtension(fileName);
-        sneakyForceMkdir(path.getParent().toFile());
-        if (Objects.requireNonNull(file.listFiles()).length > 0) {
-            return Arrays.stream(Objects.requireNonNull(file.listFiles()))
-                    .filter(f -> FilenameUtils.getExtension(f.getPath()).equals(extension))
-                    .map(f -> FilenameUtils.getBaseName(f.getName()))
-                    .toList();
+        if (extension != null && !extension.isEmpty()) {
+            sneakyForceMkdir(path.getParent().toFile());
+            if (file.exists()) {
+                return List.of(fileName);
+            } else {
+                return Collections.emptyList();
+            }
         } else {
-            return Collections.emptyList();
+            sneakyForceMkdir(path.toFile());
+            if (Objects.requireNonNull(file.listFiles()).length > 0) {
+                return Arrays.stream(Objects.requireNonNull(file.listFiles()))
+                        .filter(f -> FilenameUtils.getExtension(f.getPath()).equals(extension))
+                        .map(f -> FilenameUtils.getBaseName(f.getName()))
+                        .toList();
+            } else {
+                return Collections.emptyList();
+            }
         }
     }
 
