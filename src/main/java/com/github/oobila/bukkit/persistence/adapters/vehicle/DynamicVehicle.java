@@ -245,9 +245,14 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     }
 
     private String getPath(UUID partition, String key) {
-        return pathString
-                .replace(PARTITION_STRING, partition.toString())
-                .replace(KEY_STRING, key);
+        String working = pathString;
+        if (partition != null) {
+            working = working.replace(PARTITION_STRING, partition.toString());
+        }
+        if (key != null) {
+            working = working.replace(KEY_STRING, key);
+        }
+        return working;
     }
 
     private List<String> getPaths(UUID partition) {
