@@ -29,7 +29,7 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
     @SuppressWarnings("unchecked")
     public Map<String, V> toObjects(StoredData storedData) {
         try {
-            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
+            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration(true);
             yamlConfiguration.loadFromString(storedData.getData());
             Map<String, Object> map = yamlConfiguration.getValues(false);
             Map<String, V> retMap = new HashMap<>();
@@ -54,7 +54,7 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
     @Override
     public String fromObjects(Map<String, V> map) {
         try {
-            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
+            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration(true);
             map.forEach(yamlConfiguration::set);
             return yamlConfiguration.saveToString();
         } catch (ClassCastException e) {

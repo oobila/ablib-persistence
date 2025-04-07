@@ -194,10 +194,10 @@ public class SqlStorageAdapter implements StorageAdapter {
             sb.append(" WHERE ");
             List<String> parts = new ArrayList<>();
             if (nameParts.partition != null) {
-                parts.add(String.format("p = %s", nameParts.partition));
+                parts.add(String.format("p = %s", wrap(nameParts.partition)));
             }
             if (nameParts.key != null) {
-                parts.add(String.format("k = %s", nameParts.key));
+                parts.add(String.format("k = %s", wrap(nameParts.key)));
             }
             String combined = String.join(" AND ", parts);
             sb.append(combined);

@@ -27,8 +27,13 @@ public class MyYamlConfiguration extends FileConfiguration {
             # Do not edit unless you know what you are doing
             ################################################################
             """;
+    private final boolean includeHeader;
     private final DumperOptions dumperOptions = new DumperOptions();
     private final Representer yamlRepresenter = new YamlRepresenter(dumperOptions);
+
+    public MyYamlConfiguration(boolean includeHeader) {
+        this.includeHeader = includeHeader;
+    }
 
     @NotNull
     @Override
@@ -43,7 +48,7 @@ public class MyYamlConfiguration extends FileConfiguration {
             dump = "";
         }
 
-        return HEADER + dump;
+        return includeHeader ? HEADER + dump : dump;
     }
 
     @Override

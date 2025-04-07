@@ -22,6 +22,7 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
 
     private final Class<T> type;
+    private final boolean includeDataHeader;
 
     @Setter
     private Plugin plugin;
@@ -29,7 +30,7 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
     @Override
     public Map<String, T> toObjects(StoredData storedData) {
         try {
-            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
+            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration(includeDataHeader);
             yamlConfiguration.loadFromString(storedData.getData());
             Map<String, Object> map = yamlConfiguration.getValues(false);
             return Map.of(
@@ -53,7 +54,7 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
             Object object = inMap.values().iterator().next();
             @SuppressWarnings("unchecked")
             Map<String, Object> map = (Map<String, Object>) type.getDeclaredMethod("serialize").invoke(object);
-            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration();
+            MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration(includeDataHeader);
             map.forEach(yamlConfiguration::set);
             return yamlConfiguration.saveToString();
         } catch (ClassCastException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
