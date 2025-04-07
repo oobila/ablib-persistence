@@ -18,8 +18,8 @@ import java.util.List;
 public class SqlStorageAdapter implements StorageAdapter {
 
     private static final String TABLE_NAME = "table";
-    public static final String PARTITION_NAME = "uuid";
-    public static final String KEY_NAME = "key";
+    public static final String PARTITION_NAME = "p";
+    public static final String KEY_NAME = "k";
     public static final String DATA_NAME = "data";
     public static final String DATE_NAME = "created";
     public static final String KEY_VALUE_SEPARATOR = "=";
@@ -82,7 +82,7 @@ public class SqlStorageAdapter implements StorageAdapter {
     @Override
     public List<String> poll(Plugin plugin, String name) {
         NameParts nameParts = split(plugin, name);
-        String query = String.format("SELECT key FROM %s%s;", nameParts.tableName, constructWhere(nameParts));
+        String query = String.format("SELECT k FROM %s%s;", nameParts.tableName, constructWhere(nameParts));
         Connection connection = SqlAdapterUtils.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             ResultSet rs = statement.executeQuery();
@@ -108,7 +108,7 @@ public class SqlStorageAdapter implements StorageAdapter {
         NameParts nameParts = split(plugin, name);
         for (StoredData storedData : storedDataList) {
             String query = String.format(
-                    "INSERT INTO %s (partition, key, data, created) VALUES (%s, %s, %s, NOW());",
+                    "INSERT INTO %s (p, k, data, created) VALUES (%s, %s, %s, NOW());",
                     nameParts.tableName,
                     wrap(nameParts.partition),
                     wrap(storedData.getName()),
@@ -148,7 +148,7 @@ public class SqlStorageAdapter implements StorageAdapter {
 
     private void createTable(String tableName) {
         String query = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (partition TINYTEXT, key TINYTEXT NOT NULL, data LONGTEXT, created DATETIME);",
+                "CREATE TABLE IF NOT EXISTS %s (p TINYTEXT, k TINYTEXT NOT NULL, data LONGTEXT, created DATETIME);",
                 tableName
         );
         Connection connection = SqlAdapterUtils.getConnection();
@@ -190,10 +190,10 @@ public class SqlStorageAdapter implements StorageAdapter {
             sb.append(" WHERE ");
             List<String> parts = new ArrayList<>();
             if (nameParts.partition != null) {
-                parts.add(String.format("partition = %s", nameParts.partition));
+                parts.add(String.format("p = %s", nameParts.partition));
             }
             if (nameParts.key != null) {
-                parts.add(String.format("key = %s", nameParts.key));
+                parts.add(String.format("k = %s", nameParts.key));
             }
             String combined = String.join(" AND ", parts);
             sb.append(combined);

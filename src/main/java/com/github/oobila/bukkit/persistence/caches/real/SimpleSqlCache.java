@@ -12,7 +12,7 @@ public class SimpleSqlCache <K, V> extends AsyncReadAndWriteCache<K, V> {
     public SimpleSqlCache(String pluginName, String tableName, Class<K> keyType, Class<V> valueType, SqlConnectionProperties connectionProperties) {
         super(
                 new DynamicVehicle<>(
-                        String.format("table=%s;uuid={uuid};key={key}", tableName),
+                        String.format("table=%s;p={uuid};k={key}", tableName),
                         true,
                         keyType,
                         new SqlStorageAdapter(pluginName, tableName, connectionProperties),
