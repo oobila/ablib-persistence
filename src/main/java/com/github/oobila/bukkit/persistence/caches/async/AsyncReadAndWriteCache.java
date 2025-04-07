@@ -37,7 +37,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     @Override
     public void save(UUID partition) {
         Map<K, CacheItem<K, V>> map = new HashMap<>(localCache.get(partition));
-        getWriteVehicle().save(getPlugin(), map);
+        getWriteVehicle().save(getPlugin(), partition, map);
     }
 
     @Override
