@@ -18,8 +18,8 @@ import java.util.List;
 public class SqlStorageAdapter implements StorageAdapter {
 
     private static final String TABLE_NAME = "table";
-    public static final String PARTITION_NAME = "p";
-    public static final String KEY_NAME = "k";
+    public static final String PARTITION_NAME = "partition_id";
+    public static final String KEY_NAME = "record_key";
     public static final String DATA_NAME = "data";
     public static final String DATE_NAME = "created";
     public static final String KEY_VALUE_SEPARATOR = "=";
@@ -99,7 +99,7 @@ public class SqlStorageAdapter implements StorageAdapter {
 
     private String wrap(String string) {
         if (string == null) {
-            return "NULL";
+            return NULL_STRING;
         }
         return String.format("'%s'", string);
     }
@@ -109,7 +109,7 @@ public class SqlStorageAdapter implements StorageAdapter {
         NameParts nameParts = split(plugin, name);
         for (StoredData storedData : storedDataList) {
             String query = String.format(
-                    "INSERT INTO %s (p, k, data, created) VALUES (%s, %s, %s, NOW());",
+                    "INSERT INTO %s (partition_id, record_key, data, created) VALUES (%s, %s, %s, NOW());",
                     nameParts.tableName,
                     wrap(nameParts.partition),
                     wrap(storedData.getName()),
@@ -149,7 +149,7 @@ public class SqlStorageAdapter implements StorageAdapter {
 
     private void createTable(String tableName) {
         String query = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (p TINYTEXT, k TINYTEXT NOT NULL, data LONGTEXT, created TIMESTAMP);",
+                "CREATE TABLE IF NOT EXISTS %s (partition_id TINYTEXT, record_key TINYTEXT NOT NULL, data LONGTEXT, created TIMESTAMP);",
                 tableName
         );
         Connection connection = SqlAdapterUtils.getConnection();
@@ -191,10 +191,10 @@ public class SqlStorageAdapter implements StorageAdapter {
             sb.append(" WHERE ");
             List<String> parts = new ArrayList<>();
             if (nameParts.partition != null) {
-                parts.add(String.format("p = %s", wrap(nameParts.partition)));
+                parts.add(String.format("partition_id = %s", wrap(nameParts.partition)));
             }
             if (nameParts.key != null) {
-                parts.add(String.format("k = %s", wrap(nameParts.key)));
+                parts.add(String.format("record_key = %s", wrap(nameParts.key)));
             }
             String combined = String.join(" AND ", parts);
             sb.append(combined);

@@ -20,6 +20,8 @@ public class Serialization {
     private static final Map<Class<?>, KeySerializer<?>> keySerializers = new HashMap<>();
     static {
         register(String.class, new StringSerializer());
+        register(Integer.class, new IntSerializer());
+        register(int.class, new IntSerializer());
         register(ABID.class, new ABIDSerializer());
         register(UUID.class, new UUIDSerializer());
         register(OfflinePlayer.class, new OfflinePlayerSerializer());
