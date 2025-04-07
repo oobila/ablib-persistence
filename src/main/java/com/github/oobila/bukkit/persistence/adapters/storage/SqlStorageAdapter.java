@@ -165,9 +165,9 @@ public class SqlStorageAdapter implements StorageAdapter {
 
     private NameParts split(String pluginName, String s) {
         NameParts nameParts = new NameParts();
-        String[] strings = s.split("\\.-_/\\\\;");
+        String[] strings = s.split("[\\.-_/\\\\;,]");
         for (String string : strings) {
-            String[] keyValue = string.split("=:");
+            String[] keyValue = string.split("[=:]");
             switch (keyValue[0]) {
                 case TABLE_NAME -> nameParts.tableName = toTableName(pluginName, keyValue[1]);
                 case PARTITION_NAME -> nameParts.partition = keyValue[1];
