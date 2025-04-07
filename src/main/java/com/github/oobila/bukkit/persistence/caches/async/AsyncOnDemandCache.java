@@ -11,9 +11,9 @@ import org.bukkit.plugin.Plugin;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -27,6 +27,9 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
     private final PersistenceVehicle<K, V> writeVehicle;
     private final List<PersistenceVehicle<K, V>> readVehicles;
 
+    private final List<K> nullKeys = new ArrayList<>();
+    private final Map<UUID, List<K>> keys = new HashMap<>();
+
     public AsyncOnDemandCache(PersistenceVehicle<K, V> vehicle) {
         this(vehicle, vehicle);
     }
@@ -38,6 +41,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
     public AsyncOnDemandCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
         this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
+        keys.put(null, nullKeys);
     }
 
     @Override
@@ -47,7 +51,10 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
 
     @Override
     public void load(UUID partition) {
-        //do nothing
+        //not async as this needs to be accessible asap
+        List<K> partitionKeys = new ArrayList<>();
+        readVehicles.forEach(vehicle -> partitionKeys.addAll(vehicle.keys(partition)));
+        keys.put(partition, partitionKeys);
     }
 
     @Override
@@ -57,7 +64,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
 
     @Override
     public void unload(UUID partition) {
-        //do nothing
+        keys.remove(partition);
     }
 
     @Override
@@ -119,22 +126,14 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
         throw new RuntimeException("operation not supported");
     }
 
-    public void keys(UUID partition, Consumer<Collection<K>> consumer) {
-        runTaskAsync(() -> {
-            Set<K> keys = new HashSet<>();
-            readVehicles.forEach(vehicle -> keys.addAll(vehicle.keys(partition)));
-            consumer.accept(keys);
-        });
-    }
-
     @Override
     public Collection<K> keys() {
-        throw new RuntimeException("operation not supported, please use method with consumer");
+        throw new RuntimeException("operation not supported");
     }
 
     @Override
     public Collection<K> keys(UUID partition) {
-        throw new RuntimeException("operation not supported, please use method with consumer");
+        throw new RuntimeException("operation not supported");
     }
 
     @Override

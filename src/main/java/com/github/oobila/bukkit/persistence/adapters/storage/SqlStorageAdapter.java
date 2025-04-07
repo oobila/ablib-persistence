@@ -12,8 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +70,7 @@ public class SqlStorageAdapter implements StorageAdapter {
                         rs.getString(KEY_NAME),
                         null,
                         data.length(),
-                        ZonedDateTime.ofInstant(rs.getDate(DATE_NAME).toInstant(), ZoneId.systemDefault())
+                        rs.getTimestamp(DATE_NAME).toLocalDateTime().atZone(ZoneId.systemDefault())
                 );
                 retList.add(storedData);
             }

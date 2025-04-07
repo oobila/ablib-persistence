@@ -136,11 +136,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     }
 
     private List<StoredData> read(String path) {
-        if (isOnDemand) {
-            return storageAdapter.readMetaData(plugin, path);
-        } else {
-            return storageAdapter.read(plugin, path);
-        }
+        return storageAdapter.read(plugin, path);
     }
 
     private Map<K, CacheItem<K, V>> constructCacheMap(UUID partition, List<StoredData> storedDataList) {
@@ -153,14 +149,16 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
     private Map<K, CacheItem<K, V>> createCacheItems(UUID partition, StoredData storedData) {
         Map<K, CacheItem<K, V>> retMap = new HashMap<>();
+        Map<String, V> map = codeAdapter.toObjects(storedData);
         if (isOnDemand) {
-            K key = Serialization.deserialize(keyType, storedData.getName());
-            retMap.put(
-                    key,
-                    new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, null, storedData, writeCache)
-            );
+            map.forEach((s, v) -> {
+                K key = Serialization.deserialize(keyType, s);
+                retMap.put(
+                        key,
+                        new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, v, storedData, writeCache)
+                );
+            });
         } else {
-            Map<String, V> map = codeAdapter.toObjects(storedData);
             map.forEach((s, v) -> {
                 K key = Serialization.deserialize(keyType, s);
                 retMap.put(
