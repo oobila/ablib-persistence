@@ -20,8 +20,8 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         super(vehicle, vehicle);
     }
 
-    public ReadAndWriteCache(List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
-        super(readVehicles, writeVehicle);
+    public ReadAndWriteCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
+        super(writeVehicle, readVehicles);
     }
 
     @Override

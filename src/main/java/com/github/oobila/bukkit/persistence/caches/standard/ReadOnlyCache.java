@@ -32,11 +32,11 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         this(vehicle, vehicle);
     }
 
-    public ReadOnlyCache(PersistenceVehicle<K, V> readVehicle, PersistenceVehicle<K, V> writeVehicle) {
-        this(List.of(readVehicle), writeVehicle);
+    public ReadOnlyCache(PersistenceVehicle<K, V> writeVehicle, PersistenceVehicle<K, V> readVehicle) {
+        this(writeVehicle, List.of(readVehicle));
     }
 
-    public ReadOnlyCache(List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
+    public ReadOnlyCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
         this.readVehicles = readVehicles;
         readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
         this.writeVehicle = writeVehicle;

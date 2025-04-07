@@ -16,6 +16,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,17 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
             }
         }
         return null;
+    }
+
+    @Override
+    public Collection<K> keys(UUID partition) {
+        if (!pathStringIncludesPartition) {
+            return null;
+        }
+        String name = getPath(partition, null);
+        return storageAdapter.poll(plugin, name).stream()
+                .map(string -> Serialization.deserialize(keyType, string))
+                .toList();
     }
 
     @Override

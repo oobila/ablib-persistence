@@ -24,7 +24,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         super(vehicle, vehicle);
     }
 
-    public AsyncReadAndWriteCache(List<PersistenceVehicle<K, V>> readVehicles, PersistenceVehicle<K, V> writeVehicle) {
+    public AsyncReadAndWriteCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
         super(writeVehicle, readVehicles);
     }
 

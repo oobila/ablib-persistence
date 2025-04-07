@@ -7,6 +7,7 @@ import com.github.oobila.bukkit.persistence.model.BackwardsCompatibility;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +28,8 @@ public interface PersistenceVehicle<K, V> {
     Map<K, CacheItem<K, V>> load(Plugin plugin, UUID partition);
 
     CacheItem<K, V> load(Plugin plugin, UUID partition, K key);
+
+    Collection<K> keys(UUID partition);
 
     void copyDefaults();
 
