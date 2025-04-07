@@ -1,6 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters.storage;
 
 import com.github.oobila.bukkit.persistence.adapters.utils.SqlAdapterUtils;
+import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -24,6 +25,7 @@ public class SqlStorageAdapter implements StorageAdapter {
     public static final String DATE_NAME = "created";
     public static final String KEY_VALUE_SEPARATOR = "=";
     public static final String SEPARATOR = ";";
+    public static final String NULL_STRING = "NULL";
 
     public SqlStorageAdapter(String pluginName, String tableName, SqlConnectionProperties connectionProperties) {
         String finalName = toTableName(pluginName, tableName);
@@ -165,6 +167,8 @@ public class SqlStorageAdapter implements StorageAdapter {
 
     private NameParts split(String pluginName, String s) {
         NameParts nameParts = new NameParts();
+        s = s.replace(DynamicVehicle.KEY_STRING, NULL_STRING)
+                .replace(DynamicVehicle.PARTITION_STRING, NULL_STRING);
         String[] strings = s.split("[;,]");
         for (String string : strings) {
             String[] keyValue = string.split("[=:]");

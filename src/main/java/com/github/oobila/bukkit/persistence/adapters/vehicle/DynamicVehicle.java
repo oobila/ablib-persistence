@@ -25,9 +25,9 @@ import java.util.regex.Pattern;
 
 public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
 
-    private static final String PARTITION_STRING = "{uuid}";
+    public static final String PARTITION_STRING = "{uuid}";
     private static final String PARTITION_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-    private static final String KEY_STRING = "{key}";
+    public static final String KEY_STRING = "{key}";
     private static final String KEY_PATTERN = "[0-9a-zA-Z-_]+";
     private static final String SEPARATOR = "/";
 
