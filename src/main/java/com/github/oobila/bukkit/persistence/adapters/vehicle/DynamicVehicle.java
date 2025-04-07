@@ -1,6 +1,7 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
 import com.github.oobila.bukkit.common.utils.JavaUtil;
+import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
@@ -173,7 +174,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public void save(Plugin plugin, Map<K, CacheItem<K, V>> map) {
         if (isOnDemand || pathStringIncludesPartition) {
-            throw new RuntimeException("This operation is not supported!");
+            throw new PersistenceRuntimeException("This operation is not supported!");
         }
         if (pathStringIncludesKey) {
             map.forEach((key, cacheItem) ->
@@ -190,7 +191,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public void save(Plugin plugin, UUID partition, Map<K, CacheItem<K, V>> map) {
         if (isOnDemand || !pathStringIncludesPartition) {
-            throw new RuntimeException("This operation is not supported!");
+            throw new PersistenceRuntimeException("This operation is not supported!");
         }
         if (pathStringIncludesKey) {
             map.forEach((key, cacheItem) ->
@@ -216,7 +217,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public void delete(Plugin plugin, UUID partition) {
         if (!pathStringIncludesPartition) {
-            throw new RuntimeException("This operation is not supported!");
+            throw new PersistenceRuntimeException("This operation is not supported!");
         }
         String name = pathString
                 .replace(PARTITION_STRING, partition.toString());
@@ -226,7 +227,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public void delete(Plugin plugin, UUID partition, K key) {
         if (!pathStringIncludesPartition || !pathStringIncludesKey) {
-            throw new RuntimeException("This operation is not supported!");
+            throw new PersistenceRuntimeException("This operation is not supported!");
         }
         String name = getPath(partition, Serialization.serialize(key));
         storageAdapter.delete(plugin, name);

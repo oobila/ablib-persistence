@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.adapters.storage;
 
+import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.utils.SqlAdapterUtils;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
@@ -52,7 +53,7 @@ public class SqlStorageAdapter implements StorageAdapter {
             }
             return retList;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new PersistenceRuntimeException(e);
         }
     }
 
@@ -76,7 +77,7 @@ public class SqlStorageAdapter implements StorageAdapter {
             }
             return retList;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new PersistenceRuntimeException(e);
         }
     }
 
@@ -93,7 +94,7 @@ public class SqlStorageAdapter implements StorageAdapter {
             }
             return retList;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new PersistenceRuntimeException(e);
         }
     }
 
@@ -119,14 +120,14 @@ public class SqlStorageAdapter implements StorageAdapter {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new PersistenceRuntimeException(e);
             }
         }
     }
 
     @Override
     public void copyDefaults(Plugin plugin, String name) {
-        throw new RuntimeException("Cannot copy defaults to SQL");
+        throw new PersistenceRuntimeException("Cannot copy defaults to SQL");
     }
 
     @Override
@@ -137,7 +138,7 @@ public class SqlStorageAdapter implements StorageAdapter {
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new PersistenceRuntimeException(e);
         }
     }
 
@@ -156,7 +157,7 @@ public class SqlStorageAdapter implements StorageAdapter {
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new PersistenceRuntimeException(e);
         }
     }
 
@@ -173,7 +174,7 @@ public class SqlStorageAdapter implements StorageAdapter {
                 case TABLE_NAME -> nameParts.tableName = toTableName(pluginName, keyValue[1]);
                 case PARTITION_NAME -> nameParts.partition = keyValue[1].equals(DynamicVehicle.PARTITION_STRING) ? null : keyValue[1];
                 case KEY_NAME -> nameParts.key = keyValue[1].equals(DynamicVehicle.KEY_STRING) ? null : keyValue[1];
-                default -> throw new RuntimeException(String.format("unknown key type: %s", keyValue[0]));
+                default -> throw new PersistenceRuntimeException(String.format("unknown key type: %s", keyValue[0]));
             }
         }
         return nameParts;

@@ -1,5 +1,6 @@
 package com.github.oobila.bukkit.persistence.caches.async;
 
+import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
@@ -92,7 +93,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
             } else if (cacheItems.isEmpty()) {
                 consumer.accept(null);
             } else {
-                throw new RuntimeException("more than one item retrieved for a given key");
+                throw new PersistenceRuntimeException("more than one item retrieved for a given key");
             }
         });
     }
@@ -106,34 +107,34 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
             } else if (cacheItems.isEmpty()) {
                 consumer.accept(null);
             } else {
-                throw new RuntimeException("more than one item retrieved for a given key");
+                throw new PersistenceRuntimeException("more than one item retrieved for a given key");
             }
         });
     }
 
     @Override
     public OnDemandCacheItem<K, V> get(UUID partition, K key) {
-        throw new RuntimeException("operation not supported, please use method with consumer");
+        throw new PersistenceRuntimeException("operation not supported, please use method with consumer");
     }
 
     @Override
     public Collection<OnDemandCacheItem<K, V>> values() {
-        throw new RuntimeException("operation not supported");
+        throw new PersistenceRuntimeException("operation not supported");
     }
 
     @Override
     public Collection<OnDemandCacheItem<K, V>> values(UUID partition) {
-        throw new RuntimeException("operation not supported");
+        throw new PersistenceRuntimeException("operation not supported");
     }
 
     @Override
     public Collection<K> keys() {
-        throw new RuntimeException("operation not supported");
+        throw new PersistenceRuntimeException("operation not supported");
     }
 
     @Override
     public Collection<K> keys(UUID partition) {
-        throw new RuntimeException("operation not supported");
+        throw new PersistenceRuntimeException("operation not supported");
     }
 
     @Override
@@ -174,6 +175,6 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
 
     @Override
     public void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
-        throw new RuntimeException("operation not supported, please do this manually");
+        throw new PersistenceRuntimeException("operation not supported, please do this manually");
     }
 }
