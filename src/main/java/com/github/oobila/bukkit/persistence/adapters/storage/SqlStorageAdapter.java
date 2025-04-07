@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,7 @@ public class SqlStorageAdapter implements StorageAdapter {
                         rs.getString(KEY_NAME),
                         data,
                         data.length(),
-                        ZonedDateTime.ofInstant(rs.getDate(DATE_NAME).toInstant(), ZoneId.systemDefault())
+                        rs.getTimestamp(DATE_NAME).toLocalDateTime().atZone(ZoneId.systemDefault())
                 );
                 retList.add(storedData);
             }
@@ -150,7 +151,7 @@ public class SqlStorageAdapter implements StorageAdapter {
 
     private void createTable(String tableName) {
         String query = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (p TINYTEXT, k TINYTEXT NOT NULL, data LONGTEXT, created DATETIME);",
+                "CREATE TABLE IF NOT EXISTS %s (p TINYTEXT, k TINYTEXT NOT NULL, data LONGTEXT, created TIMESTAMP);",
                 tableName
         );
         Connection connection = SqlAdapterUtils.getConnection();
