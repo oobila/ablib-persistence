@@ -152,7 +152,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         Map<String, V> map = codeAdapter.toObjects(storedData);
         if (isOnDemand) {
             map.forEach((s, v) -> {
-                K key = Serialization.deserialize(keyType, s);
+                K key = Serialization.deserialize(keyType, (s == null || s.isEmpty()) ? storedData.getName() : s);
                 retMap.put(
                         key,
                         new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, v, storedData, writeCache)
@@ -160,7 +160,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
             });
         } else {
             map.forEach((s, v) -> {
-                K key = Serialization.deserialize(keyType, s);
+                K key = Serialization.deserialize(keyType, (s == null || s.isEmpty()) ? storedData.getName() : s);
                 retMap.put(
                         key,
                         new CacheItem<>(codeAdapter.getType(), key, v, storedData)
