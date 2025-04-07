@@ -16,7 +16,7 @@ public class SimpleSqlCache <K, V> extends AsyncOnDemandCache<K, V> {
                         true,
                         keyType,
                         new SqlStorageAdapter(pluginName, tableName, connectionProperties),
-                        new ConfigurationSerializableCodeAdapter<>(valueType)
+                        new ConfigurationSerializableCodeAdapter<>(valueType, false)
                 )
         );
     }
