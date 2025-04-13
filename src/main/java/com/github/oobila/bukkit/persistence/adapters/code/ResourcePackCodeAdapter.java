@@ -1,10 +1,13 @@
 package com.github.oobila.bukkit.persistence.adapters.code;
 
+import com.github.alastairbooth.placeholderpattern.PlaceholderPattern;
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.model.Resource;
 import com.github.oobila.bukkit.persistence.model.ResourcePack;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
 import org.bukkit.plugin.Plugin;
@@ -17,11 +20,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -31,16 +32,21 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 @Getter
 public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
 
-    private final Map<Class<?>, CodeAdapter<?>> typeMap = new HashMap<>();
-    private final Map<Pattern, CodeAdapter<?>> patternMap = new HashMap<>();
+    private final List<Info> infoList = new ArrayList<>();
 
     @Setter
     private Plugin plugin;
 
-    public ResourcePackCodeAdapter(Map<Pattern, CodeAdapter<?>> codeAdapterMap) {
-        codeAdapterMap.forEach((string, codeAdapter) -> {
-            typeMap.put(codeAdapter.getType(), codeAdapter);
-            patternMap.put(string, codeAdapter);
+    public ResourcePackCodeAdapter(Map<PlaceholderPattern, CodeAdapter<?>> codeAdapterMap) {
+        codeAdapterMap.forEach((placeholderPattern, codeAdapter) -> {
+            if (placeholderPattern.getKeys().size() != 1) {
+                throw new PersistenceRuntimeException("PlaceholderPattern should have exactly 1 key for the ResourcePackCodeAdapter");
+            }
+            infoList.add(new Info(
+                    codeAdapter.getType(),
+                    codeAdapter,
+                    placeholderPattern
+            ));
         });
     }
 
@@ -75,11 +81,9 @@ public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
     }
 
     private Resource<?> toResource(StoredData storedData) {
-        for (Map.Entry<Pattern, CodeAdapter<?>> entry : patternMap.entrySet()) {
-            Pattern pattern = entry.getKey();
-            if (pattern.matcher(storedData.getName()).matches()) {
-                CodeAdapter<?> codeAdapter = entry.getValue();
-                Map<String, ?> object = codeAdapter.toObjects(storedData);
+        for (Info info : infoList) {
+            if (info.placeholderPattern.matches(storedData.getName())) {
+                Map<String, ?> object = info.codeAdapter.toObjects(storedData);
                 return getResource(storedData, object);
             }
         }
@@ -125,11 +129,15 @@ public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
     }
 
     private StoredData toStoredData(Resource<?> resource) {
-        for (Map.Entry<Class<?>, CodeAdapter<?>> entry : typeMap.entrySet()) {
-            if (entry.getKey().isAssignableFrom(resource.getType())) {
+        for (Info info : infoList) {
+            if (info.type.isAssignableFrom(resource.getType())) {
+                String key = resource.getKey();
+                if (!info.placeholderPattern.matches(key)) {
+                    key = info.placeholderPattern.getWithReplacements(info.placeholderPattern.getKeys().get(0), key);
+                }
                 return new StoredData(
-                        resource.getKey(),
-                        fromObject(entry.getValue(), resource.getData()),
+                        key,
+                        fromObject(info.codeAdapter, resource.getData()),
                         0,
                         null
                 );
@@ -153,6 +161,14 @@ public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
     @SuppressWarnings("unchecked")
     private <T> String fromObject(CodeAdapter<T> codeAdapter, Object object) {
         return codeAdapter.fromObjects(Map.of(Strings.EMPTY, (T) object));
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private class Info {
+        Class<?> type;
+        CodeAdapter<?> codeAdapter;
+        PlaceholderPattern placeholderPattern;
     }
 
 }

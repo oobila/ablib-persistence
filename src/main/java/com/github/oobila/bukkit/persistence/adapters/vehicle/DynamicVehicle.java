@@ -18,6 +18,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
         }
         List<StoredData> storedData;
         if (pathStringIncludesKey) {
-            List<String> paths = getPaths(null);
+            List<String> paths =getPaths(null);
             storedData = paths.stream().map(this::read).collect(JavaUtil.toSingleton());
             paths.forEach(path -> storedData.addAll(read(path)));
         } else {
@@ -116,7 +117,7 @@ public class DynamicVehicle<K, V> extends BasePersistenceVehicle<K, V> {
     @Override
     public Collection<K> keys(UUID partition) {
         if (!pathStringIncludesPartition) {
-            return null;
+            return Collections.emptyList();
         }
         String name = getPath(partition, null);
         return storageAdapter.poll(plugin, name).stream()

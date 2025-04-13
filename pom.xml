@@ -53,6 +53,11 @@
             <version>1.0.2</version>
         </dependency>
         <dependency>
+            <groupId>com.github.AlastairBooth</groupId>
+            <artifactId>PlaceholderPattern</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.oobila</groupId>
             <artifactId>ablib-common</artifactId>
             <version>1.2.8</version>
