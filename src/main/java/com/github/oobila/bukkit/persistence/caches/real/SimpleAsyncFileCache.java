@@ -4,9 +4,10 @@ import com.github.oobila.bukkit.persistence.adapters.code.MapOfConfigurationSeri
 import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.async.AsyncReadAndWriteCache;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 @SuppressWarnings("unused")
-public class SimpleAsyncFileCache<K, V> extends AsyncReadAndWriteCache<K, V> {
+public class SimpleAsyncFileCache<K, V extends ConfigurationSerializable> extends AsyncReadAndWriteCache<K, V> {
 
     public SimpleAsyncFileCache(String pathString, Class<K> keyType, Class<V> valueType) {
         super(

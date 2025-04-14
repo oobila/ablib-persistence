@@ -5,8 +5,9 @@ import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
@@ -22,7 +23,6 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
 
     private final Class<V> type;
 
-    @Setter
     private Plugin plugin;
 
     @Override
@@ -61,6 +61,15 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
             log(Level.SEVERE, "Could not save object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setPlugin(Plugin plugin) {
+        this.plugin = plugin;
+        if (ConfigurationSerializable.class.isAssignableFrom(type)) {
+            ConfigurationSerialization.registerClass((Class<? extends ConfigurationSerializable>) type);
         }
     }
 }

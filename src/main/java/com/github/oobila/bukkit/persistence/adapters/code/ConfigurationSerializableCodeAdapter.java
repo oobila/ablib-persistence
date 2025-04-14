@@ -5,9 +5,10 @@ import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,16 +20,15 @@ import static com.github.oobila.bukkit.common.ABCommon.log;
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
-public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
+public class ConfigurationSerializableCodeAdapter<V> implements CodeAdapter<V> {
 
-    private final Class<T> type;
+    private final Class<V> type;
     private final boolean includeDataHeader;
 
-    @Setter
     private Plugin plugin;
 
     @Override
-    public Map<String, T> toObjects(StoredData storedData) {
+    public Map<String, V> toObjects(StoredData storedData) {
         try {
             MyYamlConfiguration yamlConfiguration = new MyYamlConfiguration(includeDataHeader);
             yamlConfiguration.loadFromString(storedData.getData());
@@ -49,7 +49,7 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
     }
 
     @Override
-    public String fromObjects(Map<String, T> inMap) {
+    public String fromObjects(Map<String, V> inMap) {
         try {
             Object object = inMap.values().iterator().next();
             @SuppressWarnings("unchecked")
@@ -61,6 +61,15 @@ public class ConfigurationSerializableCodeAdapter<T> implements CodeAdapter<T> {
             log(Level.SEVERE, "Could not save object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setPlugin(Plugin plugin) {
+        this.plugin = plugin;
+        if (ConfigurationSerializable.class.isAssignableFrom(type)) {
+            ConfigurationSerialization.registerClass((Class<? extends ConfigurationSerializable>) type);
         }
     }
 }

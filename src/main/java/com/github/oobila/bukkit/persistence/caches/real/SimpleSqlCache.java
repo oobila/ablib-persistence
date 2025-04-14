@@ -5,9 +5,10 @@ import com.github.oobila.bukkit.persistence.adapters.storage.SqlStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.async.AsyncOnDemandCache;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 
-public class SimpleSqlCache<K, V> extends AsyncOnDemandCache<K, V> {
+public class SimpleSqlCache<K, V extends ConfigurationSerializable> extends AsyncOnDemandCache<K, V> {
 
     public SimpleSqlCache(String pluginName, String tableName, Class<K> keyType, Class<V> valueType, SqlConnectionProperties connectionProperties) {
         super(
