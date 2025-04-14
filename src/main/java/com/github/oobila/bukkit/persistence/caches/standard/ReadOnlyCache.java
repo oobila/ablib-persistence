@@ -123,6 +123,16 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         return nullCache.values();
     }
 
+    @Override
+    public Collection<K> keySet(UUID partition) {
+        return localCache.get(partition).keySet();
+    }
+
+    @Override
+    public Collection<CacheItem<K, V>> values(UUID partition) {
+        return localCache.get(partition).values();
+    }
+
     @NotNull
     public Set<Map.Entry<K, CacheItem<K, V>>> entrySet() {
         return nullCache.entrySet();

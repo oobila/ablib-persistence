@@ -92,12 +92,12 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
     }
 
     @Override
-    public Collection<K> keys() {
+    public Collection<K> keySet() {
         return nullCache.keySet();
     }
 
     @Override
-    public Collection<K> keys(UUID partition) {
+    public Collection<K> keySet(UUID partition) {
         return localCache.get(partition).keySet();
     }
 

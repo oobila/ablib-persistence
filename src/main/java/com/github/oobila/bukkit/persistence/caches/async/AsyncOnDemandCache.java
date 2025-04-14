@@ -130,12 +130,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     }
 
     @Override
-    public Collection<K> keys() {
+    public Collection<K> keySet() {
         throw new PersistenceRuntimeException("operation not supported");
     }
 
     @Override
-    public Collection<K> keys(UUID partition) {
+    public Collection<K> keySet(UUID partition) {
         throw new PersistenceRuntimeException("operation not supported");
     }
 

@@ -20,8 +20,8 @@ public interface AsyncReadCache<K, V, C extends CacheItem<K, V>> extends ReadCac
 
     Collection<C> values(UUID partition);
 
-    Collection<K> keys();
+    Collection<K> keySet();
 
-    Collection<K> keys(UUID partition);
+    Collection<K> keySet(UUID partition);
 
 }
