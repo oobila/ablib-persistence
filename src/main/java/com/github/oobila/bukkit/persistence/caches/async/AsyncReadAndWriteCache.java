@@ -3,6 +3,7 @@ package com.github.oobila.bukkit.persistence.caches.async;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void putValue(K key, V value, Consumer<CacheItem<K, V>> consumer) {
+    public void putValue(K key, V value, @NotNull Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             CacheItem<K,V> cacheItem = nullCache.put(key, new CacheItem<>(
                     getWriteVehicle().getCodeAdapter().getType(), key, value,
@@ -51,7 +52,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void putValue(UUID partition, K key, V value, Consumer<CacheItem<K, V>> consumer) {
+    public void putValue(UUID partition, K key, V value, @NotNull Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             localCache.putIfAbsent(partition, new HashMap<>());
             CacheItem<K,V> cacheItem = localCache.get(partition).put(key, new CacheItem<>(
@@ -63,7 +64,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void remove(K key, Consumer<CacheItem<K, V>> consumer) {
+    public void remove(K key, @NotNull Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = nullCache.remove(key);
             getWriteVehicle().delete(getPlugin(), null, cacheItem.getKey());
@@ -72,7 +73,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void remove(UUID partition, K key, Consumer<CacheItem<K, V>> consumer) {
+    public void remove(UUID partition, K key, @NotNull Consumer<CacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = localCache.get(partition).remove(key);
             getWriteVehicle().delete(getPlugin(), partition, cacheItem.getKey());
@@ -81,7 +82,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void clear(UUID partition, Consumer<List<CacheItem<K, V>>> consumer) {
+    public void clear(UUID partition, @NotNull Consumer<List<CacheItem<K, V>>> consumer) {
         Map<K, CacheItem<K, V>> map = localCache.remove(partition);
         map.values().forEach(cacheItem ->
             getWriteVehicle().delete(getPlugin(), partition, cacheItem.getKey())
@@ -90,7 +91,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     }
 
     @Override
-    public void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<CacheItem<K, V>>> consumer) {
+    public void removeBefore(ZonedDateTime zonedDateTime, @NotNull Consumer<List<CacheItem<K, V>>> consumer) {
         //TODO handle partitioned items
         runTaskAsync(() -> {
             List<K> itemsToRemove = new ArrayList<>();

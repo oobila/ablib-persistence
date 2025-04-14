@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -81,12 +82,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     }
 
     @Override
-    public void getValue(K key, Consumer<V> consumer) {
+    public void getValue(K key, @NotNull Consumer<V> consumer) {
         getValue(null, key, consumer);
     }
 
     @Override
-    public void getValue(UUID partition, K key, Consumer<V> consumer) {
+    public void getValue(UUID partition, K key, @NotNull Consumer<V> consumer) {
         runTaskAsync(() -> {
             List<CacheItem<K, V>> cacheItems = new ArrayList<>();
             readVehicles.forEach(vehicle -> cacheItems.add(vehicle.load(plugin, partition, key)));
@@ -140,12 +141,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     }
 
     @Override
-    public void putValue(K key, V value, Consumer<OnDemandCacheItem<K, V>> consumer) {
+    public void putValue(K key, V value, @NotNull Consumer<OnDemandCacheItem<K, V>> consumer) {
         putValue(null, key, value, consumer);
     }
 
     @Override
-    public void putValue(UUID partition, K key, V value, Consumer<OnDemandCacheItem<K, V>> consumer) {
+    public void putValue(UUID partition, K key, V value, @NotNull Consumer<OnDemandCacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
             OnDemandCacheItem<K, V> cacheItem = new OnDemandCacheItem<>(
                     writeVehicle.getCodeAdapter().getType(),
@@ -161,22 +162,22 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     }
 
     @Override
-    public void remove(K key, Consumer<OnDemandCacheItem<K, V>> consumer) {
+    public void remove(K key, @NotNull Consumer<OnDemandCacheItem<K, V>> consumer) {
         remove(null, key, consumer);
     }
 
     @Override
-    public void remove(UUID partition, K key, Consumer<OnDemandCacheItem<K, V>> consumer) {
+    public void remove(UUID partition, K key, @NotNull Consumer<OnDemandCacheItem<K, V>> consumer) {
         runTaskAsync(() -> writeVehicle.delete(plugin, partition, key));
     }
 
     @Override
-    public void clear(UUID partition, Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
+    public void clear(UUID partition, @NotNull Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
         //do nothing
     }
 
     @Override
-    public void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
+    public void removeBefore(ZonedDateTime zonedDateTime, @NotNull Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
         throw new PersistenceRuntimeException("operation not supported, please do this manually");
     }
 }

@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
     }
 
     @Override
-    public void getValue(K key, Consumer<V> consumer) {
+    public void getValue(K key, @NotNull Consumer<V> consumer) {
         runTaskAsync(() -> {
             V value = nullCache.get(key).getData();
             consumer.accept(value);
@@ -79,7 +80,7 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
     }
 
     @Override
-    public void getValue(UUID partition, K key, Consumer<V> consumer) {
+    public void getValue(UUID partition, K key, @NotNull Consumer<V> consumer) {
         runTaskAsync(() -> {
             V value = localCache.get(partition).get(key).getData();
             consumer.accept(value);

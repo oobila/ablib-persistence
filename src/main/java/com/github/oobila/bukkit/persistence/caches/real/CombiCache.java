@@ -7,6 +7,7 @@ import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
             List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values());
             values.forEach(onDemandCacheItem -> {
                 fileCache.putValue(onDemandCacheItem.getKey(), onDemandCacheItem.getData());
-                sqlCache.remove(onDemandCacheItem.getKey(), null);
+                sqlCache.remove(onDemandCacheItem.getKey(), a -> {});
             });
         }
     }
@@ -64,7 +65,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
             List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values(partition));
             values.forEach(onDemandCacheItem -> {
                 fileCache.putValue(partition, onDemandCacheItem.getKey(), onDemandCacheItem.getData());
-                sqlCache.remove(partition, onDemandCacheItem.getKey(), null);
+                sqlCache.remove(partition, onDemandCacheItem.getKey(), a -> {});
             });
         }
     }
@@ -130,7 +131,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void getValue(K key, Consumer<V> consumer) {
+    public void getValue(K key, @NotNull Consumer<V> consumer) {
         if (primaryIsSql) {
             sqlCache.getValue(key, consumer);
         } else {
@@ -139,7 +140,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void getValue(UUID partition, K key, Consumer<V> consumer) {
+    public void getValue(UUID partition, K key, @NotNull Consumer<V> consumer) {
         if (primaryIsSql) {
             sqlCache.getValue(partition, key, consumer);
         } else {
@@ -197,7 +198,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void putValue(K key, V value, Consumer<CacheItem<K, V>> consumer) {
+    public void putValue(K key, V value, @NotNull Consumer<CacheItem<K, V>> consumer) {
         if (primaryIsSql) {
             sqlCache.putValue(key, value, onDemandCacheItem ->
                 consumer.accept(toCacheItem(onDemandCacheItem))
@@ -208,7 +209,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void putValue(UUID partition, K key, V value, Consumer<CacheItem<K, V>> consumer) {
+    public void putValue(UUID partition, K key, V value, @NotNull Consumer<CacheItem<K, V>> consumer) {
         if (primaryIsSql) {
             sqlCache.putValue(partition, key, value, onDemandCacheItem ->
                     consumer.accept(toCacheItem(onDemandCacheItem))
@@ -219,7 +220,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void remove(K key, Consumer<CacheItem<K, V>> consumer) {
+    public void remove(K key, @NotNull Consumer<CacheItem<K, V>> consumer) {
         if (primaryIsSql) {
             sqlCache.remove(key, onDemandCacheItem ->
                     consumer.accept(toCacheItem(onDemandCacheItem))
@@ -230,7 +231,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void remove(UUID partition, K key, Consumer<CacheItem<K, V>> consumer) {
+    public void remove(UUID partition, K key, @NotNull Consumer<CacheItem<K, V>> consumer) {
         if (primaryIsSql) {
             sqlCache.remove(partition, key, onDemandCacheItem ->
                     consumer.accept(toCacheItem(onDemandCacheItem))
@@ -241,7 +242,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void clear(UUID partition, Consumer<List<CacheItem<K, V>>> consumer) {
+    public void clear(UUID partition, @NotNull Consumer<List<CacheItem<K, V>>> consumer) {
         if (primaryIsSql) {
             sqlCache.clear(partition, list ->
                     consumer.accept(toCacheItem(list))
@@ -252,7 +253,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
-    public void removeBefore(ZonedDateTime zonedDateTime, Consumer<List<CacheItem<K, V>>> consumer) {
+    public void removeBefore(ZonedDateTime zonedDateTime, @NotNull Consumer<List<CacheItem<K, V>>> consumer) {
         if (primaryIsSql) {
             sqlCache.removeBefore(zonedDateTime, list ->
                     consumer.accept(toCacheItem(list))
