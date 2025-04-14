@@ -17,7 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -147,6 +149,16 @@ public class FileStorageAdapter implements StorageAdapter {
     public boolean exists(Plugin plugin, String name) {
         Path path = getPath(plugin, name);
         return path.toFile().exists();
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated(Plugin plugin, String fileName) {
+        try {
+            FileTime fileTime = Files.getLastModifiedTime(getPath(plugin, fileName));
+            return ZonedDateTime.ofInstant(fileTime.toInstant(), ZoneId.systemDefault());
+        } catch (IOException e) {
+            throw new PersistenceRuntimeException(e);
+        }
     }
 
     protected Path getPath(Plugin plugin, String directory) {

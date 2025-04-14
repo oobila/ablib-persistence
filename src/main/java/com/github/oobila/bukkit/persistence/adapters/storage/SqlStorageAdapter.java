@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,6 +147,22 @@ public class SqlStorageAdapter implements StorageAdapter {
     public boolean exists(Plugin plugin, String name) {
         NameParts nameParts = split(plugin, name);
         return poll(plugin, name).contains(nameParts.key);
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated(Plugin plugin, String name) {
+        NameParts nameParts = split(plugin, name);
+        String query = String.format("SELECT created FROM %s ORDER BY created DESC limit 1;", nameParts.tableName);
+        Connection connection = SqlAdapterUtils.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getTimestamp(DATE_NAME).toLocalDateTime().atZone(ZoneId.systemDefault());
+            }
+        } catch (SQLException e) {
+            throw new PersistenceRuntimeException(e);
+        }
+        return null;
     }
 
     private void createTable(String tableName) {

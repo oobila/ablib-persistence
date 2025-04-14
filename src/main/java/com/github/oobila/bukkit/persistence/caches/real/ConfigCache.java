@@ -1,24 +1,36 @@
 package com.github.oobila.bukkit.persistence.caches.real;
 
 import com.github.alastairbooth.abid.ABID;
+import com.github.oobila.bukkit.chat.Message;
 import com.github.oobila.bukkit.persistence.adapters.code.MapOfConfigurationSerializableCodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.standard.ReadOnlyCache;
 import com.github.oobila.bukkit.persistence.serializers.Serialization;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Level;
+
+import static com.github.oobila.bukkit.common.ABCommon.log;
+import static com.github.oobila.bukkit.common.ABCommon.runContinuousTask;
 
 @SuppressWarnings("unused")
 public class ConfigCache extends ReadOnlyCache<String, Object> {
+
+    private int fileListenerTask = -1;
+    private ZonedDateTime dateTime = ZonedDateTime.now();
 
     public ConfigCache(String pathString) {
         super(
@@ -30,6 +42,12 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
                         new MapOfConfigurationSerializableCodeAdapter<>(Object.class)
                 )
         );
+    }
+
+    @Override
+    public void load(Plugin plugin) {
+        super.load(plugin);
+        startFileListener(plugin);
     }
 
     public String getString(String key) {
@@ -86,5 +104,26 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
 
     public Material getMaterial(String key) {
         return Objects.requireNonNull(Material.getMaterial((String) getValue(key)));
+    }
+
+    private void startFileListener(Plugin plugin) {
+        if (fileListenerTask < 0) {
+            BukkitTask bukkitTask = runContinuousTask(() -> {
+                ZonedDateTime newTime = getWriteVehicle().getStorageAdapter().getLastUpdated(plugin, getPathString());
+                if (newTime.isAfter(this.dateTime)) {
+                    this.dateTime = newTime;
+                    unload();
+                    super.load(plugin);
+                    Bukkit.getOnlinePlayers().stream().filter(Player::isOp).forEach(op ->
+                            Message.builder("Config {0} was reloaded for plugin: {1}")
+                                    .arg(getPathString())
+                                    .arg(plugin.getName())
+                                    .send(op)
+                    );
+                    log(Level.INFO, "Config {0} was reloaded for plugin: {1}", getPathString(), plugin.getName());
+                }
+            }, 1000);
+            this.fileListenerTask = bukkitTask.getTaskId();
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.github.oobila.bukkit.persistence.caches.standard;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
+import com.github.oobila.bukkit.persistence.observers.CacheObserver;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 
@@ -39,6 +40,8 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         } else {
             getWriteVehicle().save(getPlugin(), nullCache);
         }
+        cacheObservers.stream().filter(CacheObserver.class::isInstance)
+                .map(CacheObserver.class::cast).forEach(CacheObserver::onCacheSave);
     }
 
     @Override

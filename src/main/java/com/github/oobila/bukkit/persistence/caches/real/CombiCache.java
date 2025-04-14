@@ -44,6 +44,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
                     fileCache.remove(cacheItem.getKey())
                 )
             );
+            fileCache.save();
         } else if(sqlCache != null) {
             //do nothing for now, sql functions for getting keys or values is not there
 //            List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values());
@@ -62,6 +63,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
                             fileCache.remove(partition, cacheItem.getKey())
                     )
             );
+            fileCache.save(partition);
         } else if(sqlCache != null) {
             //do nothing for now, sql functions for getting keys or values is not there
 //            List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values(partition));

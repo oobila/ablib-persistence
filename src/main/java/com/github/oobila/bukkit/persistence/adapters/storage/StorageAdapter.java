@@ -2,6 +2,7 @@ package com.github.oobila.bukkit.persistence.adapters.storage;
 
 import org.bukkit.plugin.Plugin;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface StorageAdapter {
@@ -19,5 +20,7 @@ public interface StorageAdapter {
     void delete(Plugin plugin, String name);
 
     boolean exists(Plugin plugin, String name);
+
+    ZonedDateTime getLastUpdated(Plugin plugin, String name);
 
 }

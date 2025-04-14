@@ -1,6 +1,8 @@
 package com.github.oobila.bukkit.persistence.caches.standard;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
+import com.github.oobila.bukkit.persistence.observers.CacheLoadObserver;
+import com.github.oobila.bukkit.persistence.observers.CacheObserver;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,6 +11,7 @@ import lombok.SneakyThrows;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +27,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     private final List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
     private final PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
 
+    protected final List<CacheLoadObserver> cacheObservers = new ArrayList<>();
     protected final Map<K, CacheItem<K, V>> nullCache = new HashMap<>();
     protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
@@ -58,6 +62,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         localCache.putIfAbsent(partition, new HashMap<>());
         Map<K, CacheItem<K, V>> map = localCache.get(partition);
         readVehicles.forEach(vehicle -> map.putAll(vehicle.load(plugin, partition)));
+        cacheObservers.forEach(CacheLoadObserver::onCacheLoad);
     }
 
     @Override
@@ -65,6 +70,8 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         nullCache.clear();
         localCache.clear();
         localCache.putIfAbsent(null, nullCache);
+        cacheObservers.stream().filter(CacheObserver.class::isInstance)
+                .map(CacheObserver.class::cast).forEach(CacheObserver::onCacheUnload);
     }
 
     @Override
@@ -136,6 +143,10 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     @NotNull
     public Set<Map.Entry<K, CacheItem<K, V>>> entrySet() {
         return nullCache.entrySet();
+    }
+
+    public void addObserver(CacheLoadObserver cacheObserver) {
+        cacheObservers.add(cacheObserver);
     }
 
 }
