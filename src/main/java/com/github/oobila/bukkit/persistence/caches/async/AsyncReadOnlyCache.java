@@ -45,6 +45,7 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     @Override
     public void load(Plugin plugin) {
         this.plugin = plugin;
+        writeVehicle.setPlugin(plugin);
         nullCache.clear();
         writeVehicle.copyDefaults();
         Map<K, CacheItem<K, V>> uncastMap = new HashMap<>();
