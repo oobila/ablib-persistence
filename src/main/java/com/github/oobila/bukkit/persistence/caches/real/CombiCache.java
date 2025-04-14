@@ -1,7 +1,6 @@
 package com.github.oobila.bukkit.persistence.caches.real;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
-import com.github.oobila.bukkit.persistence.caches.async.AsyncOnDemandCache;
 import com.github.oobila.bukkit.persistence.caches.async.AsyncWriteCache;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
@@ -13,7 +12,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -84,39 +82,51 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     @Override
     public void load(Plugin plugin) {
         fileCache.load(plugin);
-        Optional.of(sqlCache).ifPresent(cache -> cache.load(plugin));
+        if (sqlCache != null) {
+            sqlCache.load(plugin);
+        }
         transfer();
     }
 
     @Override
     public void load(UUID partition) {
         fileCache.load(partition);
-        Optional.of(sqlCache).ifPresent(cache -> cache.load(partition));
+        if (sqlCache != null) {
+            sqlCache.load(partition);
+        }
         transfer(partition);
     }
 
     @Override
     public void unload() {
         fileCache.unload();
-        Optional.of(sqlCache).ifPresent(AsyncOnDemandCache::unload);
+        if (sqlCache != null) {
+            sqlCache.unload();
+        }
     }
 
     @Override
     public void unload(UUID partition) {
         fileCache.unload(partition);
-        Optional.of(sqlCache).ifPresent(cache -> cache.unload(partition));
+        if (sqlCache != null) {
+            sqlCache.unload(partition);
+        }
     }
 
     @Override
     public void save() {
         fileCache.save();
-        Optional.of(sqlCache).ifPresent(AsyncOnDemandCache::save);
+        if (sqlCache != null) {
+            sqlCache.save();
+        }
     }
 
     @Override
     public void save(UUID partition) {
         fileCache.save(partition);
-        Optional.of(sqlCache).ifPresent(cache -> cache.save(partition));
+        if (sqlCache != null) {
+            sqlCache.save(partition);
+        }
     }
 
     @Override
