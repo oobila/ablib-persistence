@@ -45,11 +45,12 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
                 )
             );
         } else if(sqlCache != null) {
-            List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values());
-            values.forEach(onDemandCacheItem -> {
-                fileCache.putValue(onDemandCacheItem.getKey(), onDemandCacheItem.getData());
-                sqlCache.remove(onDemandCacheItem.getKey(), a -> {});
-            });
+            //do nothing for now, sql functions for getting keys or values is not there
+//            List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values());
+//            values.forEach(onDemandCacheItem -> {
+//                fileCache.putValue(onDemandCacheItem.getKey(), onDemandCacheItem.getData());
+//                sqlCache.remove(onDemandCacheItem.getKey(), a -> {});
+//            });
         }
     }
 
@@ -62,11 +63,12 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
                     )
             );
         } else if(sqlCache != null) {
-            List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values(partition));
-            values.forEach(onDemandCacheItem -> {
-                fileCache.putValue(partition, onDemandCacheItem.getKey(), onDemandCacheItem.getData());
-                sqlCache.remove(partition, onDemandCacheItem.getKey(), a -> {});
-            });
+            //do nothing for now, sql functions for getting keys or values is not there
+//            List<CacheItem<K, V>> values = new ArrayList<>(sqlCache.values(partition));
+//            values.forEach(onDemandCacheItem -> {
+//                fileCache.putValue(partition, onDemandCacheItem.getKey(), onDemandCacheItem.getData());
+//                sqlCache.remove(partition, onDemandCacheItem.getKey(), a -> {});
+//            });
         }
     }
 
@@ -255,9 +257,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     @Override
     public void removeBefore(ZonedDateTime zonedDateTime, @NotNull Consumer<List<CacheItem<K, V>>> consumer) {
         if (primaryIsSql) {
-            sqlCache.removeBefore(zonedDateTime, list ->
-                    consumer.accept(toCacheItem(list))
-            );
+            //unsupported
         } else {
             consumer.accept(fileCache.removeBefore(zonedDateTime));
         }
