@@ -55,6 +55,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         unload();
         writeVehicle.copyDefaults();
         readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
+        cacheObservers.forEach(CacheLoadObserver::onCacheLoad);
     }
 
     @Override
@@ -62,7 +63,6 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         localCache.putIfAbsent(partition, new HashMap<>());
         Map<K, CacheItem<K, V>> map = localCache.get(partition);
         readVehicles.forEach(vehicle -> map.putAll(vehicle.load(plugin, partition)));
-        cacheObservers.forEach(CacheLoadObserver::onCacheLoad);
     }
 
     @Override
