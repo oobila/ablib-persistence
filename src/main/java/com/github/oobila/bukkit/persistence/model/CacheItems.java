@@ -9,11 +9,11 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Getter
-public class CacheItems<K, V> implements Map<K, CacheItem<K, V>> {
+public class CacheItems<K, V, C extends CacheItem<K, V>> implements Map<K, C> {
 
     private final String parentKey;
 
     @Delegate
-    private final Map<K, CacheItem<K, V>> map = new HashMap<>();
+    private final Map<K, C> map = new HashMap<>();
 
 }

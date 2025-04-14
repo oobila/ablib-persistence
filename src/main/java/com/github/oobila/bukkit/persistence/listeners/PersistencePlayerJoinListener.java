@@ -24,7 +24,7 @@ public class PersistencePlayerJoinListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         CacheManager.getPlayerReadCaches().forEach(readCache -> {
             //SAVE
-            if (readCache instanceof WriteCache<?,?> writeCache) {
+            if (readCache instanceof WriteCache<?, ?, ?> writeCache) {
                 writeCache.save(event.getPlayer().getUniqueId());
             }
 

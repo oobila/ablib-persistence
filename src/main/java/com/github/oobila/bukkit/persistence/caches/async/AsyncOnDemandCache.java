@@ -21,25 +21,27 @@ import java.util.function.Consumer;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 @Getter
-public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V> {
+public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandCacheItem<K, V>> {
 
     @Setter(AccessLevel.PROTECTED)
     private Plugin plugin;
-    private final PersistenceVehicle<K, V> writeVehicle;
-    private final List<PersistenceVehicle<K, V>> readVehicles;
+    private final PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> writeVehicle;
+    private final List<PersistenceVehicle<K, V, OnDemandCacheItem<K, V>>> readVehicles;
 
     private final List<K> nullKeys = new ArrayList<>();
     private final Map<UUID, List<K>> keys = new HashMap<>();
 
-    public AsyncOnDemandCache(PersistenceVehicle<K, V> vehicle) {
+    public AsyncOnDemandCache(PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> vehicle) {
         this(vehicle, vehicle);
     }
 
-    public AsyncOnDemandCache(PersistenceVehicle<K, V> writeVehicle, PersistenceVehicle<K, V> readVehicle) {
+    public AsyncOnDemandCache(PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> writeVehicle,
+                              PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> readVehicle) {
         this(writeVehicle, List.of(readVehicle));
     }
 
-    public AsyncOnDemandCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
+    public AsyncOnDemandCache(PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> writeVehicle,
+                              List<PersistenceVehicle<K, V, OnDemandCacheItem<K, V>>> readVehicles) {
         this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
         keys.put(null, nullKeys);

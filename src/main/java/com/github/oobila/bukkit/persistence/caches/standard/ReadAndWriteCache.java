@@ -16,11 +16,11 @@ import java.util.UUID;
 @Getter
 public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V>, Map<K, CacheItem<K, V>> {
 
-    public ReadAndWriteCache(PersistenceVehicle<K, V> vehicle) {
+    public ReadAndWriteCache(PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(vehicle, vehicle);
     }
 
-    public ReadAndWriteCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
+    public ReadAndWriteCache(PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle, List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
         super(writeVehicle, readVehicles);
     }
 

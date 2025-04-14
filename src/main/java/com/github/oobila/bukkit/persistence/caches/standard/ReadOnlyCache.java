@@ -21,22 +21,22 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
 
     @Setter(AccessLevel.PROTECTED)
     private Plugin plugin;
-    private final List<PersistenceVehicle<K, V>> readVehicles;
-    private final PersistenceVehicle<K, V> writeVehicle;
+    private final List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
+    private final PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
 
     protected final Map<K, CacheItem<K, V>> nullCache = new HashMap<>();
     protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
 
-    public ReadOnlyCache(PersistenceVehicle<K, V> vehicle) {
+    public ReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this(vehicle, vehicle);
     }
 
-    public ReadOnlyCache(PersistenceVehicle<K, V> writeVehicle, PersistenceVehicle<K, V> readVehicle) {
+    public ReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle, PersistenceVehicle<K, V, CacheItem<K, V>> readVehicle) {
         this(writeVehicle, List.of(readVehicle));
     }
 
-    public ReadOnlyCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
+    public ReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle, List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
         this.readVehicles = readVehicles;
         readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
         this.writeVehicle = writeVehicle;

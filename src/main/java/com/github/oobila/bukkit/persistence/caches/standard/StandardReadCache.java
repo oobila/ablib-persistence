@@ -5,7 +5,7 @@ import com.github.oobila.bukkit.persistence.model.CacheItem;
 
 import java.util.UUID;
 
-public interface StandardReadCache<K, V> extends ReadCache<K, V> {
+public interface StandardReadCache<K, V> extends ReadCache<K, V, CacheItem<K, V>> {
 
     V getValue(K key);
 

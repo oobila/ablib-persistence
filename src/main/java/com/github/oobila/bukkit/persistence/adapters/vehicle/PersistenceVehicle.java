@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-public interface PersistenceVehicle<K, V> {
+public interface PersistenceVehicle<K, V, C extends CacheItem<K, V>> {
 
     void setPlugin(Plugin plugin);
 
@@ -23,21 +23,21 @@ public interface PersistenceVehicle<K, V> {
 
     void setCache(Cache cache);
 
-    Map<K, CacheItem<K, V>> load(Plugin plugin);
+    Map<K, C> load(Plugin plugin);
 
-    Map<K, CacheItem<K, V>> load(Plugin plugin, UUID partition);
+    Map<K, C> load(Plugin plugin, UUID partition);
 
-    CacheItem<K, V> load(Plugin plugin, UUID partition, K key);
+    C load(Plugin plugin, UUID partition, K key);
 
     Collection<K> keys(UUID partition);
 
     void copyDefaults();
 
-    void save(Plugin plugin, Map<K, CacheItem<K, V>> map);
+    void save(Plugin plugin, Map<K, C> map);
 
-    void save(Plugin plugin, UUID partition, Map<K, CacheItem<K, V>> map);
+    void save(Plugin plugin, UUID partition, Map<K, C> map);
 
-    void save(Plugin plugin, UUID partition, K key, CacheItem<K, V> cacheItem);
+    void save(Plugin plugin, UUID partition, K key, C cacheItem);
 
     void delete(Plugin plugin, UUID partition);
 

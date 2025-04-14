@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @SuppressWarnings("unused")
 public interface StandardWriteCache<K, V>
-        extends WriteCache<K, V>, StandardReadCache<K, V> {
+        extends WriteCache<K, V, CacheItem<K, V>>, StandardReadCache<K, V> {
 
     CacheItem<K, V> putValue(K key, V value);
 

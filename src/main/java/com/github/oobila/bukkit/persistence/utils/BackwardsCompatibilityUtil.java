@@ -7,9 +7,10 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unused")
 public class BackwardsCompatibilityUtil {
 
-    public static StoredData compatibility(PersistenceVehicle<?, ?> vehicle, StoredData storedData) {
+    public static StoredData compatibility(PersistenceVehicle<?, ?, ?> vehicle, StoredData storedData) {
         for (BackwardsCompatibility backwardsCompatibility : vehicle.getBackwardsCompatibilityList()) {
             storedData = storedData.toBuilder()
                     .data(storedData.getData().replaceAll(

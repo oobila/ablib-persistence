@@ -2,7 +2,6 @@ package com.github.oobila.bukkit.persistence.caches.async;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
-import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,25 +18,26 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 
 @Getter
-public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
+@SuppressWarnings("unused")
+public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<K, V>> {
 
     @Setter(AccessLevel.PROTECTED)
     private Plugin plugin;
-    private final PersistenceVehicle<K, V> writeVehicle;
-    private final List<PersistenceVehicle<K, V>> readVehicles;
+    private final PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
+    private final List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles;
 
-    protected final Map<K, OnDemandCacheItem<K, V>> nullCache = new HashMap<>();
-    protected final Map<UUID, Map<K, OnDemandCacheItem<K, V>>> localCache = new HashMap<>();
+    protected final Map<K, CacheItem<K, V>> nullCache = new HashMap<>();
+    protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
-    public AsyncReadOnlyCache(PersistenceVehicle<K, V> vehicle) {
+    public AsyncReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         this(vehicle, vehicle);
     }
 
-    public AsyncReadOnlyCache(PersistenceVehicle<K, V> writeVehicle, PersistenceVehicle<K, V> readVehicle) {
+    public AsyncReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle, PersistenceVehicle<K, V, CacheItem<K, V>> readVehicle) {
         this(writeVehicle, List.of(readVehicle));
     }
 
-    public AsyncReadOnlyCache(PersistenceVehicle<K, V> writeVehicle, List<PersistenceVehicle<K, V>> readVehicles) {
+    public AsyncReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle, List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
         this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
     }
@@ -48,18 +48,14 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
         writeVehicle.setPlugin(plugin);
         nullCache.clear();
         writeVehicle.copyDefaults();
-        Map<K, CacheItem<K, V>> uncastMap = new HashMap<>();
-        readVehicles.forEach(vehicle -> uncastMap.putAll(vehicle.load(plugin)));
-        uncastMap.forEach((k, cacheItem) -> nullCache.put(k, (OnDemandCacheItem<K, V>) cacheItem));
+        readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
     }
 
     @Override
     public void load(UUID partition) {
         localCache.putIfAbsent(partition, new HashMap<>());
-        Map<K, OnDemandCacheItem<K, V>> map = localCache.get(partition);
-        Map<K, CacheItem<K, V>> uncastMap = new HashMap<>();
-        readVehicles.forEach(vehicle -> uncastMap.putAll(vehicle.load(plugin, partition)));
-        uncastMap.forEach((k, cacheItem) -> map.put(k, (OnDemandCacheItem<K, V>) cacheItem));
+        Map<K, CacheItem<K, V>> map = localCache.get(partition);
+        readVehicles.forEach(vehicle -> map.putAll(vehicle.load(plugin, partition)));
     }
 
     @Override
@@ -91,7 +87,7 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     }
 
     @Override
-    public OnDemandCacheItem<K, V> get(UUID partition, K key) {
+    public CacheItem<K, V> get(UUID partition, K key) {
         return localCache.get(partition).get(key);
     }
 
@@ -106,12 +102,12 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V> {
     }
 
     @Override
-    public Collection<OnDemandCacheItem<K, V>> values() {
+    public Collection<CacheItem<K, V>> values() {
         return nullCache.values();
     }
 
     @Override
-    public Collection<OnDemandCacheItem<K, V>> values(UUID partition) {
+    public Collection<CacheItem<K, V>> values(UUID partition) {
         return localCache.get(partition).values();
     }
 }
