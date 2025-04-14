@@ -4,7 +4,7 @@ import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
 import com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -17,13 +17,21 @@ import java.util.logging.Level;
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
 @SuppressWarnings("unused")
-@RequiredArgsConstructor
 @Getter
 public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter<V> {
 
     private final Class<V> type;
 
+    @Setter
     private Plugin plugin;
+
+    @SuppressWarnings("unchecked")
+    public MapOfConfigurationSerializableCodeAdapter(Class<V> type) {
+        this.type = type;
+        if (ConfigurationSerializable.class.isAssignableFrom(type)) {
+            ConfigurationSerialization.registerClass((Class<? extends ConfigurationSerializable>) type);
+        }
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -61,15 +69,6 @@ public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter
             log(Level.SEVERE, "Could not save object for type: {0}. Bad class setup.", getTypeName());
             log(Level.SEVERE, e);
             throw new PersistenceRuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void setPlugin(Plugin plugin) {
-        this.plugin = plugin;
-        if (ConfigurationSerializable.class.isAssignableFrom(type)) {
-            ConfigurationSerialization.registerClass((Class<? extends ConfigurationSerializable>) type);
         }
     }
 }
