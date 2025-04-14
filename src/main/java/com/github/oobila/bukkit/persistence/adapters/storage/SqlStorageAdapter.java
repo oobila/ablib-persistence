@@ -84,7 +84,7 @@ public class SqlStorageAdapter implements StorageAdapter {
     @Override
     public List<String> poll(Plugin plugin, String name) {
         NameParts nameParts = split(plugin, name);
-        String query = String.format("SELECT k FROM %s%s;", nameParts.tableName, constructWhere(nameParts));
+        String query = String.format("SELECT record_key FROM %s%s;", nameParts.tableName, constructWhere(nameParts));
         Connection connection = SqlAdapterUtils.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             ResultSet rs = statement.executeQuery();
