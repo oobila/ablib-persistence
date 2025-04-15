@@ -17,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class SqlStorageAdapter implements StorageAdapter {
 
     private static final String TABLE_NAME = "table";
@@ -61,7 +62,7 @@ public class SqlStorageAdapter implements StorageAdapter {
     @Override
     public List<StoredData> readMetaData(Plugin plugin, String name) {
         NameParts nameParts = split(plugin, name);
-        String query = String.format("SELECT * FROM %s%s;", nameParts.tableName, constructWhere(nameParts));
+        String query = String.format("SELECT partition_id, record_key, created FROM %s%s;", nameParts.tableName, constructWhere(nameParts));
         Connection connection = SqlAdapterUtils.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             ResultSet rs = statement.executeQuery();

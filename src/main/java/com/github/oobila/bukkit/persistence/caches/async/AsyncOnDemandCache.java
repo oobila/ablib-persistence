@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,8 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     protected final List<WriteCacheOperationObserver<K, V>> wOperationObservers = new ArrayList<>();
     protected final List<ReadCacheOperationObserver<K, V>> rOperationObservers = new ArrayList<>();
-    private final List<K> nullKeys = new ArrayList<>();
-    private final Map<UUID, List<K>> keys = new HashMap<>();
+    protected final Map<K, OnDemandCacheItem<K, V>> nullCache = new HashMap<>();
+    protected final Map<UUID, Map<K, OnDemandCacheItem<K, V>>> localCache = new HashMap<>();
 
     public AsyncOnDemandCache(PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> vehicle) {
         this(vehicle, vehicle);
@@ -49,17 +50,15 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
                               List<PersistenceVehicle<K, V, OnDemandCacheItem<K, V>>> readVehicles) {
         this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
-        keys.put(null, nullKeys);
+        localCache.put(null, nullCache);
     }
 
     @Override
     public void load(Plugin plugin) {
         this.plugin = plugin;
         writeVehicle.setPlugin(plugin);
-        List<K> local = new ArrayList<>();
-        readVehicles.forEach(vehicle -> local.addAll(vehicle.keys()));
-        nullKeys.addAll(local);
-        local.forEach(k ->
+        readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
+        nullCache.keySet().forEach(k ->
                 rOperationObservers.forEach(observer -> observer.onLoad(k, null))
         );
     }
@@ -67,23 +66,22 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     @Override
     public void load(UUID partition) {
         //not async as this needs to be accessible asap
-        List<K> partitionKeys = new ArrayList<>();
-        readVehicles.forEach(vehicle -> partitionKeys.addAll(vehicle.keys(partition)));
-        keys.put(partition, partitionKeys);
-        partitionKeys.forEach(k ->
+        localCache.putIfAbsent(partition, new HashMap<>());
+        readVehicles.forEach(vehicle -> localCache.get(partition).putAll(vehicle.load(plugin)));
+        localCache.get(partition).keySet().forEach(k ->
                 rOperationObservers.forEach(observer -> observer.onLoad(partition, k, null))
         );
     }
 
     @Override
     public void unload() {
-        nullKeys.clear();
+        nullCache.clear();
         rOperationObservers.forEach(ReadCacheOperationObserver::onUnload);
     }
 
     @Override
     public void unload(UUID partition) {
-        keys.remove(partition);
+        localCache.get(partition).clear();
         rOperationObservers.forEach(observer -> observer.onUnload(partition));
     }
 
@@ -133,27 +131,39 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     @Override
     public OnDemandCacheItem<K, V> get(UUID partition, K key) {
-        throw new PersistenceRuntimeException("operation not supported, please use method with consumer");
+        if (localCache.containsKey(partition)) {
+            return localCache.get(partition).get(key);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Collection<OnDemandCacheItem<K, V>> values() {
-        throw new PersistenceRuntimeException("operation not supported");
+        return nullCache.values();
     }
 
     @Override
     public Collection<OnDemandCacheItem<K, V>> values(UUID partition) {
-        throw new PersistenceRuntimeException("operation not supported");
+        if (localCache.containsKey(partition)) {
+            return localCache.get(partition).values();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public Collection<K> keySet() {
-        throw new PersistenceRuntimeException("operation not supported");
+        return nullCache.keySet();
     }
 
     @Override
     public Collection<K> keySet(UUID partition) {
-        throw new PersistenceRuntimeException("operation not supported");
+        if (localCache.containsKey(partition)) {
+            return localCache.get(partition).keySet();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -174,6 +184,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
                     null
             );
             writeVehicle.save(plugin, partition, key, cacheItem);
+            localCache.get(partition).put(key, cacheItem);
             if (partition == null) {
                 wOperationObservers.forEach(observer -> observer.onPut(key, value));
             } else {
@@ -193,8 +204,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         runTaskAsync(() -> {
             writeVehicle.delete(plugin, partition, key);
             if (partition == null) {
+                nullCache.remove(key);
                 wOperationObservers.forEach(observer -> observer.onRemove(key, null));
             } else {
+                if (localCache.containsKey(partition)) {
+                    localCache.get(partition).remove(key);
+                }
                 wOperationObservers.forEach(observer -> observer.onRemove(partition, key, null));
             }
             consumer.accept(null);
@@ -203,7 +218,14 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     @Override
     public void clear(UUID partition, @NotNull Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
-        //do nothing
+        runTaskAsync(() -> {
+            if (localCache.containsKey(partition)) {
+                localCache.get(partition).keySet().forEach(k ->
+                    writeVehicle.delete(plugin, partition, k)
+                );
+            }
+            localCache.get(partition).clear();
+        });
     }
 
     @Override

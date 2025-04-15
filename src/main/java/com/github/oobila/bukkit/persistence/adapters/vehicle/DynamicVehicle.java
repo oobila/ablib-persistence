@@ -73,7 +73,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
         }
         List<StoredData> storedData;
         if (pathStringIncludesKey) {
-            List<String> paths =getPaths(null);
+            List<String> paths = getPaths(null);
             storedData = paths.stream().map(this::read).collect(JavaUtil.toSingleton());
             paths.forEach(path -> storedData.addAll(read(path)));
         } else {
@@ -145,7 +145,11 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     }
 
     private List<StoredData> read(String path) {
-        return storageAdapter.read(plugin, path);
+        if (isOnDemand) {
+            return storageAdapter.readMetaData(plugin, path);
+        } else {
+            return storageAdapter.read(plugin, path);
+        }
     }
 
     private Map<K, C> constructCacheMap(UUID partition, List<StoredData> storedDataList) {
