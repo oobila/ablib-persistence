@@ -1,7 +1,13 @@
 package com.github.oobila.bukkit.persistence.observers;
 
-import com.github.oobila.bukkit.persistence.model.CacheItem;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 @SuppressWarnings("unused")
-public interface PlayerObserver<K, V, C extends CacheItem<K, V>> {
+public interface PlayerObserver {
+
+    void onJoin(Player player);
+
+    void onLeave(OfflinePlayer player);
+
 }
