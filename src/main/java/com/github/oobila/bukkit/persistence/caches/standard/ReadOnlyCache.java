@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,12 +153,20 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
 
     @Override
     public Collection<K> keySet(UUID partition) {
-        return localCache.get(partition).keySet();
+        if (localCache.containsKey(partition)) {
+            return localCache.get(partition).keySet();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public Collection<CacheItem<K, V>> values(UUID partition) {
-        return localCache.get(partition).values();
+        if (localCache.containsKey(partition)) {
+            return localCache.get(partition).values();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @NotNull
