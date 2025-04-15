@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.UUID;
 
@@ -21,13 +22,37 @@ public class MessageCache extends CombiCache<UUID, MessageItem> implements Playe
         CacheManager.registerPlayerCache(this);
     }
 
+    public void message(OfflinePlayer player, String text, String... args) {
+        putValue(
+                player.getUniqueId(),
+                UUID.randomUUID(),
+                new MessageItem(
+                        new Message(text, args).toString(),
+                        ZonedDateTime.now()
+                ),
+                a -> {}
+        );
+    }
+
+    public void message(OfflinePlayer player, String text) {
+        putValue(
+                player.getUniqueId(),
+                UUID.randomUUID(),
+                new MessageItem(
+                        new Message(text).toString(),
+                        ZonedDateTime.now()
+                ),
+                a -> {}
+        );
+    }
+
     @Override
     public void onJoin(Player player) {
         values(player.getUniqueId()).stream()
                 .map(CacheItem::getData)
                 .sorted(Comparator.comparing(MessageItem::getDateTime))
                 .map(MessageItem::getMessage)
-                .forEach(message -> Message.builder(message).send(player));
+                .forEach(player::sendMessage);
     }
 
     @Override
