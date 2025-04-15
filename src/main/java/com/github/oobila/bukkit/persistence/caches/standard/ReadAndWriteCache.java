@@ -49,7 +49,7 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
 
     @Override
     public void save(UUID partition) {
-        getWriteVehicle().save(getPlugin(), localCache.get(partition));
+        getWriteVehicle().save(getPlugin(), partition, localCache.get(partition));
     }
 
     @Override
