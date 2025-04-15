@@ -122,7 +122,7 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
                     );
                     log(Level.INFO, "Config {0} was reloaded for plugin: {1}", getPathString(), plugin.getName());
                 }
-            }, 1000);
+            }, 200);
             this.fileListenerTask = bukkitTask.getTaskId();
         }
     }

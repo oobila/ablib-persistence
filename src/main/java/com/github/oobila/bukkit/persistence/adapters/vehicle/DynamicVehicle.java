@@ -115,6 +115,13 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     }
 
     @Override
+    public Collection<K> keys() {
+        return storageAdapter.poll(plugin, pathString).stream()
+                .map(string -> Serialization.deserialize(keyType, string))
+                .toList();
+    }
+
+    @Override
     public Collection<K> keys(UUID partition) {
         if (!pathStringIncludesPartition) {
             return Collections.emptyList();

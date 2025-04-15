@@ -29,6 +29,8 @@ public interface PersistenceVehicle<K, V, C extends CacheItem<K, V>> {
 
     C load(Plugin plugin, UUID partition, K key);
 
+    Collection<K> keys();
+
     Collection<K> keys(UUID partition);
 
     void copyDefaults();

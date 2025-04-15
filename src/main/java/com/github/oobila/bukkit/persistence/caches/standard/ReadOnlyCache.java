@@ -4,6 +4,7 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.observers.CacheLoadObserver;
 import com.github.oobila.bukkit.persistence.observers.CacheObserver;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
+import com.github.oobila.bukkit.persistence.observers.ReadCacheOperationObserver;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     private final PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle;
 
     protected final List<CacheLoadObserver> cacheObservers = new ArrayList<>();
+    protected final List<ReadCacheOperationObserver<K, V>> rOperationObservers = new ArrayList<>();
     protected final Map<K, CacheItem<K, V>> nullCache = new HashMap<>();
     protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
@@ -54,7 +56,15 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         writeVehicle.setPlugin(plugin);
         unload();
         writeVehicle.copyDefaults();
-        readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
+        readVehicles.forEach(vehicle -> {
+            Map<K, CacheItem<K, V>> loadedItems = vehicle.load(plugin);
+            rOperationObservers.forEach(observer ->
+                loadedItems.forEach((k, cacheItem) ->
+                    observer.onLoad(k, cacheItem.getData())
+                )
+            );
+            nullCache.putAll(loadedItems);
+        });
         cacheObservers.forEach(CacheLoadObserver::onCacheLoad);
     }
 
@@ -62,7 +72,15 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     public void load(UUID partition) {
         localCache.putIfAbsent(partition, new HashMap<>());
         Map<K, CacheItem<K, V>> map = localCache.get(partition);
-        readVehicles.forEach(vehicle -> map.putAll(vehicle.load(plugin, partition)));
+        readVehicles.forEach(vehicle -> {
+            Map<K, CacheItem<K, V>> loadedItems = vehicle.load(plugin, partition);
+            rOperationObservers.forEach(observer ->
+                loadedItems.forEach((k, cacheItem) ->
+                    observer.onLoad(partition, k, cacheItem.getData())
+                )
+            );
+            map.putAll(loadedItems);
+        });
     }
 
     @Override
@@ -70,6 +88,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         nullCache.clear();
         localCache.clear();
         localCache.putIfAbsent(null, nullCache);
+        rOperationObservers.forEach(ReadCacheOperationObserver::onUnload);
         cacheObservers.stream().filter(CacheObserver.class::isInstance)
                 .map(CacheObserver.class::cast).forEach(CacheObserver::onCacheUnload);
     }
@@ -77,6 +96,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     @Override
     public void unload(UUID partition) {
         localCache.remove(partition);
+        rOperationObservers.forEach(observer -> observer.onUnload(partition));
     }
 
     @Override
@@ -145,8 +165,12 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         return nullCache.entrySet();
     }
 
-    public void addObserver(CacheLoadObserver cacheObserver) {
-        cacheObservers.add(cacheObserver);
+    public void addObserver(CacheLoadObserver observer) {
+        cacheObservers.add(observer);
+    }
+
+    public void addObserver(ReadCacheOperationObserver<K, V> observer) {
+        rOperationObservers.add(observer);
     }
 
 }

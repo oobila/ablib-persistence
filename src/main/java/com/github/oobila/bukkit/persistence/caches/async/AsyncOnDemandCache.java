@@ -4,6 +4,8 @@ import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
+import com.github.oobila.bukkit.persistence.observers.ReadCacheOperationObserver;
+import com.github.oobila.bukkit.persistence.observers.WriteCacheOperationObserver;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +31,8 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     private final PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> writeVehicle;
     private final List<PersistenceVehicle<K, V, OnDemandCacheItem<K, V>>> readVehicles;
 
+    protected final List<WriteCacheOperationObserver<K, V>> wOperationObservers = new ArrayList<>();
+    protected final List<ReadCacheOperationObserver<K, V>> rOperationObservers = new ArrayList<>();
     private final List<K> nullKeys = new ArrayList<>();
     private final Map<UUID, List<K>> keys = new HashMap<>();
 
@@ -51,6 +55,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     @Override
     public void load(Plugin plugin) {
         this.plugin = plugin;
+        List<K> local = new ArrayList<>();
+        readVehicles.forEach(vehicle -> local.addAll(vehicle.keys()));
+        nullKeys.addAll(local);
+        local.forEach(k ->
+                rOperationObservers.forEach(observer -> observer.onLoad(k, null))
+        );
     }
 
     @Override
@@ -59,16 +69,21 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         List<K> partitionKeys = new ArrayList<>();
         readVehicles.forEach(vehicle -> partitionKeys.addAll(vehicle.keys(partition)));
         keys.put(partition, partitionKeys);
+        partitionKeys.forEach(k ->
+                rOperationObservers.forEach(observer -> observer.onLoad(partition, k, null))
+        );
     }
 
     @Override
     public void unload() {
-        //do nothing
+        nullKeys.clear();
+        rOperationObservers.forEach(ReadCacheOperationObserver::onUnload);
     }
 
     @Override
     public void unload(UUID partition) {
         keys.remove(partition);
+        rOperationObservers.forEach(observer -> observer.onUnload(partition));
     }
 
     @Override
@@ -158,6 +173,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
                     null
             );
             writeVehicle.save(plugin, partition, key, cacheItem);
+            if (partition == null) {
+                wOperationObservers.forEach(observer -> observer.onPut(key, value));
+            } else {
+                wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
+            }
+            consumer.accept(cacheItem);
         });
     }
 
@@ -168,7 +189,15 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     @Override
     public void remove(UUID partition, K key, @NotNull Consumer<OnDemandCacheItem<K, V>> consumer) {
-        runTaskAsync(() -> writeVehicle.delete(plugin, partition, key));
+        runTaskAsync(() -> {
+            writeVehicle.delete(plugin, partition, key);
+            if (partition == null) {
+                wOperationObservers.forEach(observer -> observer.onRemove(key, null));
+            } else {
+                wOperationObservers.forEach(observer -> observer.onRemove(partition, key, null));
+            }
+            consumer.accept(null);
+        });
     }
 
     @Override
@@ -179,5 +208,13 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     @Override
     public void removeBefore(ZonedDateTime zonedDateTime, @NotNull Consumer<List<OnDemandCacheItem<K, V>>> consumer) {
         throw new PersistenceRuntimeException("operation not supported, please do this manually");
+    }
+
+    public void addObserver(ReadCacheOperationObserver<K, V> observer) {
+        if (observer instanceof WriteCacheOperationObserver<K,V> writeCacheOperationObserver) {
+            wOperationObservers.add(writeCacheOperationObserver);
+        } else {
+            rOperationObservers.add(observer);
+        }
     }
 }
