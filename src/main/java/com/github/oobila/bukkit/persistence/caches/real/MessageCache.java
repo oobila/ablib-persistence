@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class MessageCache extends CombiCache<UUID, MessageItem> implements PlayerObserver {
 
     public MessageCache(Plugin plugin, String pathString, String tableName,

@@ -55,6 +55,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     @Override
     public void load(Plugin plugin) {
         this.plugin = plugin;
+        writeVehicle.setPlugin(plugin);
         List<K> local = new ArrayList<>();
         readVehicles.forEach(vehicle -> local.addAll(vehicle.keys()));
         nullKeys.addAll(local);
