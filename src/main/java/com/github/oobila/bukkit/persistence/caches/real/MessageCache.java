@@ -54,6 +54,7 @@ public class MessageCache extends CombiCache<UUID, MessageItem> implements Playe
                 .sorted(Comparator.comparing(MessageItem::getDateTime))
                 .map(MessageItem::getMessage)
                 .forEach(player::sendMessage);
+        clear(player.getUniqueId(), a -> {});
     }
 
     @Override
