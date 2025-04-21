@@ -54,19 +54,21 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
 
     @Override
     public CacheItem<K, V> putValue(K key, V value) {
-        wOperationObservers.forEach(observer -> observer.onPut(key, value));
-        return nullCache.put(key, new CacheItem<>(
+        CacheItem<K, V> cacheItem = nullCache.put(key, new CacheItem<>(
                 getWriteVehicle().getCodeAdapter().getType(), key, value, 0, ZonedDateTime.now()
         ));
+        wOperationObservers.forEach(observer -> observer.onPut(key, value));
+        return cacheItem;
     }
 
     @Override
     public CacheItem<K, V> putValue(UUID partition, K key, V value) {
-        wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
         localCache.putIfAbsent(partition, new HashMap<>());
-        return localCache.get(partition).put(key, new CacheItem<>(
+        CacheItem<K, V> cacheItem = localCache.get(partition).put(key, new CacheItem<>(
                 getWriteVehicle().getCodeAdapter().getType(), key, value, 0, ZonedDateTime.now()
         ));
+        wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
+        return cacheItem;
     }
 
     @Override
