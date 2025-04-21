@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
+import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
 
 @SuppressWarnings({"unused"})
 @Getter
@@ -49,7 +50,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
                     getWriteVehicle().getCodeAdapter().getType(), key, value,
                     0, ZonedDateTime.now()
             ));
-            wOperationObservers.forEach(observer -> observer.onPut(key, value));
+            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onPut(key, value)), 1);
             consumer.accept(cacheItem);
         });
     }
@@ -62,7 +63,8 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
                     getWriteVehicle().getCodeAdapter().getType(), key, value,
                     0, ZonedDateTime.now()
             ));
-            wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
+            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onPut(partition, key, value)), 1);
+
             consumer.accept(cacheItem);
         });
     }
@@ -72,7 +74,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = nullCache.remove(key);
             getWriteVehicle().delete(getPlugin(), null, cacheItem.getKey());
-            wOperationObservers.forEach(observer -> observer.onRemove(key, cacheItem.getData()));
+            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(key, cacheItem.getData())), 1);
             consumer.accept(cacheItem);
         });
     }
@@ -82,7 +84,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = localCache.get(partition).remove(key);
             getWriteVehicle().delete(getPlugin(), partition, cacheItem.getKey());
-            wOperationObservers.forEach(observer -> observer.onRemove(partition, key, cacheItem.getData()));
+            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(partition, key, cacheItem.getData())), 1);
             consumer.accept(cacheItem);
         });
     }
@@ -90,10 +92,14 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
     @Override
     public void clear(UUID partition, @NotNull Consumer<List<CacheItem<K, V>>> consumer) {
         Map<K, CacheItem<K, V>> map = localCache.remove(partition);
-        map.values().forEach(cacheItem -> {
-            getWriteVehicle().delete(getPlugin(), partition, cacheItem.getKey());
-            wOperationObservers.forEach(observer -> observer.onRemove(partition, cacheItem.getKey(), cacheItem.getData()));
-        });
+        map.values().forEach(cacheItem ->
+            getWriteVehicle().delete(getPlugin(), partition, cacheItem.getKey())
+        );
+        runTaskLater(() ->
+            map.values().forEach(cacheItem ->
+                runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(partition, cacheItem.getKey(), cacheItem.getData())), 1)
+            )
+        , 1);
         consumer.accept(new ArrayList<>(map.values()));
     }
 

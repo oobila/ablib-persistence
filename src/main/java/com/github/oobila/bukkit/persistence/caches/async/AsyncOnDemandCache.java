@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
+import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
 
 @Getter
 public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandCacheItem<K, V>> {
@@ -186,11 +187,13 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
             writeVehicle.save(plugin, partition, key, cacheItem);
             localCache.putIfAbsent(partition, new HashMap<>());
             localCache.get(partition).put(key, cacheItem);
-            if (partition == null) {
-                wOperationObservers.forEach(observer -> observer.onPut(key, value));
-            } else {
-                wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
-            }
+            runTaskLater(() -> {
+                if (partition == null) {
+                    wOperationObservers.forEach(observer -> observer.onPut(key, value));
+                } else {
+                    wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
+                }
+            }, 1);
             consumer.accept(cacheItem);
         });
     }
@@ -206,12 +209,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
             writeVehicle.delete(plugin, partition, key);
             if (partition == null) {
                 nullCache.remove(key);
-                wOperationObservers.forEach(observer -> observer.onRemove(key, null));
+                runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(key, null)), 1);
             } else {
                 if (localCache.containsKey(partition)) {
                     localCache.get(partition).remove(key);
                 }
-                wOperationObservers.forEach(observer -> observer.onRemove(partition, key, null));
+                runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(partition, key, null)), 1);
             }
             consumer.accept(null);
         });
@@ -234,6 +237,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         throw new PersistenceRuntimeException("operation not supported, please do this manually");
     }
 
+    @SuppressWarnings("unused")
     public void addObserver(ReadCacheOperationObserver<K, V> observer) {
         if (observer instanceof WriteCacheOperationObserver<K,V> writeCacheOperationObserver) {
             wOperationObservers.add(writeCacheOperationObserver);
