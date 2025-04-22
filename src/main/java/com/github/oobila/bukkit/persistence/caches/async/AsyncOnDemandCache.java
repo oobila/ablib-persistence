@@ -28,6 +28,8 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
 @Getter
 public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandCacheItem<K, V>> {
 
+    private static final int RETENTION_TICKS = 1200;
+
     @Setter(AccessLevel.PROTECTED)
     private Plugin plugin;
     private final PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> writeVehicle;
@@ -103,16 +105,9 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     @Override
     public void getValue(UUID partition, K key, @NotNull Consumer<V> consumer) {
-        runTaskAsync(() -> {
-            List<CacheItem<K, V>> cacheItems = new ArrayList<>();
-            readVehicles.forEach(vehicle -> cacheItems.add(vehicle.load(plugin, partition, key)));
-            if (cacheItems.size() == 1) {
-                consumer.accept(cacheItems.iterator().next().getData());
-            } else if (cacheItems.isEmpty()) {
-                consumer.accept(null);
-            } else {
-                throw new PersistenceRuntimeException("more than one item retrieved for a given key");
-            }
+        get(partition, key, onDemandCacheItem -> {
+            consumer.accept(onDemandCacheItem.getData());
+            runTaskLater(() -> localCache.get(partition).get(key).unload(), RETENTION_TICKS);
         });
     }
 
@@ -187,6 +182,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
             writeVehicle.save(plugin, partition, key, cacheItem);
             localCache.putIfAbsent(partition, new HashMap<>());
             localCache.get(partition).put(key, cacheItem);
+            runTaskLater(() -> localCache.get(partition).get(key).unload(), RETENTION_TICKS);
             runTaskLater(() -> {
                 if (partition == null) {
                     wOperationObservers.forEach(observer -> observer.onPut(key, value));
