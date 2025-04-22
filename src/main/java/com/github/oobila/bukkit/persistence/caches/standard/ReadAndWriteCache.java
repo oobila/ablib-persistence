@@ -13,12 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 @Getter
 public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V>, Map<K, CacheItem<K, V>> {
-
-    protected final List<WriteCacheOperationObserver<K, V>> wOperationObservers = new ArrayList<>();
 
     public ReadAndWriteCache(PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(vehicle, vehicle);
@@ -57,7 +56,7 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         CacheItem<K, V> cacheItem = nullCache.put(key, new CacheItem<>(
                 getWriteVehicle().getCodeAdapter().getType(), key, value, 0, ZonedDateTime.now()
         ));
-        wOperationObservers.forEach(observer -> observer.onPut(key, value));
+        observers().forEach(observer -> observer.onPut(key, value));
         return cacheItem;
     }
 
@@ -67,7 +66,7 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         CacheItem<K, V> cacheItem = localCache.get(partition).put(key, new CacheItem<>(
                 getWriteVehicle().getCodeAdapter().getType(), key, value, 0, ZonedDateTime.now()
         ));
-        wOperationObservers.forEach(observer -> observer.onPut(partition, key, value));
+        observers().forEach(observer -> observer.onPut(partition, key, value));
         return cacheItem;
     }
 
@@ -75,25 +74,25 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
     @SuppressWarnings("unchecked")
     public CacheItem<K, V> remove(Object key) {
         CacheItem<K, V> cacheItem = nullCache.remove(key);
-        wOperationObservers.forEach(observer -> observer.onRemove((K) key, cacheItem.getData()));
+        observers().forEach(observer -> observer.onRemove((K) key, cacheItem.getData()));
         return cacheItem;
     }
 
     @Override
     public CacheItem<K, V> remove(UUID partition, K key) {
         CacheItem<K, V> cacheItem = localCache.get(partition).remove(key);
-        wOperationObservers.forEach(observer -> observer.onRemove(partition, key, cacheItem.getData()));
+        observers().forEach(observer -> observer.onRemove(partition, key, cacheItem.getData()));
         return cacheItem;
     }
 
     public void clear() {
         nullCache.forEach((k, cacheItem) ->
-            wOperationObservers.forEach(observer -> observer.onRemove(k, cacheItem.getData()))
+                observers().forEach(observer -> observer.onRemove(k, cacheItem.getData()))
         );
         localCache.forEach((uuid, kCacheItemMap) ->
             kCacheItemMap.forEach((k, cacheItem) -> {
                 if (k != null) {
-                    wOperationObservers.forEach(observer -> observer.onRemove(uuid, k, cacheItem.getData()));
+                    observers().forEach(observer -> observer.onRemove(uuid, k, cacheItem.getData()));
                 }
             })
         );
@@ -107,7 +106,7 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         localCache.forEach((uuid, kCacheItemMap) ->
                 kCacheItemMap.forEach((k, cacheItem) -> {
                     if (k != null) {
-                        wOperationObservers.forEach(observer -> observer.onRemove(uuid, k, cacheItem.getData()));
+                        observers().forEach(observer -> observer.onRemove(uuid, k, cacheItem.getData()));
                     }
                 })
         );
@@ -128,18 +127,20 @@ public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements Stan
         List<CacheItem<K,V>> itemsRemoved = new ArrayList<>();
         itemsToRemove.forEach(key -> itemsRemoved.add(nullCache.remove(key)));
         itemsRemoved.forEach(cacheItem ->
-                wOperationObservers.forEach(observer -> observer.onRemove(cacheItem.getKey(), cacheItem.getData()))
+                observers().forEach(observer -> observer.onRemove(cacheItem.getKey(), cacheItem.getData()))
         );
         return itemsRemoved;
+    }
+
+    private Stream<WriteCacheOperationObserver<K,V>> observers() {
+        return rOperationObservers.stream()
+                .filter(observer -> observer instanceof WriteCacheOperationObserver<K,V>)
+                .map(observer -> (WriteCacheOperationObserver<K,V>) observer);
     }
 
     @Delegate(excludes = Excludes.class)
     private Map<K, CacheItem<K, V>> getNullCacheDelegate() {
         return nullCache;
-    }
-
-    public void addObserver(WriteCacheOperationObserver<K, V> observer) {
-        wOperationObservers.add(observer);
     }
 
     interface Excludes<K, V> {

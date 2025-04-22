@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
@@ -20,8 +21,6 @@ import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
 @SuppressWarnings({"unused"})
 @Getter
 public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> {
-
-    protected final List<WriteCacheOperationObserver<K, V>> wOperationObservers = new ArrayList<>();
 
     public AsyncReadAndWriteCache(PersistenceVehicle<K, V, CacheItem<K, V>> vehicle) {
         super(vehicle, vehicle);
@@ -50,7 +49,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
                     getWriteVehicle().getCodeAdapter().getType(), key, value,
                     0, ZonedDateTime.now()
             ));
-            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onPut(key, value)), 1);
+            runTaskLater(() -> observers().forEach(observer -> observer.onPut(key, value)), 1);
             consumer.accept(cacheItem);
         });
     }
@@ -63,7 +62,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
                     getWriteVehicle().getCodeAdapter().getType(), key, value,
                     0, ZonedDateTime.now()
             ));
-            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onPut(partition, key, value)), 1);
+            runTaskLater(() -> observers().forEach(observer -> observer.onPut(partition, key, value)), 1);
 
             consumer.accept(cacheItem);
         });
@@ -74,7 +73,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = nullCache.remove(key);
             getWriteVehicle().delete(getPlugin(), null, cacheItem.getKey());
-            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(key, cacheItem.getData())), 1);
+            runTaskLater(() -> observers().forEach(observer -> observer.onRemove(key, cacheItem.getData())), 1);
             consumer.accept(cacheItem);
         });
     }
@@ -84,7 +83,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         runTaskAsync(() -> {
             CacheItem<K, V> cacheItem = localCache.get(partition).remove(key);
             getWriteVehicle().delete(getPlugin(), partition, cacheItem.getKey());
-            runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(partition, key, cacheItem.getData())), 1);
+            runTaskLater(() -> observers().forEach(observer -> observer.onRemove(partition, key, cacheItem.getData())), 1);
             consumer.accept(cacheItem);
         });
     }
@@ -97,7 +96,7 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         );
         runTaskLater(() ->
             map.values().forEach(cacheItem ->
-                runTaskLater(() -> wOperationObservers.forEach(observer -> observer.onRemove(partition, cacheItem.getKey(), cacheItem.getData())), 1)
+                runTaskLater(() -> observers().forEach(observer -> observer.onRemove(partition, cacheItem.getKey(), cacheItem.getData())), 1)
             )
         , 1);
         consumer.accept(new ArrayList<>(map.values()));
@@ -119,7 +118,9 @@ public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> imple
         });
     }
 
-    public void addObserver(WriteCacheOperationObserver<K, V> observer) {
-        wOperationObservers.add(observer);
+    private Stream<WriteCacheOperationObserver<K,V>> observers() {
+        return rOperationObservers.stream()
+                .filter(observer -> observer instanceof WriteCacheOperationObserver<K,V>)
+                .map(observer -> (WriteCacheOperationObserver<K,V>) observer);
     }
 }
