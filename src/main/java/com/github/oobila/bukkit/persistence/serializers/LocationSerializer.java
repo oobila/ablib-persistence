@@ -11,9 +11,9 @@ public class LocationSerializer implements KeySerializer<Location> {
         return String.format(
                 "%s_%s_%s_%s",
                 worldSerializer.serialize(location.getWorld()),
-                location.getX(),
-                location.getY(),
-                location.getZ()
+                parse(location.getX()),
+                parse(location.getY()),
+                parse(location.getZ())
         );
     }
 
@@ -22,9 +22,17 @@ public class LocationSerializer implements KeySerializer<Location> {
         String[] split = string.split("_");
         return new Location(
                 split[0].isEmpty() ? null : worldSerializer.deserialize(split[0]),
-                Double.parseDouble(split[1]),
-                Double.parseDouble(split[2]),
-                Double.parseDouble(split[3])
+                parse(split[1]),
+                parse(split[2]),
+                parse(split[3])
         );
+    }
+
+    private String parse(double d) {
+        return Double.toString(d).replace(".","-");
+    }
+
+    private double parse(String s) {
+        return Double.parseDouble(s.replace("-", "."));
     }
 }
