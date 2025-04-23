@@ -59,7 +59,9 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     public void load(Plugin plugin) {
         this.plugin = plugin;
         writeVehicle.setPlugin(plugin);
-        readVehicles.forEach(vehicle -> nullCache.putAll(vehicle.load(plugin)));
+        readVehicles.forEach(vehicle ->
+            nullCache.putAll(vehicle.load(plugin))
+        );
         nullCache.keySet().forEach(k ->
                 rOperationObservers.forEach(observer -> observer.onLoad(k, null))
         );
@@ -181,7 +183,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
                     value,
                     0,
                     null,
-                    null
+                    this
             );
             writeVehicle.save(plugin, partition, key, cacheItem);
             localCache.putIfAbsent(partition, new HashMap<>());
