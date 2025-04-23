@@ -2,7 +2,6 @@ package com.github.oobila.bukkit.persistence.caches.async;
 
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
-import com.github.oobila.bukkit.persistence.model.CacheItem;
 import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
 import com.github.oobila.bukkit.persistence.observers.ReadCacheOperationObserver;
 import com.github.oobila.bukkit.persistence.observers.WriteCacheOperationObserver;
@@ -107,20 +106,27 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     public void getValue(UUID partition, K key, @NotNull Consumer<V> consumer) {
         get(partition, key, onDemandCacheItem -> {
             consumer.accept(onDemandCacheItem.getData());
-            runTaskLater(() -> localCache.get(partition).get(key).unload(), RETENTION_TICKS);
+            runTaskLater(() -> {
+                if (localCache.containsKey(partition)) {
+                    localCache.get(partition).get(key).unload();
+                }
+            }, RETENTION_TICKS);
         });
     }
 
     public void get(UUID partition, K key, Consumer<OnDemandCacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
-            List<CacheItem<K, V>> cacheItems = new ArrayList<>();
-            readVehicles.forEach(vehicle -> cacheItems.add(vehicle.load(plugin, partition, key)));
-            if (cacheItems.size() == 1) {
-                consumer.accept((OnDemandCacheItem<K, V>) cacheItems.iterator().next());
-            } else if (cacheItems.isEmpty()) {
-                consumer.accept(null);
+            if (!localCache.containsKey(partition)) {
+                load(partition);
+                if (localCache.containsKey(partition)) {
+                    OnDemandCacheItem<K, V> cacheItem = localCache.get(partition).get(key);
+                    unload(partition);
+                    consumer.accept(cacheItem);
+                } else {
+                    consumer.accept(null);
+                }
             } else {
-                throw new PersistenceRuntimeException("more than one item retrieved for a given key");
+                consumer.accept(localCache.get(partition).get(key));
             }
         });
     }
@@ -144,6 +150,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).values();
         } else {
+            load(partition);
+            if (localCache.containsKey(partition)) {
+                Collection<OnDemandCacheItem<K, V>> values = localCache.get(partition).values();
+                unload(partition);
+                return values;
+            }
             return Collections.emptyList();
         }
     }
@@ -158,6 +170,12 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).keySet();
         } else {
+            load(partition);
+            if (localCache.containsKey(partition)) {
+                Collection<K> keySet = localCache.get(partition).keySet();
+                unload(partition);
+                return keySet;
+            }
             return Collections.emptyList();
         }
     }
