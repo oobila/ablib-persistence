@@ -29,7 +29,7 @@ public interface ReadCache<K, V, C extends CacheItem<K, V>> extends Cache {
         return getWriteVehicle().getPathString();
     }
 
-    default void tansaction(UUID partition, Runnable runnable) {
+    default void transaction(UUID partition, Runnable runnable) {
         boolean loaded = isLoaded(partition);
         if (!loaded) {
             load(partition);
@@ -40,8 +40,8 @@ public interface ReadCache<K, V, C extends CacheItem<K, V>> extends Cache {
         }
     }
 
-    default void tansaction(OfflinePlayer player, Runnable runnable) {
-        tansaction(player.getUniqueId(), runnable);
+    default void transaction(OfflinePlayer player, Runnable runnable) {
+        transaction(player.getUniqueId(), runnable);
     }
 
 }
