@@ -2,6 +2,7 @@ package com.github.oobila.bukkit.persistence.caches;
 
 import com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle;
 import com.github.oobila.bukkit.persistence.model.CacheItem;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
@@ -22,8 +23,25 @@ public interface ReadCache<K, V, C extends CacheItem<K, V>> extends Cache {
 
     void unload(UUID partition);
 
+    boolean isLoaded(UUID partition);
+
     default String getPathString(){
         return getWriteVehicle().getPathString();
+    }
+
+    default void tansaction(UUID partition, Runnable runnable) {
+        boolean loaded = isLoaded(partition);
+        if (!loaded) {
+            load(partition);
+        }
+        runnable.run();
+        if (!loaded) {
+            unload(partition);
+        }
+    }
+
+    default void tansaction(OfflinePlayer player, Runnable runnable) {
+        tansaction(player.getUniqueId(), runnable);
     }
 
 }

@@ -76,6 +76,11 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     }
 
     @Override
+    public boolean isLoaded(UUID partition) {
+        return localCache.containsKey(partition);
+    }
+
+    @Override
     public void unload() {
         nullCache.clear();
         rOperationObservers.forEach(ReadCacheOperationObserver::onUnload);
@@ -116,17 +121,10 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     public void get(UUID partition, K key, Consumer<OnDemandCacheItem<K, V>> consumer) {
         runTaskAsync(() -> {
-            if (!localCache.containsKey(partition)) {
-                load(partition);
-                if (localCache.containsKey(partition)) {
-                    OnDemandCacheItem<K, V> cacheItem = localCache.get(partition).get(key);
-                    unload(partition);
-                    consumer.accept(cacheItem);
-                } else {
-                    consumer.accept(null);
-                }
-            } else {
+            if (localCache.containsKey(partition)) {
                 consumer.accept(localCache.get(partition).get(key));
+            } else {
+                consumer.accept(null);
             }
         });
     }
@@ -150,12 +148,6 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).values();
         } else {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                Collection<OnDemandCacheItem<K, V>> values = localCache.get(partition).values();
-                unload(partition);
-                return values;
-            }
             return Collections.emptyList();
         }
     }
@@ -170,12 +162,6 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).keySet();
         } else {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                Collection<K> keySet = localCache.get(partition).keySet();
-                unload(partition);
-                return keySet;
-            }
             return Collections.emptyList();
         }
     }

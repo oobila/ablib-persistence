@@ -85,6 +85,11 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     }
 
     @Override
+    public boolean isLoaded(UUID partition) {
+        return localCache.containsKey(partition);
+    }
+
+    @Override
     public void unload() {
         nullCache.clear();
         localCache.clear();
@@ -110,14 +115,7 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
     @SneakyThrows
     public CacheItem<K, V> get(UUID partition, K key) {
         if (!localCache.containsKey(partition)) {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                CacheItem<K, V> cacheItem = localCache.get(partition).get(key);
-                unload(partition);
-                return cacheItem;
-            } else {
-                return null;
-            }
+            return null;
         } else {
             return localCache.get(partition).get(key);
         }
@@ -167,12 +165,6 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).keySet();
         } else {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                Collection<K> keySet = localCache.get(partition).keySet();
-                unload(partition);
-                return keySet;
-            }
             return Collections.emptyList();
         }
     }
@@ -182,12 +174,6 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).values();
         } else {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                Collection<CacheItem<K, V>> values = localCache.get(partition).values();
-                unload(partition);
-                return values;
-            }
             return Collections.emptyList();
         }
     }

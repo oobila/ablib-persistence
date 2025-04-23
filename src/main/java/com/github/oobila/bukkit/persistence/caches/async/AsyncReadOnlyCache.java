@@ -80,6 +80,11 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
     }
 
     @Override
+    public boolean isLoaded(UUID partition) {
+        return localCache.containsKey(partition);
+    }
+
+    @Override
     public void unload() {
         nullCache.clear();
         localCache.clear();
@@ -108,17 +113,10 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
 
     @Override
     public CacheItem<K, V> get(UUID partition, K key) {
-        if (!localCache.containsKey(partition)) {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                CacheItem<K, V> cacheItem = localCache.get(partition).get(key);
-                unload(partition);
-                return cacheItem;
-            } else {
-                return null;
-            }
-        } else {
+        if (localCache.containsKey(partition)) {
             return localCache.get(partition).get(key);
+        } else {
+            return null;
         }
     }
 
@@ -132,12 +130,6 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).keySet();
         } else {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                Collection<K> keySet = localCache.get(partition).keySet();
-                unload(partition);
-                return keySet;
-            }
             return Collections.emptyList();
         }
     }
@@ -152,12 +144,6 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
         if (localCache.containsKey(partition)) {
             return localCache.get(partition).values();
         } else {
-            load(partition);
-            if (localCache.containsKey(partition)) {
-                Collection<CacheItem<K, V>> values = localCache.get(partition).values();
-                unload(partition);
-                return values;
-            }
             return Collections.emptyList();
         }
     }
