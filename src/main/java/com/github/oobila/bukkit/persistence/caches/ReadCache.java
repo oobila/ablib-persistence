@@ -7,6 +7,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public interface ReadCache<K, V, C extends CacheItem<K, V>> extends Cache {
@@ -30,18 +31,30 @@ public interface ReadCache<K, V, C extends CacheItem<K, V>> extends Cache {
     }
 
     default void transaction(UUID partition, Runnable runnable) {
-        boolean loaded = isLoaded(partition);
-        if (!loaded) {
-            load(partition);
-        }
-        runnable.run();
-        if (!loaded) {
-            unload(partition);
-        }
+        transaction(partition, () -> {
+            runnable.run();
+            return null;
+        });
     }
 
     default void transaction(OfflinePlayer player, Runnable runnable) {
         transaction(player.getUniqueId(), runnable);
+    }
+
+    default V transaction(UUID partition, Supplier<V> supplier) {
+        boolean loaded = isLoaded(partition);
+        if (!loaded) {
+            load(partition);
+        }
+        V v = supplier.get();
+        if (!loaded) {
+            unload(partition);
+        }
+        return v;
+    }
+
+    default V transaction(OfflinePlayer player, Supplier<V> supplier) {
+        return transaction(player.getUniqueId(), supplier);
     }
 
 }
