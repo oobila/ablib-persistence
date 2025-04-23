@@ -103,6 +103,15 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     }
 
     @Override
+    public boolean isLoaded(UUID partition) {
+        if (primaryIsSql) {
+            return sqlCache.isLoaded(partition);
+        } else {
+            return fileCache.isLoaded(partition);
+        }
+    }
+
+    @Override
     public void unload() {
         fileCache.unload();
         if (sqlCache != null) {
