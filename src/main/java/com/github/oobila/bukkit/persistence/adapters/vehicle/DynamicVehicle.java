@@ -109,10 +109,15 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
             return null;
         }
         String name = getPath(partition, Serialization.serialize(key));
+        Bukkit.getLogger().info("loading: " + name);
         if (storageAdapter.exists(plugin, name)) {
+            Bukkit.getLogger().info("exists");
             List<StoredData> storedData = read(name, true);
+            Bukkit.getLogger().info("sd: " + storedData.size());
             if (storedData.size() == 1) {
-                return createCacheItems(partition, storedData.get(0)).values().iterator().next();
+                StoredData sd1 = storedData.get(0);
+                Bukkit.getLogger().info("sd1: " + sd1.getName() + " - size: " + sd1.getSize() + " - hasData: " + (sd1.getData() != null));
+                return createCacheItems(partition, sd1).values().iterator().next();
             }
         }
         return null;
@@ -171,7 +176,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     @SuppressWarnings("unchecked")
     private Map<K, C> createCacheItems(UUID partition, StoredData storedData) {
         Map<K, C> retMap = new HashMap<>();
-        if (isOnDemand) {
+        if (storedData.getData() == null) {
             K key = Serialization.deserialize(keyType, storedData.getName());
             retMap.put(
                     key,
