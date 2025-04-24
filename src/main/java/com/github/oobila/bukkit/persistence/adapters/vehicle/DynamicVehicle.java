@@ -310,7 +310,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                     .replace(PARTITION_STRING, PARTITION_PATTERN)
                     .replace(KEY_STRING, KEY_PATTERN);
             if (paths == null || paths.isEmpty()) {
-                List<String> options = storageAdapter.poll(plugin, prev);
+                List<String> options = storageAdapter.poll(plugin, "");
                 for (String option : options) {
                     if (option.matches(pathPartRegex) &&
                             (!pathPart.contains(PARTITION_STRING) || option.contains(partition.toString()))) {
@@ -319,7 +319,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                 }
             } else {
                 for (String path : paths) {
-                    List<String> options = storageAdapter.poll(plugin, prev);
+                    List<String> options = storageAdapter.poll(plugin, path);
                     Bukkit.getLogger().info("found " + pathPart + " options");
                     for (String option : options) {
                         Bukkit.getLogger().info("option: " + option);
