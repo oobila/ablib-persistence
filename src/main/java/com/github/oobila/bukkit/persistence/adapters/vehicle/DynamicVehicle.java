@@ -293,6 +293,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
 
     @SuppressWarnings("java:S3776")
     private List<String> getPaths(int depth, String current, List<String> paths, UUID partition) {
+        Bukkit.getLogger().info("getPaths called on: " + pathString + " - current: " + current);
         if (depth >= pathParts.length) {
             return paths;
         }
@@ -306,7 +307,6 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                     .replace(KEY_STRING, KEY_PATTERN);
             if (paths == null || paths.isEmpty()) {
                 List<String> options = storageAdapter.poll(plugin, prev);
-                options.forEach(option -> Bukkit.getLogger().info("option1: " + option));
                 for (String option : options) {
                     if (option.matches(pathPartRegex) &&
                             (!pathPart.contains(PARTITION_STRING) || option.contains(partition.toString()))) {
@@ -316,8 +316,11 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
             } else {
                 for (String path : paths) {
                     List<String> options = storageAdapter.poll(plugin, prev);
-                    options.forEach(option -> Bukkit.getLogger().info("option2: " + option));
                     for (String option : options) {
+                        Bukkit.getLogger().info("option: " + option);
+                        Bukkit.getLogger().info("  matches: " + option.matches(pathPartRegex));
+                        Bukkit.getLogger().info("  is_key: " + !pathPart.contains(PARTITION_STRING));
+                        Bukkit.getLogger().info("  option contains partition: " + option.contains(partition.toString()));
                         if (option.matches(pathPartRegex) &&
                                 (!pathPart.contains(PARTITION_STRING) || option.contains(partition.toString()))) {
                             newPaths.add(path + SEPARATOR + option);
@@ -334,6 +337,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                 }
             }
         }
+        newPaths.forEach(p -> Bukkit.getLogger().info("new path - " + p));
         return getPaths(++depth, current, newPaths, partition);
     }
 
