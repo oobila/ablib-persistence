@@ -14,7 +14,6 @@ import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -91,12 +90,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
         }
         List<String> paths = getPaths(partition);
         List<StoredData> storedData = new ArrayList<>();
-        paths.forEach(path -> {
-            Bukkit.getLogger().info("path found: " + path);
-            storedData.addAll(read(path));
-            Bukkit.getLogger().info(storedData.size() + " data items: ");
-            storedData.forEach(sd -> Bukkit.getLogger().info("  - " + sd.getName()));
-        });
+        paths.forEach(path -> storedData.addAll(read(path)));
         return constructCacheMap(partition, storedData);
     }
 
@@ -109,15 +103,10 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
             return null;
         }
         String name = getPath(partition, Serialization.serialize(key));
-        Bukkit.getLogger().info("loading: " + name);
         if (storageAdapter.exists(plugin, name)) {
-            Bukkit.getLogger().info("exists");
             List<StoredData> storedData = read(name, true);
-            Bukkit.getLogger().info("sd: " + storedData.size());
             if (storedData.size() == 1) {
-                StoredData sd1 = storedData.get(0);
-                Bukkit.getLogger().info("sd1: " + sd1.getName() + " - size: " + sd1.getSize() + " - hasData: " + (sd1.getData() != null));
-                return createCacheItems(partition, sd1).values().iterator().next();
+                return createCacheItems(partition, storedData.get(0)).values().iterator().next();
             }
         }
         return null;
@@ -182,6 +171,15 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                     key,
                     (C) new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, null, storedData, (WriteCache<K, V, OnDemandCacheItem<K, V>>) cache)
             );
+        } else if(isOnDemand) {
+            Map<String, V> map = codeAdapter.toObjects(storedData);
+            map.forEach((s, v) -> {
+                K key = Serialization.deserialize(keyType, (s == null || s.isEmpty()) ? storedData.getName() : s);
+                retMap.put(
+                        key,
+                        (C) new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, v, storedData, (WriteCache<K, V, OnDemandCacheItem<K, V>>) cache)
+                );
+            });
         } else {
             Map<String, V> map = codeAdapter.toObjects(storedData);
             map.forEach((s, v) -> {
