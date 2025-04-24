@@ -106,7 +106,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
         }
         String name = getPath(partition, Serialization.serialize(key));
         if (storageAdapter.exists(plugin, name)) {
-            List<StoredData> storedData = read(name);
+            List<StoredData> storedData = read(name, true);
             if (storedData.size() == 1) {
                 return createCacheItems(partition, storedData.get(0)).values().iterator().next();
             }
@@ -145,7 +145,11 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     }
 
     private List<StoredData> read(String path) {
-        if (isOnDemand) {
+        return read(path, false);
+    }
+
+    private List<StoredData> read(String path, boolean loadAll) {
+        if (isOnDemand && !loadAll) {
             return storageAdapter.readMetaData(plugin, path);
         } else {
             return storageAdapter.read(plugin, path);
