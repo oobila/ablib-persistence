@@ -8,6 +8,7 @@ import com.github.oobila.bukkit.persistence.observers.WriteCacheOperationObserve
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,8 +73,13 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     @Override
     public void load(UUID partition) {
         //not async as this needs to be accessible asap
+        Bukkit.getLogger().info("loading - " + getPathString());
         localCache.putIfAbsent(partition, new HashMap<>());
-        readVehicles.forEach(vehicle -> localCache.get(partition).putAll(vehicle.load(plugin, partition)));
+        readVehicles.forEach(vehicle -> {
+            Map<K, OnDemandCacheItem<K, V>> map = vehicle.load(plugin, partition);
+            Bukkit.getLogger().info("map size - " + map.keySet().size());
+            localCache.get(partition).putAll(map);
+        });
         localCache.get(partition).keySet().forEach(k ->
                 rOperationObservers.forEach(observer -> observer.onLoad(partition, k, null))
         );
