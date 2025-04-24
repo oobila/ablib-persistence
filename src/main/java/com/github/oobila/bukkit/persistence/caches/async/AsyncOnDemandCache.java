@@ -188,7 +188,11 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
             writeVehicle.save(plugin, partition, key, cacheItem);
             localCache.putIfAbsent(partition, new HashMap<>());
             localCache.get(partition).put(key, cacheItem);
-            runTaskLater(() -> localCache.get(partition).get(key).unload(), RETENTION_TICKS);
+            runTaskLater(() -> {
+                if (localCache.containsKey(partition)) {
+                    localCache.get(partition).get(key).unload();
+                }
+            }, RETENTION_TICKS);
             runTaskLater(() -> {
                 if (partition == null) {
                     wOperationObservers.forEach(observer -> observer.onPut(key, value));
