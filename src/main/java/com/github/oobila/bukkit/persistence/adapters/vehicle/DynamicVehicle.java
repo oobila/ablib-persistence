@@ -171,16 +171,14 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     @SuppressWarnings("unchecked")
     private Map<K, C> createCacheItems(UUID partition, StoredData storedData) {
         Map<K, C> retMap = new HashMap<>();
-        Map<String, V> map = codeAdapter.toObjects(storedData);
         if (isOnDemand) {
-            map.forEach((s, v) -> {
-                K key = Serialization.deserialize(keyType, (s == null || s.isEmpty()) ? storedData.getName() : s);
-                retMap.put(
-                        key,
-                        (C) new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, v, storedData, (WriteCache<K, V, OnDemandCacheItem<K, V>>) cache)
-                );
-            });
+            K key = Serialization.deserialize(keyType, storedData.getName());
+            retMap.put(
+                    key,
+                    (C) new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, null, storedData, (WriteCache<K, V, OnDemandCacheItem<K, V>>) cache)
+            );
         } else {
+            Map<String, V> map = codeAdapter.toObjects(storedData);
             map.forEach((s, v) -> {
                 K key = Serialization.deserialize(keyType, (s == null || s.isEmpty()) ? storedData.getName() : s);
                 retMap.put(
@@ -293,18 +291,12 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
 
     @SuppressWarnings("java:S3776")
     private List<String> getPaths(int depth, String current, List<String> paths, UUID partition) {
-        Bukkit.getLogger().info("getPaths called on: " + pathString + " - current: " + current);
         if (depth >= pathParts.length) {
-            Bukkit.getLogger().info("getPaths returned");
             return paths;
         }
         List<String> newPaths = new ArrayList<>();
         String pathPart = pathParts[depth];
-        String prev = current;
         current = updateCurrent(depth, current, pathPart);
-        Bukkit.getLogger().info("current: " + current);
-        Bukkit.getLogger().info("prev: " + prev);
-        Bukkit.getLogger().info("pathPart: " + pathPart);
         if (pathPart.contains(PARTITION_STRING) || pathPart.contains(KEY_STRING)) {
             String pathPartRegex = RegexUtil.performWithRegexMatch(pathPart, RegexUtil.ANYTHING_NOT_IN_BRACES, Pattern::quote)
                     .replace(PARTITION_STRING, PARTITION_PATTERN)
@@ -320,12 +312,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
             } else {
                 for (String path : paths) {
                     List<String> options = storageAdapter.poll(plugin, path);
-                    Bukkit.getLogger().info("found " + pathPart + " options");
                     for (String option : options) {
-                        Bukkit.getLogger().info("option: " + option);
-                        Bukkit.getLogger().info("  matches: " + option.matches(pathPartRegex));
-                        Bukkit.getLogger().info("  is_key: " + !pathPart.contains(PARTITION_STRING));
-                        Bukkit.getLogger().info("  option contains partition: " + option.contains(partition.toString()));
                         if (option.matches(pathPartRegex) &&
                                 (!pathPart.contains(PARTITION_STRING) || option.contains(partition.toString()))) {
                             newPaths.add(path + SEPARATOR + option);
@@ -342,7 +329,6 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                 }
             }
         }
-        newPaths.forEach(p -> Bukkit.getLogger().info("new path - " + p));
         return getPaths(++depth, current, newPaths, partition);
     }
 
