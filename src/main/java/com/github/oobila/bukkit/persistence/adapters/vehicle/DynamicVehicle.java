@@ -14,6 +14,7 @@ import com.github.oobila.bukkit.persistence.serializers.Serialization;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -90,7 +91,12 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
         }
         List<String> paths = getPaths(partition);
         List<StoredData> storedData = new ArrayList<>();
-        paths.forEach(path -> storedData.addAll(read(path)));
+        paths.forEach(path -> {
+            Bukkit.getLogger().info("path found: " + path);
+            storedData.addAll(read(path));
+            Bukkit.getLogger().info(storedData.size() + " data items: ");
+            storedData.forEach(sd -> Bukkit.getLogger().info("  - " + sd.getName()));
+        });
         return constructCacheMap(partition, storedData);
     }
 
