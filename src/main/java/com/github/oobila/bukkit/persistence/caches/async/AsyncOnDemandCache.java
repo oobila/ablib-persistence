@@ -50,8 +50,10 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
 
     public AsyncOnDemandCache(PersistenceVehicle<K, V, OnDemandCacheItem<K, V>> writeVehicle,
                               List<PersistenceVehicle<K, V, OnDemandCacheItem<K, V>>> readVehicles) {
-        this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
+        readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
+        this.writeVehicle = writeVehicle;
+        writeVehicle.setCache(this);
         localCache.put(null, nullCache);
     }
 

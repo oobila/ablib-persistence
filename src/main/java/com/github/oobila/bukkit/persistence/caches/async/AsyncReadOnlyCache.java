@@ -43,8 +43,11 @@ public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<
     }
 
     public AsyncReadOnlyCache(PersistenceVehicle<K, V, CacheItem<K, V>> writeVehicle, List<PersistenceVehicle<K, V, CacheItem<K, V>>> readVehicles) {
-        this.writeVehicle = writeVehicle;
         this.readVehicles = readVehicles;
+        readVehicles.forEach(readVehicle -> readVehicle.setCache(this));
+        this.writeVehicle = writeVehicle;
+        writeVehicle.setCache(this);
+        localCache.put(null, nullCache);
     }
 
     @Override
