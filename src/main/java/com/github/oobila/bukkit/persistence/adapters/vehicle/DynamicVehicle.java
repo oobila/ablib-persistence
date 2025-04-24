@@ -295,12 +295,16 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     private List<String> getPaths(int depth, String current, List<String> paths, UUID partition) {
         Bukkit.getLogger().info("getPaths called on: " + pathString + " - current: " + current);
         if (depth >= pathParts.length) {
+            Bukkit.getLogger().info("getPaths returned");
             return paths;
         }
         List<String> newPaths = new ArrayList<>();
         String pathPart = pathParts[depth];
         String prev = current;
         current = updateCurrent(depth, current, pathPart);
+        Bukkit.getLogger().info("current: " + current);
+        Bukkit.getLogger().info("prev: " + prev);
+        Bukkit.getLogger().info("pathPart: " + pathPart);
         if (pathPart.contains(PARTITION_STRING) || pathPart.contains(KEY_STRING)) {
             String pathPartRegex = RegexUtil.performWithRegexMatch(pathPart, RegexUtil.ANYTHING_NOT_IN_BRACES, Pattern::quote)
                     .replace(PARTITION_STRING, PARTITION_PATTERN)
@@ -316,6 +320,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
             } else {
                 for (String path : paths) {
                     List<String> options = storageAdapter.poll(plugin, prev);
+                    Bukkit.getLogger().info("found " + pathPart + " options");
                     for (String option : options) {
                         Bukkit.getLogger().info("option: " + option);
                         Bukkit.getLogger().info("  matches: " + option.matches(pathPartRegex));
