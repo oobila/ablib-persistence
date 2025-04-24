@@ -73,7 +73,7 @@ public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandC
     public void load(UUID partition) {
         //not async as this needs to be accessible asap
         localCache.putIfAbsent(partition, new HashMap<>());
-        readVehicles.forEach(vehicle -> localCache.get(partition).putAll(vehicle.load(plugin)));
+        readVehicles.forEach(vehicle -> localCache.get(partition).putAll(vehicle.load(plugin, partition)));
         localCache.get(partition).keySet().forEach(k ->
                 rOperationObservers.forEach(observer -> observer.onLoad(partition, k, null))
         );
