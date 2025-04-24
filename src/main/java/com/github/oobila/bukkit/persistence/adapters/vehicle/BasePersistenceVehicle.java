@@ -15,7 +15,7 @@ import java.util.List;
 abstract class BasePersistenceVehicle<K, V, C extends CacheItem<K, V>> implements PersistenceVehicle<K, V, C> {
 
     @Setter
-    private Cache cache;
+    protected Cache cache;
     private final List<BackwardsCompatibility> backwardsCompatibilityList = new ArrayList<>();
 
     @Override

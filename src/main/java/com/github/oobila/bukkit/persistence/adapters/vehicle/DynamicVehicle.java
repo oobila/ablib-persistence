@@ -47,8 +47,6 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     private final StorageAdapter storageAdapter;
     @Getter
     private final CodeAdapter<V> codeAdapter;
-    @Setter
-    private WriteCache<K, V, C> writeCache;
 
     public DynamicVehicle(String pathString, boolean isOnDemand, Class<K> keyType,
                           StorageAdapter storageAdapter, CodeAdapter<V> codeAdapter) {
@@ -173,7 +171,7 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
                 K key = Serialization.deserialize(keyType, (s == null || s.isEmpty()) ? storedData.getName() : s);
                 retMap.put(
                         key,
-                        (C) new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, v, storedData, (WriteCache<K, V, OnDemandCacheItem<K, V>>) writeCache)
+                        (C) new OnDemandCacheItem<>(codeAdapter.getType(), partition, key, v, storedData, (WriteCache<K, V, OnDemandCacheItem<K, V>>) cache)
                 );
             });
         } else {
