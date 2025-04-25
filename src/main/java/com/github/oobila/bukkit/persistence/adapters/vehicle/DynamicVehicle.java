@@ -1,6 +1,5 @@
 package com.github.oobila.bukkit.persistence.adapters.vehicle;
 
-import com.github.oobila.bukkit.common.utils.JavaUtil;
 import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
 import com.github.oobila.bukkit.persistence.adapters.storage.StorageAdapter;
@@ -69,15 +68,15 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
             //operation not supported
             return new HashMap<>();
         }
-        List<StoredData> storedData;
+        List<StoredData> storedDataList;
         if (pathStringIncludesKey) {
             List<String> paths = getPaths(null);
-            storedData = paths.stream().map(this::read).collect(JavaUtil.toSingleton());
-            paths.forEach(path -> storedData.addAll(read(path)));
+            storedDataList = new ArrayList<>();
+            paths.forEach(path -> storedDataList.addAll(read(path)));
         } else {
-            storedData = read(pathString);
+            storedDataList = read(pathString);
         }
-        return constructCacheMap(null, storedData);
+        return constructCacheMap(null, storedDataList);
     }
 
     @Override
