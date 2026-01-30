@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
@@ -35,19 +36,28 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
     private List<String> enrichDefaults(List<String> config, List<String> defaults) {
         outer: for (String d : defaults) {
             try {
-                String defaultConfigName = CONFIG_PATTERN.matcher(d).group("config");
+                String defaultConfigName = getMatch(d);
                 for (String configItem : config) {
-                    String configItemName = CONFIG_PATTERN.matcher(configItem).group("config");
+                    String configItemName = getMatch(configItem);
                     if (defaultConfigName.equals(configItemName)) {
                         continue outer;
                     }
                 }
                 config.add(d);
             } catch (IllegalStateException e) {
+                System.out.println("test");
                 //do nothing
             }
         }
         return config;
+    }
+
+    private String getMatch(String string) {
+        Matcher matcher = CONFIG_PATTERN.matcher(string);
+        if (matcher.find()) {
+            return matcher.group("config");
+        }
+        throw new IllegalStateException("Expected config item should have matched regex pattern");
     }
 
     public List<String> readDefaults(Plugin plugin, String fileName) {
