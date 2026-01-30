@@ -38,9 +38,11 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
             try {
                 String defaultConfigName = getMatch(d);
                 for (String configItem : config) {
-                    String configItemName = getMatch(configItem);
-                    if (defaultConfigName.equals(configItemName)) {
-                        continue outer;
+                    if (CONFIG_PATTERN.matcher(configItem).matches()) {
+                        String configItemName = getMatch(configItem);
+                        if (defaultConfigName.equals(configItemName)) {
+                            continue outer;
+                        }
                     }
                 }
                 config.add(d);
