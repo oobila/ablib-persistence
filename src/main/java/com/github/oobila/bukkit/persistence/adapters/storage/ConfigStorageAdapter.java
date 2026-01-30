@@ -25,7 +25,8 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
     public List<StoredData> read(Plugin plugin, String fileName) {
         StoredData storedData = super.read(plugin, fileName).get(0);
         List<String> defaultConfigs = readDefaults(plugin, fileName);
-        String newData = String.join("\n", enrichDefaults(Arrays.asList(storedData.getData().split("\n")), defaultConfigs));
+        List<String> dataAsList = Arrays.asList(storedData.getData().split("\n"));
+        String newData = String.join("\n", enrichDefaults(dataAsList, defaultConfigs));
         return Collections.singletonList(storedData.toBuilder()
                 .data(newData)
                 .build());
@@ -33,14 +34,18 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
 
     private List<String> enrichDefaults(List<String> config, List<String> defaults) {
         outer: for (String d : defaults) {
-            String defaultConfigName = CONFIG_PATTERN.matcher(d).group("config");
-            for (String configItem : config) {
-                String configItemName = CONFIG_PATTERN.matcher(configItem).group("config");
-                if (defaultConfigName.equals(configItemName)) {
-                    continue outer;
+            try {
+                String defaultConfigName = CONFIG_PATTERN.matcher(d).group("config");
+                for (String configItem : config) {
+                    String configItemName = CONFIG_PATTERN.matcher(configItem).group("config");
+                    if (defaultConfigName.equals(configItemName)) {
+                        continue outer;
+                    }
                 }
+                config.add(d);
+            } catch (IllegalStateException e) {
+                //do nothing
             }
-            config.add(d);
         }
         return config;
     }
@@ -51,7 +56,9 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
         try (InputStream inputStream = plugin.getResource(fileName);
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            return bufferedReader.lines().filter(string -> CONFIG_PATTERN.matcher(string).matches()).toList();
+            return bufferedReader.lines()
+                    .filter(string -> CONFIG_PATTERN.matcher(string).matches())
+                    .toList();
         } catch (IOException e) {
             log(Level.SEVERE, "Could not read defaults for: {0}", fileName);
             log(Level.SEVERE, e);
