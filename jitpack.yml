@@ -1,0 +1,9 @@
+before_install:
+  # JitPack's own JDK auto-detection (inferred from pom.xml's <source>/<target> 26) resolves to
+  # a "-open" (jdk.java.net) build, e.g. 26.0.2+1.1-open. Those builds get pulled from SDKMAN's
+  # mirror soon after a newer patch supersedes them, which is why that install can fail with
+  # "Download has failed, aborting!" even though JDK 26 itself is fine. Pin explicitly to the
+  # Eclipse Temurin build instead - it's mirrored far more reliably.
+  - sdk update
+  - sdk install java 26.0.2-tem
+  - sdk use java 26.0.2-tem

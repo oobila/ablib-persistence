@@ -1,0 +1,5 @@
+# The Maven wrapper's mvnw is a POSIX shell script executed by JitPack's Linux build - it must
+# never be committed with CRLF line endings (a Windows-with-autocrlf checkout would otherwise
+# silently corrupt it, e.g. "bad interpreter" / "$'\r': command not found" on Linux).
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
