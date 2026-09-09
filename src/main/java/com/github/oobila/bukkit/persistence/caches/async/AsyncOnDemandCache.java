@@ -24,9 +24,22 @@ import java.util.function.Consumer;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
 
+/**
+ * A cache that does <em>not</em> keep values resident in memory: it backs individual records with
+ * {@link OnDemandCacheItem}s that fetch their data lazily on first access and then automatically
+ * {@link OnDemandCacheItem#unload() unload} themselves again {@link #RETENTION_TICKS} after being
+ * read. This is what makes it safe to point at a SQL table containing far more data than could
+ * reasonably be kept in memory for every player/record — see {@code SimpleSqlCache},
+ * {@code ClipboardSqlCache} and {@code StringSqlCache} in {@code caches.real}, which are all thin
+ * wrappers around this class configured with different {@code CodeAdapter}s.
+ * <p>
+ * Because {@link #save()}/{@link #save(UUID)} are no-ops here, writes go straight to storage as
+ * soon as {@code putValue}/{@code remove} are called rather than being batched.
+ */
 @Getter
 public class AsyncOnDemandCache<K, V> implements AsyncWriteCache<K, V, OnDemandCacheItem<K, V>> {
 
+    /** How long (in server ticks) a loaded record's value is kept before being evicted from memory again. */
     private static final int RETENTION_TICKS = 1200;
 
     @Setter(AccessLevel.PROTECTED)

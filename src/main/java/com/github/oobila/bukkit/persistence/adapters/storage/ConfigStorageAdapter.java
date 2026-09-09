@@ -19,10 +19,18 @@ import java.util.regex.Pattern;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
+/**
+ * A {@link FileStorageAdapter} for plugin config files that automatically merges in top-level
+ * keys from the plugin's bundled default config that are missing from the file on disk, so
+ * upgrading a plugin can add new config options without overwriting a user's existing config or
+ * requiring a manual migration. Backs {@link com.github.oobila.bukkit.persistence.caches.real.ConfigCache}.
+ */
 public class ConfigStorageAdapter extends FileStorageAdapter {
 
+    /** Matches a top-level YAML key line (e.g. {@code "some-key:"}), used to compare existing vs. default keys line-by-line. */
     private static final Pattern CONFIG_PATTERN = Pattern.compile("(?<config>[a-z0-9]+[a-z0-9-]*[a-z0-9]+):.*");
 
+    /** Reads the config file and merges in any default top-level keys missing from it (see {@link #enrichDefaults}). */
     @Override
     public List<StoredData> read(Plugin plugin, String fileName) {
         StoredData storedData = super.read(plugin, fileName).get(0);
@@ -34,6 +42,12 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
                 .build());
     }
 
+    /**
+     * Appends each default top-level key line to {@code config} that isn't already present under
+     * the same key name, leaving existing values (and their nested sub-keys) untouched. This is a
+     * line-based merge rather than a full YAML merge, so it only ever adds whole missing
+     * top-level sections — it does not merge new nested keys into an existing section.
+     */
     private List<String> enrichDefaults(List<String> config, List<String> defaults) {
         outer: for (String d : defaults) {
             try {
@@ -63,6 +77,7 @@ public class ConfigStorageAdapter extends FileStorageAdapter {
         throw new IllegalStateException("Expected config item should have matched regex pattern");
     }
 
+    /** Reads the top-level key lines from the plugin's bundled default resource for {@code fileName}. */
     public List<String> readDefaults(Plugin plugin, String fileName) {
         Path path = getPath(plugin, fileName);
         sneakyForceMkdir(path.getParent().toFile());

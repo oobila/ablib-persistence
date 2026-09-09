@@ -17,6 +17,15 @@ import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
+/**
+ * (De)serializes a single {@code ConfigurationSerializable} value (e.g. an {@code ItemStack}) to
+ * and from YAML, via Bukkit's own {@code serialize()}/{@code deserialize(Map)} contract. Unlike
+ * {@link MapOfConfigurationSerializableCodeAdapter}, this stores exactly one value per record
+ * rather than a whole map of them — used by {@code SimpleSqlCache}, where each row already
+ * corresponds to a single value.
+ *
+ * @param <V> the {@code ConfigurationSerializable} type this adapter (de)serializes
+ */
 @SuppressWarnings("unused")
 @Getter
 public class ConfigurationSerializableCodeAdapter<V> implements CodeAdapter<V> {
@@ -27,6 +36,13 @@ public class ConfigurationSerializableCodeAdapter<V> implements CodeAdapter<V> {
     @Setter
     private Plugin plugin;
 
+    /**
+     * @param type              the value type; automatically registered with Bukkit's
+     *                           {@code ConfigurationSerialization} if it implements
+     *                           {@code ConfigurationSerializable}
+     * @param includeDataHeader whether to prepend the "generated file, do not edit" YAML header
+     *                           (see {@link com.github.oobila.bukkit.persistence.adapters.utils.MyYamlConfiguration})
+     */
     @SuppressWarnings("unchecked")
     public ConfigurationSerializableCodeAdapter(Class<V> type, boolean includeDataHeader) {
         this.type = type;

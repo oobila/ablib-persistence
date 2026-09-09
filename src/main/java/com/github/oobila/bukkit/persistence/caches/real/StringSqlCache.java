@@ -6,6 +6,12 @@ import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.caches.async.AsyncOnDemandCache;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
 
+/**
+ * A SQL-backed, on-demand cache for plain {@code String} values — see {@link SimpleSqlCache} for
+ * the equivalent storing full {@code ConfigurationSerializable} objects.
+ *
+ * @param <K> the key type identifying individual rows
+ */
 public class StringSqlCache<K> extends AsyncOnDemandCache<K, String> {
 
     public StringSqlCache(String pluginName, String tableName, Class<K> keyType, SqlConnectionProperties connectionProperties) {

@@ -21,6 +21,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Base implementation of {@link StandardReadCache}: keeps every loaded value fully in memory,
+ * split between {@link #nullCache} (global/unpartitioned data) and {@link #localCache} (one map
+ * per loaded partition, e.g. per online player). All I/O happens synchronously on the calling
+ * thread via this cache's {@link com.github.oobila.bukkit.persistence.adapters.vehicle.PersistenceVehicle}s.
+ * <p>
+ * A cache may have several read vehicles but only one write vehicle — useful for reading from
+ * multiple legacy locations while always writing to the current one.
+ */
 @Getter
 public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
 
@@ -31,7 +40,9 @@ public class ReadOnlyCache<K, V> implements StandardReadCache<K, V> {
 
     protected final List<CacheLoadObserver> cacheObservers = new ArrayList<>();
     protected final List<ReadCacheOperationObserver<K, V>> rOperationObservers = new ArrayList<>();
+    /** Globally-stored (unpartitioned) values, keyed by record key. Also stored as {@code localCache.get(null)}. */
     protected final Map<K, CacheItem<K, V>> nullCache = new HashMap<>();
+    /** Per-partition value maps, keyed by partition UUID (with {@code null} mapping to {@link #nullCache}). */
     protected final Map<UUID, Map<K, CacheItem<K, V>>> localCache = new HashMap<>();
 
 

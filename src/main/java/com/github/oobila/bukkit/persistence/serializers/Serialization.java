@@ -14,6 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Central registry and lookup point for {@link KeySerializer}s, used by
+ * {@link com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle} to turn cache keys
+ * into path/table segments and back. Ships with serializers for the key types most Bukkit plugins
+ * need out of the box (see the static initializer below); call {@link #register} to add support
+ * for a custom key type.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Serialization {
 
@@ -32,21 +39,25 @@ public class Serialization {
         register(LocalTime.class, new LocalTimeSerializer());
     }
 
+    /** Registers (or replaces) the {@link KeySerializer} used for keys of type {@code type}. */
     public static <T> void register(Class<T> type, KeySerializer<T> keySerializer) {
         keySerializers.put(type, keySerializer);
     }
 
+    /** Serializes a key using the registered serializer for its runtime type (or nearest registered supertype). */
     @SuppressWarnings("unchecked")
     public static <T> String serialize(T t) {
         KeySerializer<T> keySerializer = (KeySerializer<T>) getKeySerializer(t.getClass());
         return keySerializer.serialize(t);
     }
 
+    /** Deserializes a key string using the registered serializer for {@code type} (or nearest registered supertype). */
     public static <T> T deserialize(Class<T> type, String s) {
         KeySerializer<T> keySerializer = getKeySerializer(type);
         return keySerializer.deserialize(s);
     }
 
+    /** Finds the serializer registered for {@code type}, or the first one registered for an assignable supertype (e.g. any {@code OfflinePlayer} implementation). */
     @SuppressWarnings("unchecked")
     private static <T> KeySerializer<T> getKeySerializer(Class<T> type) {
         for (Map.Entry<Class<?>, KeySerializer<?>> entry : Serialization.keySerializers.entrySet()) {

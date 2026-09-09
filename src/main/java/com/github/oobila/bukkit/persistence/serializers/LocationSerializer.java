@@ -2,6 +2,11 @@ package com.github.oobila.bukkit.persistence.serializers;
 
 import org.bukkit.Location;
 
+/**
+ * {@link KeySerializer} for {@code Location} keys: serializes as {@code world_x_y_z}, with each
+ * coordinate's decimal point replaced by a hyphen (since {@code .} isn't safe to use unescaped in
+ * every storage medium this library targets, e.g. file paths).
+ */
 public class LocationSerializer implements KeySerializer<Location> {
 
     WorldSerializer worldSerializer = new WorldSerializer();

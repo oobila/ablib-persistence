@@ -4,7 +4,6 @@ import com.github.oobila.bukkit.persistence.PersistenceRuntimeException;
 import com.github.oobila.bukkit.persistence.adapters.utils.SqlAdapterUtils;
 import com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle;
 import com.github.oobila.bukkit.persistence.model.SqlConnectionProperties;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.bukkit.plugin.Plugin;
 
@@ -17,6 +16,19 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A {@link StorageAdapter} backed by a single MySQL table per {@code (plugin, table name)} pair
+ * (auto-created on construction with columns {@code partition_id}, {@code record_key},
+ * {@code data}, {@code created}). Rather than a file path, the {@code name} passed to every method
+ * here is a small key=value; key=value string (see {@link #split}) produced by a
+ * {@link com.github.oobila.bukkit.persistence.adapters.vehicle.DynamicVehicle}'s SQL-style path
+ * template, e.g. {@code "table=homes,partition_id={uuid},record_key={key}"} — this is how a
+ * vehicle tells the adapter which table/partition/key a given operation targets.
+ * <p>
+ * Note: values are escaped by doubling single quotes before being inlined into SQL text (see
+ * {@link #write}) rather than via {@code PreparedStatement} parameters — this adapter should only
+ * ever be pointed at a trusted database, not exposed to arbitrary user-supplied table/column names.
+ */
 @SuppressWarnings("unused")
 public class SqlStorageAdapter implements StorageAdapter {
 
@@ -29,6 +41,7 @@ public class SqlStorageAdapter implements StorageAdapter {
     public static final String SEPARATOR = ";";
     public static final String NULL_STRING = "NULL";
 
+    /** Opens (or reuses) the shared SQL connection and creates the backing table if it doesn't already exist. */
     public SqlStorageAdapter(String pluginName, String tableName, SqlConnectionProperties connectionProperties) {
         String finalName = toTableName(pluginName, tableName);
         SqlAdapterUtils.createConnection(finalName, connectionProperties);
@@ -116,7 +129,7 @@ public class SqlStorageAdapter implements StorageAdapter {
                     nameParts.tableName,
                     wrap(nameParts.partition),
                     wrap(storedData.getName()),
-                    wrap(StringUtils.replace(storedData.getData(), "'", "''"))
+                    wrap(storedData.getData().replace("'", "''"))
             );
             Connection connection = SqlAdapterUtils.getConnection();
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -179,6 +192,7 @@ public class SqlStorageAdapter implements StorageAdapter {
         }
     }
 
+    /** Parses the {@code table=...,partition_id=...,record_key=...} name string produced by a {@code DynamicVehicle}. */
     private NameParts split(Plugin plugin, String s) {
         return split(plugin.getName(), s);
     }

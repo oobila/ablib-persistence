@@ -26,12 +26,21 @@ import java.util.logging.Level;
 import static com.github.oobila.bukkit.common.ABCommon.log;
 import static com.github.oobila.bukkit.common.ABCommon.runContinuousTask;
 
+/**
+ * A read-only cache for a plugin's config file, with typed convenience getters
+ * ({@link #getString}, {@link #getLocation}, etc.) and automatic hot-reloading: it polls the
+ * backing file's last-modified time and reloads itself (notifying online operators) whenever it
+ * changes on disk, so editing the config while the server is running takes effect without a
+ * restart. Uses {@link com.github.oobila.bukkit.persistence.adapters.storage.ConfigStorageAdapter}
+ * under the hood, which also merges in newly-added default keys from the plugin's bundled config.
+ */
 @SuppressWarnings("unused")
 public class ConfigCache extends ReadOnlyCache<String, Object> {
 
     private int fileListenerTask = -1;
     private ZonedDateTime dateTime = ZonedDateTime.now();
 
+    /** @param pathString the config file's path relative to the plugin's data folder, e.g. {@code "config.yml"} */
     public ConfigCache(String pathString) {
         super(
                 new DynamicVehicle<>(
@@ -106,6 +115,7 @@ public class ConfigCache extends ReadOnlyCache<String, Object> {
         return Objects.requireNonNull(Material.getMaterial((String) getValue(key)));
     }
 
+    /** Starts (once) a repeating task that reloads this config whenever its file's last-modified time advances. */
     private void startFileListener(Plugin plugin) {
         if (fileListenerTask < 0) {
             BukkitTask bukkitTask = runContinuousTask(() -> {

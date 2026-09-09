@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** A {@code ConfigurationSerializable} list of queued message strings, storable directly via a YAML-based {@link com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter}. */
 @RequiredArgsConstructor
 @Getter
 public class MessageQueue implements Collection<String>, ConfigurationSerializable {

@@ -15,6 +15,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/**
+ * Adds put/remove/save/clear on top of {@link ReadOnlyCache}, and implements {@code Map} directly
+ * (delegating to {@link #nullCache}) so a global-data instance of this cache can be used
+ * anywhere a {@code Map<K, CacheItem<K, V>>} is expected. This is the base class behind most of
+ * the file-backed caches in {@code caches.real} (e.g. {@code SimpleFileCache}).
+ */
 @SuppressWarnings("unused")
 @Getter
 public class ReadAndWriteCache<K, V> extends ReadOnlyCache<K, V> implements StandardWriteCache<K, V>, Map<K, CacheItem<K, V>> {

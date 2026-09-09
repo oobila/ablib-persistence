@@ -1,116 +1,56 @@
-//package com.github.oobila.bukkit.persistence.adapters.vehicle;
-//
-//import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
-//import com.github.oobila.bukkit.persistence.adapters.code.DummyCodeAdapter;
-//import com.github.oobila.bukkit.persistence.adapters.code.ResourcePackCodeAdapter;
-//import com.github.oobila.bukkit.persistence.adapters.storage.StoredData;
-//import com.github.oobila.bukkit.persistence.adapters.storage.ZipStorageAdapter;
-//import com.github.oobila.bukkit.persistence.model.CacheItem;
-//import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
-//import com.github.oobila.bukkit.persistence.model.Resource;
-//import com.github.oobila.bukkit.persistence.model.ResourcePack;
-//import com.github.oobila.bukkit.persistence.serializers.Serialization;
-//import lombok.Getter;
-//import org.apache.commons.io.FilenameUtils;
-//import org.bukkit.plugin.Plugin;
-//
-//import java.time.ZoneOffset;
-//import java.time.ZonedDateTime;
-//import java.util.ArrayList;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.regex.Pattern;
-//
-//import static com.github.oobila.bukkit.persistence.adapters.utils.DirectoryUtils.append;
-//import static com.github.oobila.bukkit.persistence.utils.BackwardsCompatibilityUtil.compatibility;
-//
-//@Getter
-//public class ResourcePackVehicle<K>
-//        extends BasePersistenceVehicle<K, ResourcePack, OnDemandCacheItem<K, ResourcePack>>
-//        implements OnDemandPersistenceVehicle<K, ResourcePack, OnDemandCacheItem<K, ResourcePack>> {
-//
-//    private static final ZonedDateTime OLD_DATE = ZonedDateTime.of(
-//            2000,1,1,0,0,0,0, ZoneOffset.UTC);
-//
-//    private final Class<K> keyType;
-//    private final ResourcePackCodeAdapter resourceCodeAdapter;
-//    private final DummyCodeAdapter<ResourcePack> codeAdapter = new DummyCodeAdapter<>(ResourcePack.class);
-//    private final ZipStorageAdapter storageAdapter = new ZipStorageAdapter();
-//
-//    public ResourcePackVehicle(Class<K> keyType, Map<Pattern, CodeAdapter<?>> codeAdapterMap) {
-//        this.keyType = keyType;
-//        this.resourceCodeAdapter = new ResourcePackCodeAdapter(codeAdapterMap);
-//    }
-//
-//    @Override
-//    public Map<K, OnDemandCacheItem<K, ResourcePack>> load(Plugin plugin, String directory) {
-//        resourceCodeAdapter.setPlugin(plugin);
-//        Map<K, OnDemandCacheItem<K,ResourcePack>> map = new HashMap<>();
-//        for (String item : storageAdapter.poll(plugin, directory)) {
-//            K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(item));
-//            map.put(key, loadSingle(plugin, directory, item));
-//        }
-//        return map;
-//    }
-//
-//    @Override
-//    public void save(Plugin plugin, String directory, Map<K, OnDemandCacheItem<K, ResourcePack>> map) {
-//        map.forEach((key, value) ->
-//                saveSingle(plugin, directory, value)
-//        );
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    @Override
-//    public OnDemandCacheItem<K, ResourcePack> loadSingle(Plugin plugin, String directory, String name) {
-//        long size = 0;
-//        ZonedDateTime updatedDate = OLD_DATE;
-//        List<StoredData> storedDataList = storageAdapter.read(plugin, append(directory, name));
-//        ResourcePack resourcePack = new ResourcePack(FilenameUtils.getBaseName(name));
-//        for (StoredData storedData : storedDataList) {
-//            size += storedData.getSize();
-//            if (updatedDate.isBefore(storedData.getUpdatedDate())) {
-//                updatedDate = storedData.getUpdatedDate();
-//            }
-//            Resource<?> object = resourceCodeAdapter.toObject(compatibility(this, storedData));
-//            resourcePack.put(object.getKey(), object);
-//        }
-//        K key = Serialization.deserialize(getKeyType(), FilenameUtils.getBaseName(name));
-//        StoredData storedData = new StoredData(null, null, size, updatedDate);
-//        return new OnDemandCacheItem<>(
-//                ResourcePack.class, key, resourcePack, storedData, (ResourcePackCache<K>) getCache()
-//        );
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    @Override
-//    public OnDemandCacheItem<K, ResourcePack> loadMetadataSingle(Plugin plugin, String directory, String name) {
-//        CacheItem<K, ResourcePack> cacheItem = loadSingle(plugin, directory, name);
-//        return new OnDemandCacheItem<>(
-//                ResourcePack.class,
-//                cacheItem.getKey(),
-//                cacheItem.getData(),
-//                cacheItem.getSize(),
-//                cacheItem.getUpdatedDate(),
-//                (ResourcePackCache<K>) getCache()
-//        );
-//    }
-//
-//    @Override
-//    public void saveSingle(Plugin plugin, String directory, OnDemandCacheItem<K, ResourcePack> cacheItem) {
-//        String name = Serialization.serialize(cacheItem.getKey());
-//        List<StoredData> storedDataList = new ArrayList<>();
-//        for (Map.Entry<String, Resource<?>> entry : cacheItem.getData().entrySet()) {
-//            String data = resourceCodeAdapter.fromObject(entry.getValue());
-//            storedDataList.add(new StoredData(entry.getKey(), data, 0, null));
-//        }
-//        storageAdapter.write(plugin, append(directory, name), storedDataList);
-//    }
-//
-//    @Override
-//    public void deleteSingle(Plugin plugin, String directory, K key) {
-//        String name = Serialization.serialize(key);
-//        storageAdapter.delete(plugin, append(directory, name));
-//    }
-//}
+package com.github.oobila.bukkit.persistence.adapters.vehicle;
+
+import com.github.alastairbooth.placeholderpattern.PlaceholderPattern;
+import com.github.oobila.bukkit.persistence.adapters.code.CodeAdapter;
+import com.github.oobila.bukkit.persistence.adapters.code.ResourcePackCodeAdapter;
+import com.github.oobila.bukkit.persistence.adapters.storage.FileStorageAdapter;
+import com.github.oobila.bukkit.persistence.model.OnDemandCacheItem;
+import com.github.oobila.bukkit.persistence.model.ResourcePack;
+
+import java.util.Map;
+
+/**
+ * A {@link DynamicVehicle} preconfigured to load {@link ResourcePack}s — zip archives bundling
+ * several typed resources — from a directory of {@code .zip} files, one resource pack per file,
+ * keyed by file name. Resource packs are treated as global data, not partitioned per player: the
+ * path template this vehicle builds only contains {@link DynamicVehicle#KEY_STRING}, never
+ * {@link DynamicVehicle#PARTITION_STRING}.
+ * <p>
+ * Loading is on-demand: {@code load(Plugin)} only reads each zip's metadata (size/last-modified),
+ * wrapping it in an {@link OnDemandCacheItem} that lazily reads and unpacks the full archive the
+ * first time it's actually accessed, rather than eagerly unzipping every resource pack up front —
+ * see {@link com.github.oobila.bukkit.persistence.caches.real.ResourcePackCache}, the ready-to-use
+ * cache built on this vehicle. Use
+ * {@link com.github.oobila.bukkit.persistence.caches.real.SimpleAsyncResourceCache} instead when
+ * the full set of resource packs is small enough to eagerly hold in memory.
+ *
+ * @param <K> the key type identifying individual resource packs (their file name, minus extension)
+ */
+public class ResourcePackVehicle<K> extends DynamicVehicle<K, ResourcePack, OnDemandCacheItem<K, ResourcePack>> {
+
+    private static final String EXTENSION = "zip";
+
+    /**
+     * @param directory      the directory (relative to the plugin's data folder) resource pack
+     *                        zip files are stored under, e.g. {@code "resourcepacks"}
+     * @param keyType        the runtime type of {@code K}, used to (de)serialize each pack's key
+     *                        (its file name) via {@link com.github.oobila.bukkit.persistence.serializers.Serialization}
+     * @param codeAdapterMap maps each resource type's {@link CodeAdapter} to a
+     *                        {@link PlaceholderPattern} that matches that type's entries by file
+     *                        name within a pack's zip archive — see {@link ResourcePackCodeAdapter}
+     */
+    public ResourcePackVehicle(String directory, Class<K> keyType, Map<PlaceholderPattern, CodeAdapter<?>> codeAdapterMap) {
+        super(
+                trimTrailingSlash(directory) + "/" + KEY_STRING + "." + EXTENSION,
+                true,
+                keyType,
+                new FileStorageAdapter(),
+                new ResourcePackCodeAdapter(codeAdapterMap)
+        );
+    }
+
+    private static String trimTrailingSlash(String directory) {
+        return directory.endsWith("/") ? directory.substring(0, directory.length() - 1) : directory;
+    }
+
+}

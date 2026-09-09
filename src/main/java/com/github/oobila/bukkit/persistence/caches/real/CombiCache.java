@@ -16,6 +16,18 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+/**
+ * Wraps a {@link SimpleFileCache} and an optional {@link SimpleSqlCache} for the same data,
+ * treating one of them as the "primary" source of truth ({@code primaryIsSql}) and migrating
+ * records into the primary store on load. This exists to support switching a plugin's storage
+ * backend (e.g. moving from file storage to a shared SQL database) without a one-off migration
+ * step or downtime: as data is loaded it is automatically transferred to the primary store and
+ * removed from the other one. When no {@code SqlConnectionProperties} are supplied, this behaves
+ * as a plain file cache.
+ *
+ * @param <K> the key type identifying individual records
+ * @param <V> the value type being stored (must be {@code ConfigurationSerializable})
+ */
 public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> {
 
     @Getter
@@ -24,6 +36,14 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
     private final SimpleSqlCache<K, V> sqlCache;
     private final boolean primaryIsSql;
 
+    /**
+     * @param sqlConnectionProperties SQL connection details, or {@code null} to operate as a
+     *                                 plain file cache with no SQL store at all
+     * @param primaryIsSql             when true, data loaded from the file cache is copied into
+     *                                  SQL and removed from the file cache (one-way migration);
+     *                                  when false, the SQL side is currently unused for transfer
+     *                                  (see {@link #transfer()})
+     */
     public CombiCache(Plugin plugin, Class<K> keyType, Class<V> valueType, String pathString, String tableName,
                       SqlConnectionProperties sqlConnectionProperties, boolean primaryIsSql) {
         this.plugin = plugin;
@@ -36,6 +56,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
         }
     }
 
+    /** Migrates every globally-stored record from the file cache into SQL, if SQL is the primary store. */
     private void transfer() {
         if (primaryIsSql) {
             List<CacheItem<K, V>> values = new ArrayList<>(fileCache.values());
@@ -55,6 +76,7 @@ public class CombiCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> 
         }
     }
 
+    /** Per-partition equivalent of {@link #transfer()}, run after loading a single partition. */
     private void transfer(UUID partition) {
         if (primaryIsSql) {
             List<CacheItem<K, V>> values = new ArrayList<>(fileCache.values(partition));

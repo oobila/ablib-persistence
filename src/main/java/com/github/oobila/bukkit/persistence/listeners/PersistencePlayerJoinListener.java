@@ -9,10 +9,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+/**
+ * Register this once per plugin (or once server-wide, if shared) to drive the lifecycle of every
+ * cache registered via {@link CacheManager#registerPlayerCache}: their data is loaded when a
+ * player joins and saved then unloaded when they quit, with {@link PlayerObserver} caches also
+ * notified. Without this listener, per-player caches must be loaded/saved/unloaded manually.
+ */
 @AllArgsConstructor
 @SuppressWarnings("java:S1871")
 public class PersistencePlayerJoinListener implements Listener {
 
+    /** Loads every registered cache's data for the joining player, notifying {@link PlayerObserver} caches. */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         CacheManager.getPlayerReadCaches().forEach(readCache -> {
@@ -26,6 +33,7 @@ public class PersistencePlayerJoinListener implements Listener {
         });
     }
 
+    /** Saves (if the cache supports writing) and unloads every registered cache's data for the leaving player, notifying {@link PlayerObserver} caches. */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         CacheManager.getPlayerReadCaches().forEach(readCache -> {

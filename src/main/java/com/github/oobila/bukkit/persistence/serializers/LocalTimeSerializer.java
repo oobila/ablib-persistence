@@ -3,6 +3,7 @@ package com.github.oobila.bukkit.persistence.serializers;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+/** {@link KeySerializer} for {@code LocalTime} keys, using ISO-8601 time format. */
 public class LocalTimeSerializer implements KeySerializer<LocalTime> {
 
     @Override

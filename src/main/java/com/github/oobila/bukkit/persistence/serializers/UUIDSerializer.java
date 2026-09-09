@@ -2,6 +2,7 @@ package com.github.oobila.bukkit.persistence.serializers;
 
 import java.util.UUID;
 
+/** {@link KeySerializer} for {@code UUID} keys, via {@code UUID.toString()}/{@code fromString()}. */
 public class UUIDSerializer implements KeySerializer<UUID> {
 
     @Override

@@ -29,6 +29,13 @@ import java.util.zip.ZipOutputStream;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
+/**
+ * (De)serializes a {@link ResourcePack} — a named bundle of heterogeneous resources — to and from
+ * a single zip archive (encoded as ISO-8859-1 text). Each zip entry is matched to the
+ * {@link CodeAdapter} responsible for its type by filename, via the {@link PlaceholderPattern}s
+ * supplied at construction, so a resource pack can freely mix, e.g., YAML-serialized objects and
+ * plain-text files in one archive.
+ */
 @Getter
 public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
 
@@ -37,6 +44,11 @@ public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
     @Setter
     private Plugin plugin;
 
+    /**
+     * @param codeAdapterMap maps each resource type's {@link CodeAdapter} to a
+     *                        {@link PlaceholderPattern} (with exactly one placeholder) that
+     *                        matches that type's entries by file name within the archive
+     */
     public ResourcePackCodeAdapter(Map<PlaceholderPattern, CodeAdapter<?>> codeAdapterMap) {
         codeAdapterMap.forEach((placeholderPattern, codeAdapter) -> {
             if (placeholderPattern.getKeys().size() != 1) {
@@ -52,7 +64,7 @@ public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
 
     @Override
     public Class<ResourcePack> getType() {
-        return null;
+        return ResourcePack.class;
     }
 
     @Override
@@ -83,8 +95,9 @@ public class ResourcePackCodeAdapter implements CodeAdapter<ResourcePack> {
     private Resource<?> toResource(StoredData storedData) {
         for (Info info : infoList) {
             if (info.placeholderPattern.matches(storedData.getName())) {
-                Map<String, ?> object = info.codeAdapter.toObjects(storedData);
-                return getResource(storedData, object);
+                Map<String, ?> objects = info.codeAdapter.toObjects(storedData);
+                Object value = objects.values().iterator().next();
+                return getResource(storedData, value);
             }
         }
         log(Level.SEVERE, "Class not registered with the ResourcePackCodeAdapter: {0}", storedData.getName());

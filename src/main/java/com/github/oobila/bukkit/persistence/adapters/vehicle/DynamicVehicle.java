@@ -24,10 +24,38 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+/**
+ * The general-purpose {@link PersistenceVehicle} implementation used by every cache in
+ * {@code caches.real}. It is configured with a <b>path template</b> — a string such as
+ * {@code "players/{uuid}/homes/{key}.yml"} for file/config storage, or
+ * {@code "table=homes,partition_id={uuid},record_key={key}"} for SQL storage — containing the
+ * literal placeholders {@link #PARTITION_STRING} and {@link #KEY_STRING}. Whether the template
+ * contains each placeholder determines what this vehicle supports:
+ * <ul>
+ *     <li>Neither placeholder: one global record/file — {@link #load(Plugin)}/{@code save(Plugin, Map)} work,
+ *         partitioned operations don't.</li>
+ *     <li>Only {@code {uuid}}: one record/file per partition (e.g. per player) —
+ *         {@link #load(Plugin, UUID)}/{@code save(Plugin, UUID, Map)} work.</li>
+ *     <li>Only {@code {key}}: one record/file per key, all global.</li>
+ *     <li>Both: one record/file per key, per partition — used for on-demand caches
+ *         ({@code isOnDemand}), which only ever load/save a single {@code (partition, key)} record
+ *         at a time rather than an entire partition.</li>
+ * </ul>
+ * Concrete paths/names are resolved by substituting real values for the placeholders (see
+ * {@link #getPath}) or, when discovering what already exists in storage, by turning the
+ * placeholder segments into a regex and polling the {@link StorageAdapter} for matches (see
+ * {@link #getPaths}).
+ *
+ * @param <K> the key type identifying individual records
+ * @param <V> the value type being stored
+ * @param <C> the {@code CacheItem} subtype wrapping each stored value plus its metadata
+ */
 public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersistenceVehicle<K, V, C> {
 
+    /** Placeholder in a path template standing in for a partition's UUID (e.g. a player). */
     public static final String PARTITION_STRING = "{uuid}";
     private static final String PARTITION_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+    /** Placeholder in a path template standing in for a record's serialized key. */
     public static final String KEY_STRING = "{key}";
     private static final String KEY_PATTERN = "[0-9a-zA-Z-_]+";
     private static final String SEPARATOR = "/";
@@ -47,6 +75,15 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     @Getter
     private final CodeAdapter<V> codeAdapter;
 
+    /**
+     * @param pathString a path/table template, e.g. {@code "players/{uuid}/homes/{key}.yml"};
+     *                    see the class documentation for how the presence of
+     *                    {@link #PARTITION_STRING} and {@link #KEY_STRING} changes behaviour
+     * @param isOnDemand  when true, records aren't eagerly loaded in full — {@link #read} returns
+     *                    metadata-only until a single record is explicitly requested, letting a
+     *                    cache built on this vehicle hold far more data than fits in memory
+     * @param keyType     the runtime type of {@code K}, used to (de)serialize keys via {@link Serialization}
+     */
     public DynamicVehicle(String pathString, boolean isOnDemand, Class<K> keyType,
                           StorageAdapter storageAdapter, CodeAdapter<V> codeAdapter) {
         this.pathString = pathString;
@@ -97,10 +134,14 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
     public C load(Plugin plugin, UUID partition, K key) {
         this.plugin = plugin;
         codeAdapter.setPlugin(plugin);
-        if (!pathStringIncludesPartition || !pathStringIncludesKey) {
+        if (!pathStringIncludesKey) {
             //operation not supported
             return null;
         }
+        // partition is optional here: a template with no {uuid} placeholder ignores it (see
+        // getPath), so a global (non-partitioned) on-demand vehicle can still load a single
+        // record by key alone - this is what lets OnDemandCacheItem.getData() lazily reload a
+        // record it wasn't loaded with a partition for.
         String name = getPath(partition, Serialization.serialize(key));
         if (storageAdapter.exists(plugin, name)) {
             List<StoredData> storedData = read(name, true);
@@ -161,6 +202,14 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
         return map;
     }
 
+    /**
+     * Turns one {@link StoredData} record into one or more {@code CacheItem}s. Three cases:
+     * data is {@code null} (metadata-only read for an on-demand cache — wrap it in an
+     * {@link OnDemandCacheItem} that will lazily reload its actual value when first accessed);
+     * this vehicle is on-demand but data was fully read anyway (one specific record load); or a
+     * normal eager load, which may unpack several keyed values out of a single stored record
+     * (see {@link CodeAdapter#toObjects}).
+     */
     @SuppressWarnings("unchecked")
     private Map<K, C> createCacheItems(UUID partition, StoredData storedData) {
         Map<K, C> retMap = new HashMap<>();
@@ -247,9 +296,11 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
 
     @Override
     public void delete(Plugin plugin, UUID partition, K key) {
-        if (!pathStringIncludesPartition || !pathStringIncludesKey) {
+        if (!pathStringIncludesKey) {
             throw new PersistenceRuntimeException("This operation is not supported!");
         }
+        // as in load(Plugin, UUID, K): partition is optional, ignored when the template has no
+        // {uuid} placeholder, so a global on-demand vehicle can still delete a single record.
         String name = getPath(partition, Serialization.serialize(key));
         storageAdapter.delete(plugin, name);
     }
@@ -287,10 +338,22 @@ public class DynamicVehicle<K, V, C extends CacheItem<K, V>> extends BasePersist
         return working;
     }
 
+    /** Kicks off {@link #getPaths(int, String, List, UUID)} at the first path segment. */
     private List<String> getPaths(UUID partition) {
         return getPaths(0, "", null, partition);
     }
 
+    /**
+     * Resolves every concrete storage path matching this vehicle's template, one path segment
+     * (between {@link #SEPARATOR}s) at a time, by polling the {@link StorageAdapter} at each
+     * level of nesting. A literal segment (e.g. {@code "players"}) is appended as-is; a segment
+     * containing {@link #PARTITION_STRING} and/or {@link #KEY_STRING} is turned into a regex
+     * (quoting everything else literally) and matched against whatever
+     * {@link StorageAdapter#poll} finds at that level, additionally filtering by the requested
+     * partition when the segment contains {@code {uuid}}. This is what lets, e.g., a template of
+     * {@code "players/{uuid}/homes/{key}.yml"} discover every home file for one player without
+     * the vehicle needing to track the set of keys itself.
+     */
     @SuppressWarnings("java:S3776")
     private List<String> getPaths(int depth, String current, List<String> paths, UUID partition) {
         if (depth >= pathParts.length) {

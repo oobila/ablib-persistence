@@ -10,6 +10,12 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Package-private base class holding the state common to every {@link PersistenceVehicle}
+ * implementation: the owning {@link Cache} and the list of registered
+ * {@link BackwardsCompatibility} rules. Kept separate from {@link DynamicVehicle} so any future
+ * alternative vehicle implementation can reuse this plumbing.
+ */
 @RequiredArgsConstructor
 @Getter
 abstract class BasePersistenceVehicle<K, V, C extends CacheItem<K, V>> implements PersistenceVehicle<K, V, C> {

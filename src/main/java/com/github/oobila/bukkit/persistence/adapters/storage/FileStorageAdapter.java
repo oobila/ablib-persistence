@@ -28,6 +28,12 @@ import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
+/**
+ * Stores each record as its own file (or, when {@code name} has no file extension, treats it as a
+ * directory and lists its contents) under the plugin's data folder. The base
+ * {@link StorageAdapter} implementation for plain file-backed caches;
+ * {@link ConfigStorageAdapter} extends this to add default-value merging for config-style files.
+ */
 @RequiredArgsConstructor
 @Getter
 public class FileStorageAdapter implements StorageAdapter {

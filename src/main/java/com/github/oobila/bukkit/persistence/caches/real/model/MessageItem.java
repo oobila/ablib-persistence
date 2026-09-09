@@ -11,6 +11,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Getter
+/** One queued chat message stored by {@code MessageCache}, delivered to its recipient on next join. */
 public class MessageItem implements ConfigurationSerializable {
 
     private final String message;

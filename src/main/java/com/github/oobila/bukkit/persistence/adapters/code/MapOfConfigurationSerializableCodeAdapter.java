@@ -16,6 +16,15 @@ import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
+/**
+ * (De)serializes an entire YAML document as a map of named {@code ConfigurationSerializable} (or
+ * primitive) values, one per top-level key — used wherever a single file holds several distinct
+ * records (e.g. every player's saved item in one file, keyed by slot name). This is the adapter
+ * behind {@link com.github.oobila.bukkit.persistence.caches.real.SimpleFileCache} and
+ * {@link com.github.oobila.bukkit.persistence.caches.real.SimpleAsyncFileCache}.
+ *
+ * @param <V> the value type stored under each top-level key
+ */
 @SuppressWarnings("unused")
 @Getter
 public class MapOfConfigurationSerializableCodeAdapter<V> implements CodeAdapter<V> {

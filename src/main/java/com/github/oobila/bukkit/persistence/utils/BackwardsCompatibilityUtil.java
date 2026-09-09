@@ -10,6 +10,13 @@ import lombok.NoArgsConstructor;
 @SuppressWarnings("unused")
 public class BackwardsCompatibilityUtil {
 
+    /**
+     * Applies every {@link BackwardsCompatibility} rule registered on {@code vehicle} (via
+     * {@link PersistenceVehicle#addBackwardsCompatibility}) to {@code storedData}'s content, in
+     * registration order, and returns the rewritten copy. Intended to be called on data as it's
+     * read, before deserialization, so old save files referencing a since-renamed class or field
+     * still load correctly.
+     */
     public static StoredData compatibility(PersistenceVehicle<?, ?, ?> vehicle, StoredData storedData) {
         for (BackwardsCompatibility backwardsCompatibility : vehicle.getBackwardsCompatibilityList()) {
             storedData = storedData.toBuilder()

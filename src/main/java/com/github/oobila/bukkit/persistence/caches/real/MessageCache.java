@@ -14,6 +14,13 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.UUID;
 
+/**
+ * Delivers messages to players who are offline when they're sent: {@link #message} queues a
+ * message under the recipient's UUID via the underlying {@link CombiCache}, and
+ * {@link #onJoin(Player)} — invoked automatically by
+ * {@code PersistencePlayerJoinListener} once this cache is registered — flushes and clears every
+ * queued message to the player, in the order they were sent, as soon as they join.
+ */
 @SuppressWarnings("unused")
 public class MessageCache extends CombiCache<UUID, MessageItem> implements PlayerObserver {
 
@@ -23,6 +30,7 @@ public class MessageCache extends CombiCache<UUID, MessageItem> implements Playe
         CacheManager.registerPlayerCache(this);
     }
 
+    /** Queues a formatted {@link Message} (with {@code args} substituted) for {@code player} to receive on next join. */
     public void message(OfflinePlayer player, String text, String... args) {
         putValue(
                 player.getUniqueId(),
@@ -35,6 +43,7 @@ public class MessageCache extends CombiCache<UUID, MessageItem> implements Playe
         );
     }
 
+    /** Queues a plain message for {@code player} to receive on next join. */
     public void message(OfflinePlayer player, String text) {
         putValue(
                 player.getUniqueId(),

@@ -18,6 +18,12 @@ import java.util.stream.Stream;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskLater;
 
+/**
+ * Asynchronous equivalent of {@code ReadAndWriteCache}: put/remove/clear operations run via
+ * {@code runTaskAsync} and report back through a callback, but — unlike {@link AsyncOnDemandCache}
+ * — all currently-loaded data still lives fully in memory. Backs {@code SimpleAsyncFileCache} and
+ * {@code SimpleAsyncResourceCache} in {@code caches.real}.
+ */
 @SuppressWarnings({"unused"})
 @Getter
 public class AsyncReadAndWriteCache<K, V> extends AsyncReadOnlyCache<K, V> implements AsyncWriteCache<K, V, CacheItem<K, V>> {

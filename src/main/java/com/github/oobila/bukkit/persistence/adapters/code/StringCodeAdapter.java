@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.Map;
 
+/** A no-op {@link CodeAdapter} for plain {@code String} values — stores/reads the text as-is. */
 @Getter
 public class StringCodeAdapter implements CodeAdapter<String> {
 

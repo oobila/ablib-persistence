@@ -21,6 +21,14 @@ import java.util.function.Consumer;
 import static com.github.oobila.bukkit.common.ABCommon.runTaskAsync;
 
 
+/**
+ * Asynchronous equivalent of {@code ReadOnlyCache}: data is still held fully in memory once
+ * loaded (see {@link #nullCache}/{@link #localCache}), but reads are dispatched via
+ * {@code runTaskAsync} and returned through a callback rather than directly. Use this (or
+ * {@link AsyncReadAndWriteCache}) when the underlying storage is small enough to load in full but
+ * I/O should stay off the main thread; use {@link AsyncOnDemandCache} instead when the data set
+ * is too large to hold entirely in memory.
+ */
 @Getter
 @SuppressWarnings("unused")
 public class AsyncReadOnlyCache<K, V> implements AsyncReadCache<K, V, CacheItem<K, V>> {

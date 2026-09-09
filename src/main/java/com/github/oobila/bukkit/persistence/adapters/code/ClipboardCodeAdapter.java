@@ -21,6 +21,12 @@ import java.util.logging.Level;
 
 import static com.github.oobila.bukkit.common.ABCommon.log;
 
+/**
+ * (De)serializes a WorldEdit {@link Clipboard} (a schematic — copied block/entity data) to and
+ * from the Sponge Schematic v3 binary format, encoded as ISO-8859-1 text so it can travel through
+ * the same string-based storage pipeline as every other {@link CodeAdapter}. Backs
+ * {@code ClipboardSqlCache}.
+ */
 @SuppressWarnings("unused")
 @RequiredArgsConstructor
 @Getter
